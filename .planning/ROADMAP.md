@@ -27,7 +27,7 @@ This milestone converts the current guided-learning release candidate into one s
   4. The labeled fixture fallback, hidden-answer containment, host-execution prohibition, and deterministic evidence authority still pass regression and adversarial checks after integration.
   5. `docs/BUILD_LOG.md`, `docs/ROADMAP.md`, `docs/THREAT_MODEL.md`, `docs/TESTING.md`, and `docs/COMPLETION_REPORT.md` report current branch/SHA-specific evidence without stale or unsupported completion claims.
 **External dependencies:** None. GitHub branch-protection changes require the repository owner's existing administrative access but are already within the authorized repository scope.
-**Plans:** 6 plans across 4 waves; Plan 01-01 complete
+**Plans:** 6 plans across 4 waves; Plans 01-01 through 01-04 complete
 
 ### Phase 2: Credential-Controlled Live OpenAI Proof
 
@@ -84,7 +84,7 @@ This milestone converts the current guided-learning release candidate into one s
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Release Integration and Independent Quality Gates | 1/6 | In Progress | - |
+| 1. Release Integration and Independent Quality Gates | 4/6 | In Progress — findings remediation | - |
 | 2. Credential-Controlled Live OpenAI Proof | 0/TBD | Not started — credential gate | - |
 | 3. Approved Public Deployment and Production Verification | 0/TBD | Not started — approval gate | - |
 | 4. External UAT, Video, and Final Submission | 0/TBD | Not started — external evidence | - |
