@@ -1,0 +1,127 @@
+# Requirements: FaultSmith Submission Completion
+
+**Defined:** July 18, 2026  
+**Core Value:** Learners must practice reading real failure evidence, reasoning about root causes, and proving minimal repairs instead of receiving an answer that bypasses the debugging process.
+
+## v1 Requirements
+
+Requirements for the current release/submission milestone. Existing learner-facing capabilities are recorded as validated in `.planning/PROJECT.md`; these requirements cover the remaining engineering proof and external release evidence.
+
+### Development Orchestration
+
+- [ ] **DEV-01**: Maintainers can use a tracked GSD brownfield map, project context, requirements, roadmap, state, and phase plans that link to—not replace—the canonical PRD and execution documents.
+- [ ] **DEV-02**: The coordinator can run independent product, QA/accessibility, and security/adversarial review streams with non-overlapping ownership and consolidate their evidence against one commit SHA.
+- [ ] **DEV-03**: Every accepted material review finding records severity, affected surface, reproducible failure path, repair, regression coverage, and rerun evidence; rejected findings record a technical rationale.
+
+### Continuous Integration
+
+- [ ] **CI-01**: Every pull request and main-branch push runs an independently named static-analysis gate containing lint and TypeScript checks.
+- [ ] **CI-02**: Every pull request and main-branch push runs an independently named unit/integration gate containing the mocked/offline Vitest suite.
+- [ ] **CI-03**: Every pull request and main-branch push runs an independently named build/security gate containing the production build, client leakage scan, dependency audit, and targeted repository safety scans.
+- [ ] **CI-04**: Every pull request and main-branch push runs an independently named browser/accessibility gate containing the Playwright workflows and Chromium/axe setup.
+- [ ] **CI-05**: The complete local `npm run quality` command remains green and the new CI jobs call the same package scripts rather than implementing divergent checks.
+- [ ] **CI-06**: Branch protection requires the unique green CI gates after they have successfully run, without leaving `main` unprotected or blocked by a removed check name.
+
+### Quality and Security Evidence
+
+- [ ] **QA-01**: Independent product-completeness review finds no unresolved blocker/high defect in the guided roadmap, advanced catalog, primary demo, fallback disclosure, persistence, or report workflow.
+- [ ] **QA-02**: Independent QA/accessibility review finds no unresolved blocker/high defect and verifies keyboard use, labels, focus, axe, contrast, reduced motion, responsive recording layout, refresh, reset, retry, duplicate action, and failure recovery.
+- [ ] **SEC-01**: Independent security/adversarial review finds no unresolved blocker/high defect across untrusted inputs, strict schemas, allowlists, hidden-answer containment, model authority, host execution, output sanitation, errors, rate limiting, secrets, dependencies, and bundles.
+- [ ] **SEC-02**: The current working tree and reachable Git history contain no real credential or private-key material, and all deliberate fake-token/test matches are documented as false positives.
+- [ ] **SAFE-01**: The validated fixture fallback remains functional, visibly labeled, and covered by missing-key/provider-failure tests after all orchestration, quality, and documentation changes.
+- [ ] **SAFE-02**: No new client import, response field, browser storage value, bundle string, command input, repository ingestion path, or runtime agent may weaken hidden-answer containment or deterministic test authority.
+- [ ] **DOC-01**: `docs/BUILD_LOG.md`, `docs/ROADMAP.md`, `docs/THREAT_MODEL.md`, `docs/TESTING.md`, and `docs/COMPLETION_REPORT.md` contain current branch/SHA-specific evidence and no stale pre-GitHub or unsupported completion claim.
+
+### Live OpenAI Verification
+
+- [ ] **LIVE-01**: With an explicitly configured server-only credential, GPT-5.6 returns a strict schema-valid mutation contract that passes the approved semantic equality and allowlist gates for Expense Approval.
+- [ ] **LIVE-02**: The current OpenAI Code Interpreter path captures original-pass, mutated-fail with the intended signature, and repaired-pass evidence without executing learner Python on the application host.
+- [ ] **LIVE-03**: Live hint and assessment responses satisfy their strict schemas, never reveal a completed repair, and cannot mark non-passing execution evidence as verified.
+- [ ] **LIVE-04**: Missing key, invalid provider output, timeout, expiration, or provider failure still recovers to the real visibly labeled fixture path after the credentialed smoke changes.
+
+### Public Deployment
+
+- [ ] **DEP-01**: With explicit deployment approval, a judge can open the exact reviewed commit at a stable public HTTPS URL without an account or preview authentication.
+- [ ] **DEP-02**: The public deployment keeps `OPENAI_API_KEY` server-only, supports the 30-second route/20-second Code Interpreter timeout ordering, and applies platform/edge abuse controls in addition to the application limiter.
+- [ ] **DEP-03**: Public health, security headers, cache behavior, fixture fallback, live path, primary Expense Approval workflow, guided roadmap, report refresh, and 1440×900/390×844 layouts pass production smoke checks.
+- [ ] **DEP-04**: The deployed commit SHA, public URL, environment, timestamp, rate-control configuration, and sanitized smoke evidence are recorded without exposing credentials or provider internals.
+
+### External Validation and Submission
+
+- [ ] **UAT-01**: At least five external testers complete the scripted experience and results record whether at least four understand FaultSmith's purpose without extra explanation.
+- [ ] **UAT-02**: Every blocker/high usability finding from the tester pass is repaired, regression tested where automatable, and retested before recording.
+- [ ] **SUB-01**: The public demonstration video is clear, under three minutes, uses only consistently verified features, accurately distinguishes live from prevalidated evidence, and remains available through judging.
+- [ ] **SUB-02**: The final submission replaces every URL/video/result placeholder and includes the primary Codex `/feedback` Session ID corresponding to the task where most core functionality was built.
+- [ ] **SUB-03**: The public application, repository, video, submission text, attribution, license, and judging links are rechecked as unauthenticated viewers and remain available through the judging period.
+
+## v2 Requirements
+
+Deferred until the submission milestone is complete and a new requirements/PRD cycle approves the expanded trust model.
+
+### Adaptive Challenge Creation
+
+- **ADAPT-01**: Advanced learner can describe a bounded special-case learning goal and receive a dynamically generated challenge from an approved project/template family.
+- **ADAPT-02**: System can create difficulty-adaptive variants based on verified lesson evidence without leaking answers or weakening deterministic validation.
+- **ADAPT-03**: Maintainer can add new curated project packs through a documented, lifecycle-tested content contract.
+
+### Product Platform
+
+- **PLAT-01**: Learner can opt into an account for cross-device progress synchronization.
+- **PLAT-02**: Instructor can organize cohorts, assign learning paths, and review aggregated evidence without exposing private code/prose by default.
+- **PLAT-03**: FaultSmith can expose stable reusable domain packages after client/server boundaries and versioning are deliberately designed.
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Arbitrary public repository upload | Materially expands data handling, prompt-injection, dependency, licensing, and sandbox scope beyond the locked curated MVP |
+| Learner-supplied shell commands, packages, container IDs, or unrestricted Python | Conflicts with the server-owned fixed-command/allowlist execution boundary |
+| Runtime learner-facing multi-agent swarm | Adds latency and nondeterministic authority; the swarm is approved for development only |
+| Automatic paid live calls in normal CI | Creates nondeterminism, credential exposure surface, and uncontrolled spend |
+| Unverifiable certification or competitive ranking | Browser-local evidence is practice feedback, not identity-backed certification |
+| Authentication, payments, social features, native mobile apps, or additional languages before submission | Do not advance the core evidence-first debugging proof or current judging deliverables |
+
+## Traceability
+
+Roadmap phase mappings are populated during GSD roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DEV-01 | TBD | Pending |
+| DEV-02 | TBD | Pending |
+| DEV-03 | TBD | Pending |
+| CI-01 | TBD | Pending |
+| CI-02 | TBD | Pending |
+| CI-03 | TBD | Pending |
+| CI-04 | TBD | Pending |
+| CI-05 | TBD | Pending |
+| CI-06 | TBD | Pending |
+| QA-01 | TBD | Pending |
+| QA-02 | TBD | Pending |
+| SEC-01 | TBD | Pending |
+| SEC-02 | TBD | Pending |
+| SAFE-01 | TBD | Pending |
+| SAFE-02 | TBD | Pending |
+| DOC-01 | TBD | Pending |
+| LIVE-01 | TBD | Pending |
+| LIVE-02 | TBD | Pending |
+| LIVE-03 | TBD | Pending |
+| LIVE-04 | TBD | Pending |
+| DEP-01 | TBD | Pending |
+| DEP-02 | TBD | Pending |
+| DEP-03 | TBD | Pending |
+| DEP-04 | TBD | Pending |
+| UAT-01 | TBD | Pending |
+| UAT-02 | TBD | Pending |
+| SUB-01 | TBD | Pending |
+| SUB-02 | TBD | Pending |
+| SUB-03 | TBD | Pending |
+
+**Coverage:**
+- v1 requirements: 29 total
+- Mapped to phases: 0
+- Unmapped: 29 ⚠️
+
+---
+*Requirements defined: July 18, 2026*  
+*Last updated: July 18, 2026 after GSD brownfield research*
