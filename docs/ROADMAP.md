@@ -3,20 +3,20 @@
 **Last direction review:** July 18, 2026  
 **Locked track:** Education  
 **Locked primary demo:** Expense Approval boundary condition  
-**Current state:** Guided-learning release candidate green locally; GitHub review/CI, live credential smoke, deployment, and remaining submission actions pending
+**Current state:** Phase 1 candidate `fee208737b9814eb72b2f7582d0aad4d1a7fab9e` green locally after independent review/remediation; publication-head GitHub CI, live credential smoke, deployment, and remaining submission actions pending
 
 ## Completed milestones
 
 | Milestone | Evidence |
 | --- | --- |
-| Secure challenge domain | Strict contracts, public DTO stripping, nine fixtures, allowlisted edits, exact prevalidated repair matching, challenge-grounded fallback scoring, sanitized output, 40 passing unit/integration tests |
+| Secure challenge domain | Strict contracts, public DTO stripping, nine fixtures, allowlisted edits, exact prevalidated repair matching, score-only live assessment with server-owned prose, expanded sanitation, 63 passing unit/integration tests |
 | Validated generation | Separate GPT-5.6 mutation and validation schemas are constrained by approved contracts; deterministic original-pass/mutated-fail/signature checks remain authoritative and one retry precedes fallback |
 | Isolated execution | Live Python path uses Code Interpreter only; client has no command or container-ID input; local fallback is deterministic and explicitly labeled |
-| Deterministic assessment | Exact submitted snapshot is rerun; failing evidence forces `not_verified`; model scores are bounded and subordinate |
+| Deterministic assessment | Exact submitted snapshot is rerun; failing or overbroad evidence forces `not_verified`; hidden answers are excluded from score-only model input; feedback prose remains server-owned |
 | Complete learning UI | Project/skill/difficulty selection, forge state, editor, tests, revision-aware hypothesis journal, separately delivered hints, explanation, evidence report, reset and refresh restoration |
 | Guided learning MVP | Three-phase, nine-lesson evidence-first roadmap; concept guides; investigation checklists; zero-token guided launches; bounded local progress; verified-only completion; deterministic reinforcement/next-step recommendations; direct catalog preserved |
 | Reliability breadth | Three projects and three scenarios per project; missing-key, malformed plan, timeout, expiration, and invalid patch paths covered |
-| Quality hardening | Keyboard and axe checks, secondary-project E2E, narrow viewport check, reduced-motion CSS, secure headers, bounded local telemetry/rate buckets, zero-audit dependency state, production build |
+| Quality hardening | Independent product/QA/security reviews, duplicate-action single-flight, streamed request cap, keyboard/axe/mobile checks, all-fixture bundle and source/history scans, secure headers, bounded local telemetry/rate buckets, zero-audit dependency state |
 | Submission package | README, build log, testing guide, threat model, demo script, Devpost draft, license, and completion report |
 | Public development baseline | `Anish-Guntreddi/FaultSmith` on GitHub with tracked `main`, CI, Dependabot, CODEOWNERS, issue forms, pull-request template, security policy, and contribution workflow |
 
@@ -35,7 +35,7 @@ These are intentionally not marked complete by local fallback evidence.
 - **Highest technical risk:** live provider response or container behavior can drift from mocked/typed expectations. Mitigation: strict parse/validation, timeout, one retry, safe recovery, and a separate live smoke procedure.
 - **Highest demo risk:** network or credential failure during recording. Mitigation: the primary lab is prevalidated and automatically recovers to fixture mode with visible labeling.
 - **Highest security risk:** the in-memory rate limiter is per process and not globally coordinated across a multi-instance deployment. Mitigation: conservative route limits now; add provider/edge rate limiting before high-traffic public use.
-- **Highest judging opportunity:** show that GPT does more than chat—it creates a constrained mutation plan, Code Interpreter proves the failure, and deterministic evidence controls the final result.
+- **Highest judging opportunity:** accurately show the zero-token guided curriculum, then—only after credentialed proof—show GPT emitting the exact approved live contract, Code Interpreter producing execution evidence, and deterministic policy controlling release.
 - **API-credit constraint:** live generation can require original and mutated executions, plus assessment. The fixture path allows unlimited rehearsal without spend.
 - **Curriculum boundary:** guided metadata must never contain hidden answers or become an alternate execution authority. Mitigation: lesson data references only public project-skill IDs; fixtures and assessments remain server-owned.
 - **Time constraint:** prioritize the public deployment, five-tester study, and concise recording over new product breadth.
