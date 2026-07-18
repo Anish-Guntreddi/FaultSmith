@@ -3,7 +3,7 @@
 **Last direction review:** July 18, 2026  
 **Locked track:** Education  
 **Locked primary demo:** Expense Approval boundary condition  
-**Current state:** Local release candidate; live credential smoke and external submission actions pending
+**Current state:** Public-source release candidate; live credential smoke, deployment, and remaining submission actions pending
 
 ## Completed milestones
 
@@ -17,15 +17,15 @@
 | Reliability breadth | Three projects and three scenarios per project; missing-key, malformed plan, timeout, expiration, and invalid patch paths covered |
 | Quality hardening | Keyboard and axe checks, secondary-project E2E, narrow viewport check, reduced-motion CSS, secure headers, bounded local telemetry/rate buckets, zero-audit dependency state, production build |
 | Submission package | README, build log, testing guide, threat model, demo script, Devpost draft, license, and completion report |
+| Public development baseline | `Anish-Guntreddi/FaultSmith` on GitHub with tracked `main`, CI, Dependabot, CODEOWNERS, issue forms, pull-request template, security policy, and contribution workflow |
 
 ## Remaining PRD gaps requiring external action
 
 1. Run the controlled live GPT-5.6 and Code Interpreter smoke test with a valid `OPENAI_API_KEY`.
 2. Obtain deployment approval, deploy, and verify the public URL without authentication.
-3. Create or connect the public source repository and preserve it through judging. This workspace currently has no `.git` directory.
-4. Run the study with at least five external testers and record comprehension results.
-5. Record and publish the under-three-minute demonstration.
-6. Capture the primary Codex `/feedback` Session ID and place it in the submission.
+3. Run the study with at least five external testers and record comprehension results.
+4. Record and publish the under-three-minute demonstration.
+5. Capture the primary Codex `/feedback` Session ID and place it in the submission.
 
 These are intentionally not marked complete by local fallback evidence.
 

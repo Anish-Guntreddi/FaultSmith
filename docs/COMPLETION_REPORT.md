@@ -1,14 +1,14 @@
 # FaultSmith Completion Report
 
 **Checkpoint:** July 18, 2026  
-**Release state:** local release candidate green; credential/deployment/submission actions explicitly pending  
+**Release state:** public-source release candidate green; credential/deployment/submission actions explicitly pending
 **Primary evidence:** `docs/TESTING.md`, `docs/BUILD_LOG.md`, `docs/THREAT_MODEL.md`
 
 ## Executive result
 
 Every safe, local, in-scope implementation and quality gate is complete. The primary fallback workflow, all three projects, security boundary, deterministic verification, accessibility, build, automated tests, production startup, and documentation have objective evidence. No unresolved local blocker or high-severity security finding remains.
 
-The goal is not represented as globally finished because live OpenAI verification, deployment/public availability, the external tester study, public video, repository publication, and `/feedback` Session ID require a credential, deployment approval, or external coordination.
+The goal is not represented as globally finished because live OpenAI verification, deployment/public app availability, the external tester study, public video, and `/feedback` Session ID require a credential, deployment approval, or external coordination. The public source repository is complete at `Anish-Guntreddi/FaultSmith`.
 
 ## Persistent execution goal — Definition of Finished
 
@@ -25,11 +25,11 @@ The goal is not represented as globally finished because live OpenAI verificatio
 | 9 | Inventory and Notification functioning fixtures | Verified | three lifecycle-tested scenarios per project, all nine route combinations, and selection-to-workspace E2E for both secondary projects |
 | 10 | Security review/threat model without blocker/high | Verified locally | threat model conclusion, zero audit vulnerabilities, adversarial tests, secret/bundle scans |
 | 11 | QA matrix complete | Verified | `docs/TESTING.md` maps every required quality item to automated/manual evidence |
-| 12 | Lint, types, tests, build, server smoke pass | Verified | final quality run: 36 unit/integration, five E2E, build, bundle check; seven-route production server ready in 71 ms and returned HTTP 200 |
+| 12 | Lint, types, tests, build, server smoke pass | Verified locally and on GitHub | final local quality run: 36 unit/integration, five E2E, build, bundle check; seven-route production server ready in 71 ms and returned HTTP 200; public baseline CI run 29650774197 passed |
 | 13 | Primary workflow manually tested at recording resolution | Verified locally | controlled production browser run at 1440 × 900 plus 390 × 844 after the journal/report revision; no overflow |
 | 14 | Keyboard, labels, focus, contrast, reduced motion | Verified | keyboard E2E, zero axe violations, visible focus classes, contrast repair, reduced-motion CSS |
 | 15 | Complete submission documentation | Verified as drafts/evidence | README, testing, build log, roadmap, threat model, demo script, Devpost draft, execution goal, completion report, env example, license |
-| 16 | No secrets/artifacts/misleading or fake features | Verified locally | scans clean except deliberate fake redaction test; client bundle clean; test artifact removed/ignored; live claims clearly qualified |
+| 16 | No secrets/artifacts/misleading or fake features | Verified locally and at publication | scans clean except deliberate fake redaction test; client bundle clean; generated artifacts ignored; public baseline contains no credential; live claims clearly qualified |
 | 17 | Deployment-ready | Verified locally; deployment pending | production build/start/headers/health pass, env/setup documented; public deployment needs approval |
 | 18 | Video-intended features consistent | Verified in fallback mode | primary flow passed repeatedly in manual browser and Playwright; live mode awaits smoke |
 | 19 | Majority built in primary Codex thread documented | Verified; Session ID pending | README, BUILD_LOG, SUBMISSION document Codex work and no secondary review; `/feedback` ID not yet supplied |
@@ -51,7 +51,7 @@ The goal is not represented as globally finished because live OpenAI verificatio
 | 10 | Real live-failure fallback | Verified for missing/malformed/timeout paths | nine real fixtures; actual provider outage recovery awaits live credential |
 | 11 | Critical rules automated | Verified | 36 unit/integration plus five E2E and bundle check |
 | 12 | README/build log document Codex/GPT/review | Verified | accurate provenance and no-secondary-review disclosure |
-| 13 | Public demo/repository available through judging | Pending authorization/publication | deploy and publish, then monitor |
+| 13 | Public demo/repository available through judging | Repository verified; demo pending deployment | source is public at `https://github.com/Anish-Guntreddi/FaultSmith`; deploy the app and monitor both through judging |
 | 14 | Public clear video under three minutes | Pending recording/publication | 2:35 script ready; local primary flow 2.6 seconds |
 | 15 | `/feedback` Session ID from primary task | Pending user/Codex action | capture after the primary build task is ready for submission |
 
@@ -81,9 +81,9 @@ The goal is not represented as globally finished because live OpenAI verificatio
 ## Required user-authorized next actions
 
 1. Provide or configure a server-only `OPENAI_API_KEY` for the controlled live smoke.
-2. Approve the target deployment and repository publication.
+2. Approve the target deployment.
 3. Coordinate five external testers.
 4. Record and publish the demo after the live/deployment smoke.
 5. Capture the primary `/feedback` Session ID.
 
-No destructive or external action was taken without that authority. The validated fixture fallback remains intact and green.
+Repository publication was explicitly authorized and completed. No other destructive or external action was taken without authority. The validated fixture fallback remains intact and green.

@@ -26,8 +26,11 @@ The final local run produced:
 | npm audit at moderate threshold | Pass; zero vulnerabilities |
 | Production startup | Pass; ready on `127.0.0.1:3100` in 71 ms |
 | Production root/health/generation smoke | HTTP 200; fallback ready; initial challenge failed as designed |
+| GitHub Actions baseline | Pass; public `main` run [29650774197](https://github.com/Anish-Guntreddi/FaultSmith/actions/runs/29650774197) completed successfully |
 
 The earlier final-gate lint failure in the new 404 page and the client-bundle hidden-schema finding were repaired and all downstream gates were rerun. See `docs/BUILD_LOG.md`.
+
+The same quality command is enforced on pushes and pull requests by `.github/workflows/ci.yml` using Node.js 24 and Playwright Chromium. Dependabot separately monitors npm and GitHub Actions dependencies.
 
 ## Automated suite map
 
@@ -174,7 +177,7 @@ If any live step fails, keep the fallback green, record the exact provider respo
 ## External submission validation still required
 
 - Public deployment and unauthenticated cross-network smoke
-- Public repository/history secret scan and judging-period availability
+- Ongoing public repository and GitHub Actions availability through judging
 - Five-person tester study and comprehension result
 - Under-three-minute public video review
 - Primary Codex `/feedback` Session ID

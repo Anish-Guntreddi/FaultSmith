@@ -13,7 +13,7 @@ FaultSmith is an Education-track OpenAI Build Week project. The primary demonstr
 
 1. Choose a curated project, skill, and difficulty.
 2. Forge a validated challenge with GPT-5.6 or load the preserved fixture fallback.
-3. Inspect the mutated project and authoritative failing test evidence.
+3. Inspect the mutated project and authoritative failing evidence from the prevalidated gate or live Code Interpreter tests.
 4. Record a hypothesis, request up to three progressive hints, edit only the allowlisted source, and rerun tests.
 5. Submit the exact code snapshot with a root-cause explanation.
 6. Receive a report that clearly separates executed-test evidence from model assessment.

@@ -109,4 +109,13 @@ The authoritative commands, dates, and outcomes are maintained in `docs/TESTING.
 - **Medium findings repaired:** dependency advisories, test-runner overlap, contrast, document landmarks, and recovery/persistence polish.
 - **Accepted external review findings:** none; no secondary review was performed.
 - **Rejected findings:** none.
-- **Remaining external gates:** live API smoke, deployment/public availability, tester study, recording/publication, public repository, and feedback Session ID.
+- **Remaining external gates:** live API smoke, app deployment/public availability, tester study, recording/publication, and feedback Session ID.
+
+## July 18, 2026 — Public GitHub development baseline
+
+- **Authorization:** the user explicitly requested repository initialization and publication for organized ongoing development. Public visibility follows the locked PRD submission requirement.
+- **Repository:** initialized Git on `main`, committed the complete 64-file audited baseline as `660eff7`, created `https://github.com/Anish-Guntreddi/FaultSmith`, and configured `origin/main` tracking.
+- **Development workflow:** added GitHub Actions CI, Dependabot for npm and Actions, CODEOWNERS, issue forms, a pull-request template, contribution guidance, private vulnerability-reporting guidance, squash-only merging, automatic branch deletion, issues, projects, topics, secret scanning, and push protection.
+- **Publish safety:** ignored dependencies, builds, test output, local env files, and compiler caches; staged and public-source scans found no credential beyond deliberate synthetic redaction tests. The full pre-push gate passed: lint, types, 36 unit/integration tests, production build, 17-artifact client leakage scan, five E2E workflows, and zero audit vulnerabilities.
+- **Remote verification:** GitHub Actions baseline run [29650774197](https://github.com/Anish-Guntreddi/FaultSmith/actions/runs/29650774197) completed successfully on public `main` using the checked-in clean-install workflow.
+- **Direction:** the initial baseline necessarily landed directly on the empty `main`. Future work should use focused branches and pull requests governed by the checked-in template and CI gate.

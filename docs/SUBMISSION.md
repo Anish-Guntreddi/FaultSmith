@@ -70,7 +70,7 @@ After the Build Week MVP, FaultSmith could add instructor-authored fixture packs
 ## Links and submission fields
 
 - **Public demo URL:** `[ADD AFTER DEPLOYMENT APPROVAL]`
-- **Public source repository:** `[ADD AFTER REPOSITORY IS PUBLISHED]`
+- **Public source repository:** [github.com/Anish-Guntreddi/FaultSmith](https://github.com/Anish-Guntreddi/FaultSmith)
 - **Demo video:** `[ADD AFTER RECORDING AND PUBLICATION]`
 - **Primary Codex /feedback Session ID:** `[ADD FROM PRIMARY BUILD TASK]`
 - **Five-tester result:** `[ADD AFTER EXTERNAL STUDY]`
@@ -78,7 +78,7 @@ After the Build Week MVP, FaultSmith could add instructor-authored fixture packs
 
 ## Disclosure
 
-The application has a production-ready local fallback and automated mocked coverage. At the July 18 release-candidate checkpoint, the live OpenAI smoke test was not run because `OPENAI_API_KEY` was not present, and deployment had not been authorized. These fields must be updated with objective evidence before final submission.
+The application has a production-ready local fallback, automated mocked coverage, and a public source repository with GitHub Actions CI. At the July 18 release-candidate checkpoint, the live OpenAI smoke test was not run because `OPENAI_API_KEY` was not present, and deployment had not been authorized. The remaining placeholder fields must be updated with objective evidence before final submission.
 
 ### Dependencies and assistance
 
