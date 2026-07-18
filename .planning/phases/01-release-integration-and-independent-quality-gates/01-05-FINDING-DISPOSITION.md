@@ -41,4 +41,21 @@ The reproduced provider path previously sent a hidden root cause to a free-form 
 
 ## Validation status
 
-Narrow repaired-path tests passed during implementation. The final candidate SHA, full quality/security/audit results, production smoke, and independent high-finding recheck are appended only after the complete downstream gate succeeds.
+Candidate `fee208737b9814eb72b2f7582d0aad4d1a7fab9e` passed the complete downstream gate:
+
+- source/history security scan: 109 working-tree files and 26 reachable commits in the main checkout;
+- ESLint and `tsc --noEmit`;
+- 63 Vitest tests across nine files;
+- Next.js 16.2.10 production build with seven routes;
+- client leakage scan across 17 artifacts using 63 hidden markers derived from all nine fixtures;
+- seven Playwright workflows in 6.6 seconds, including the new single-flight adversarial path;
+- zero vulnerabilities at the moderate audit threshold;
+- production startup in 93 ms, hardened header/health smoke, and fallback generation → hint → intended failure → repaired pass → verified assessment lifecycle.
+
+Focused detached-worktree rechecks inspected that exact SHA:
+
+- `01-05-PRODUCT-RECHECK.md`: **APPROVED**, PR-001/PR-002 resolved, zero remaining findings;
+- `01-05-QA-RECHECK.md`: **APPROVED**, one POST per duplicate action and all focused UX/accessibility paths green, zero remaining findings;
+- `01-05-SECURITY-RECHECK.md`: **APPROVED**, FS-SEC-001/004 closed, zero blocker/high; distributed rate limiting, inline CSP, and live provider conformance remain explicitly separate constraints.
+
+The validated fixture fallback remained visibly labeled and green throughout every repair and recheck.
