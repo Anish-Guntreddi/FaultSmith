@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { GuidedRoadmap } from "@/components/guided-roadmap";
 import { projects } from "@/lib/catalog";
@@ -37,6 +37,7 @@ import {
 type Stage = "configure" | "forging" | "workspace" | "report";
 type RequestState = "idle" | "running";
 type LearningMode = "guided" | "catalog";
+type NetworkAction = "generate" | "execute" | "hint" | "assess";
 
 const ATTEMPT_KEY = "faultsmith:attempt:v2";
 const EVENT_KEY = "faultsmith:events:v1";
@@ -117,7 +118,7 @@ function editableFiles(challenge: PublicChallenge): FileSnapshot[] {
 }
 
 function sourceLabel(challenge: PublicChallenge) {
-  return challenge.source === "generated" ? "GPT-5.6 generated · Code Interpreter" : "Prevalidated fixture · deterministic verifier";
+  return challenge.source === "generated" ? "GPT-5.6 live contract · Code Interpreter" : "Prevalidated fixture · deterministic verifier";
 }
 
 function difficultyLabel(difficulty: Difficulty) {
@@ -174,6 +175,7 @@ export function FaultSmithApp() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [assessment, setAssessment] = useState<AssessmentResponse | null>(null);
+  const requestLocks = useRef<Set<NetworkAction>>(new Set());
 
   const project = useMemo(
     () => projects.find((item) => item.id === projectId) ?? projects[0],
@@ -295,6 +297,16 @@ export function FaultSmithApp() {
     return nextHistory;
   }
 
+  function acquireRequestLock(action: NetworkAction) {
+    if (requestLocks.current.has(action)) return false;
+    requestLocks.current.add(action);
+    return true;
+  }
+
+  function releaseRequestLock(action: NetworkAction) {
+    requestLocks.current.delete(action);
+  }
+
   async function forgeChallenge(
     useLive = preferLive,
     selection?: { projectId: ProjectId; targetSkill: string; difficulty: Difficulty },
@@ -303,6 +315,7 @@ export function FaultSmithApp() {
     const selectedSkill = selection?.targetSkill ?? skill;
     const selectedDifficulty = selection?.difficulty ?? difficulty;
     if (!selectedSkill || !selectedDifficulty) return;
+    if (!acquireRequestLock("generate")) return;
     trackAnonymousEvent("project_selected", { projectId: selectedProjectId, outcome: "generation_confirmed" });
     trackAnonymousEvent("generation_started", {
       projectId: selectedProjectId,
@@ -376,6 +389,7 @@ export function FaultSmithApp() {
       setStage("configure");
     } finally {
       window.clearInterval(timer);
+      releaseRequestLock("generate");
       setRequestState("idle");
     }
   }
@@ -397,6 +411,7 @@ export function FaultSmithApp() {
 
   async function runTests() {
     if (!challenge) return;
+    if (!acquireRequestLock("execute")) return;
     recordHypothesis();
     setRequestState("running");
     setError("");
@@ -421,12 +436,14 @@ export function FaultSmithApp() {
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "The test run failed safely.");
     } finally {
+      releaseRequestLock("execute");
       setRequestState("idle");
     }
   }
 
   async function revealHint() {
     if (!challenge || hypothesis.trim().length < 12 || revealedHints.length >= 3) return;
+    if (!acquireRequestLock("hint")) return;
     recordHypothesis();
     trackAnonymousEvent("hint_requested", {
       projectId: challenge.projectId,
@@ -454,13 +471,13 @@ export function FaultSmithApp() {
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "The hint request failed safely.");
     } finally {
+      releaseRequestLock("hint");
       setRequestState("idle");
     }
   }
 
   async function submitAttempt() {
     if (!challenge) return;
-    const submittedHypotheses = recordHypothesis();
     if (hypothesis.trim().length < 12) {
       setError("Record a specific debugging hypothesis before submitting.");
       return;
@@ -469,6 +486,8 @@ export function FaultSmithApp() {
       setError("Explain the root cause and why your change fixes it.");
       return;
     }
+    if (!acquireRequestLock("assess")) return;
+    const submittedHypotheses = recordHypothesis();
     setRequestState("running");
     setError("");
     setMessage("");
@@ -525,6 +544,7 @@ export function FaultSmithApp() {
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "The submission failed safely.");
     } finally {
+      releaseRequestLock("assess");
       setRequestState("idle");
     }
   }
@@ -714,12 +734,12 @@ function ConfigureView(props: ConfigureProps) {
             <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Step 02</div><h2 className="mt-1 text-xl font-medium text-white">Forge the challenge</h2>
             <div className="mt-7 space-y-6">
               <label className="block"><span className="mb-2 block text-xs font-medium text-zinc-400">Target skill</span><select value={props.skill} onChange={(event) => props.setSkill(event.target.value)} className="w-full rounded-xl border border-white/10 bg-[#0b0e11] px-3.5 py-3 text-sm text-zinc-200 outline-none focus:ring-2 focus:ring-amber-400/40"><option value="">Select a skill</option>{selected.skills.map((item) => <option key={item}>{item}</option>)}</select></label>
-              <fieldset><legend className="mb-2 text-xs font-medium text-zinc-400">Difficulty</legend><div className="grid grid-cols-3 gap-2">{difficultyOptions.map((option) => <button key={option.value} type="button" aria-pressed={props.difficulty === option.value} onClick={() => props.setDifficulty(option.value)} className={`rounded-xl border px-2 py-2.5 text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${props.difficulty === option.value ? "border-amber-400/40 bg-amber-400/10 text-amber-200" : "border-white/8 bg-black/10 text-zinc-500 hover:text-zinc-300"}`}>{option.label}</button>)}</div></fieldset>
+              <fieldset><legend className="mb-2 text-xs font-medium text-zinc-400">Practice level</legend><div className="grid grid-cols-3 gap-2">{difficultyOptions.map((option) => <button key={option.value} type="button" aria-pressed={props.difficulty === option.value} onClick={() => props.setDifficulty(option.value)} className={`rounded-xl border px-2 py-2.5 text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${props.difficulty === option.value ? "border-amber-400/40 bg-amber-400/10 text-amber-200" : "border-white/8 bg-black/10 text-zinc-500 hover:text-zinc-300"}`}>{option.label}</button>)}</div><p className="mt-2 text-[10px] leading-4 text-zinc-600">Labels this attempt; the curated fault is selected by system and skill.</p></fieldset>
               <fieldset><legend className="mb-2 text-xs font-medium text-zinc-400">Validation mode</legend><div className="grid grid-cols-2 gap-2"><button type="button" aria-pressed={props.preferLive} onClick={() => props.setPreferLive(true)} className={`rounded-xl border px-3 py-3 text-left text-xs ${props.preferLive ? "border-amber-400/35 bg-amber-400/[0.07] text-amber-200" : "border-white/8 text-zinc-500"}`}><span className="block font-medium">Live + fallback</span><span className="mt-1 block text-[10px] opacity-70">GPT-5.6 when configured</span></button><button type="button" aria-pressed={!props.preferLive} onClick={() => props.setPreferLive(false)} className={`rounded-xl border px-3 py-3 text-left text-xs ${!props.preferLive ? "border-emerald-400/30 bg-emerald-400/[0.06] text-emerald-200" : "border-white/8 text-zinc-500"}`}><span className="block font-medium">Prevalidated</span><span className="mt-1 block text-[10px] opacity-70">Reliable demo fixture</span></button></div></fieldset>
               <div className="rounded-xl border border-white/7 bg-black/20 p-4"><div className="flex items-center justify-between text-xs"><span className="text-zinc-500">Release gate</span><span className="text-emerald-300">Original pass → Mutant fail</span></div><div className="mt-3 h-1 overflow-hidden rounded-full bg-white/5"><div className="h-full w-full bg-gradient-to-r from-amber-500/60 to-emerald-400/70" /></div></div>
               {props.error && <div role="alert" className="rounded-xl border border-red-400/15 bg-red-400/[0.05] p-3 text-xs leading-5 text-red-300">{props.error}<button type="button" disabled={!ready} onClick={props.onFallback} className="mt-2 block font-semibold underline disabled:opacity-40">Load the prevalidated challenge</button></div>}
               <button type="button" disabled={!ready} onClick={props.onForge} className="forge-pulse flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 py-3.5 text-sm font-semibold text-[#1a1105] transition hover:bg-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:animate-none disabled:opacity-35">Forge debugging lab <span aria-hidden="true">→</span></button>
-              <p className="text-center text-[11px] leading-5 text-zinc-600">GPT-5.6 plans the live mutation. Executed evidence decides whether it ships.</p>
+              <p className="text-center text-[11px] leading-5 text-zinc-600">Live mode asks GPT-5.6 to emit the approved bounded contract. Executed evidence decides whether it ships.</p>
             </div>
           </aside>
         </div>
@@ -827,7 +847,7 @@ function ReportView({
   const verified = result.completionStatus === "verified";
   const overall = overallAssessmentScore(response);
   const roadmapRecommendation = getLearningRecommendation(learningProgress);
-  const reasoningSource = response.assessmentSource === "gpt-5.6" ? "GPT-5.6 structured rubric" : "Deterministic reasoning rubric";
+  const reasoningSource = response.assessmentSource === "gpt-5.6" ? "GPT-5.6 bounded rubric scores" : "Deterministic reasoning rubric";
   const prevalidatedEvidence = response.testResult.executionMode === "prevalidated_fixture";
   const cards = [["Root-cause accuracy", result.rootCauseScore, reasoningSource], ["Causal reasoning", result.reasoningScore, reasoningSource], ["Patch discipline", result.patchDisciplineScore, `${response.changedLines} changed line${response.changedLines === 1 ? "" : "s"}`], ["Concept understanding", result.conceptUnderstandingScore, challenge.targetSkill]] as const;
 
@@ -867,7 +887,7 @@ function ReportView({
               <div className="rounded-xl border border-amber-400/12 bg-amber-400/[0.04] p-4"><div className="text-[10px] uppercase tracking-wider text-amber-300">Primary improvement</div><p className="mt-2 text-xs leading-5 text-zinc-400">{result.improvementAreas[0]}</p></div>
             </div>
             <div className="mt-4 flex flex-wrap gap-2 text-[10px] text-zinc-600">
-              <span className="rounded-full border border-white/7 px-2.5 py-1">Assessment: {response.assessmentSource === "gpt-5.6" ? "GPT-5.6 structured rubric" : "Deterministic fallback rubric"}</span>
+              <span className="rounded-full border border-white/7 px-2.5 py-1">Assessment: {response.assessmentSource === "gpt-5.6" ? "GPT-5.6 scores · server-owned feedback" : "Deterministic fallback rubric"}</span>
               <span className="rounded-full border border-white/7 px-2.5 py-1">Hints: {response.hintsUsed}/3</span>
               <span className="rounded-full border border-white/7 px-2.5 py-1">Test runs: {response.testRuns}</span>
               <span className="rounded-full border border-white/7 px-2.5 py-1">Files changed: {response.changedFiles.length > 0 ? response.changedFiles.join(", ") : "none"}</span>

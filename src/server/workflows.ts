@@ -14,7 +14,12 @@ import {
   type PublicChallenge,
 } from "@/lib/contracts";
 import type { MutationPlan } from "@/server/mutation-contract";
-import { OpenAIGateway, hasOpenAIKey, type AIGateway } from "./ai-gateway";
+import {
+  OpenAIGateway,
+  hasOpenAIKey,
+  type AIGateway,
+  type ModelAssessmentScores,
+} from "./ai-gateway";
 import { getPrevalidatedChallenge, toPublicChallenge } from "./challenge-service";
 import { countChangedLines, runFixtureTests, validateSubmittedFiles } from "./fixture-runner";
 import { getFixture, selectFixture, withRequestedDifficulty, type ChallengeFixture } from "./fixtures";
@@ -259,6 +264,7 @@ function deterministicAssessment(
 ): AssessmentResult {
   const passed = testResult.status === "passed";
   const disciplined = changedLines <= fixture.maxChangedLines;
+  const verified = passed && disciplined;
   const reasoningText = `${request.hypothesisHistory.join(" ")} ${request.explanation}`.toLowerCase();
   const matchedSignalGroups = fixture.explanationSignals.filter((alternatives) =>
     alternatives.some((signal) => reasoningText.includes(signal.toLowerCase())),
@@ -280,22 +286,28 @@ function deterministicAssessment(
   const prevalidated = testResult.executionMode === "prevalidated_fixture";
 
   return {
-    completionStatus: passed ? "verified" : "not_verified",
+    completionStatus: verified ? "verified" : "not_verified",
     rootCauseScore,
     reasoningScore,
     patchDisciplineScore: disciplined ? 96 : 45,
     conceptUnderstandingScore,
-    strengths: passed && explanationGrounded
+    strengths: passed && !disciplined
+      ? ["The executed tests passed, but verification remains gated by the approved minimal-change boundary."]
+      : passed && explanationGrounded
       ? ["The repair passed and the explanation connected multiple challenge-specific causal signals."]
       : passed
         ? ["The submitted snapshot passed the authoritative deterministic challenge checks."]
       : ["The explanation was recorded and can guide the next debugging iteration."],
-    improvementAreas: passed && explanationGrounded
+    improvementAreas: passed && !disciplined
+      ? ["Reduce the repair to the smallest causal change before treating the attempt as verified."]
+      : passed && explanationGrounded
       ? ["Continue connecting the observed failure signature to the smallest causal code change."]
       : passed
         ? ["Name the affected condition, boundary or state, and explain causally why the observed test failed."]
       : ["Resolve the remaining failing test before treating the repair as complete."],
-    evidenceSummary: passed
+    evidenceSummary: passed && !disciplined
+      ? `${testResult.passedCount} executed tests passed, but ${changedLines} changed lines exceeded this lab's server-owned minimal-repair boundary.`
+      : passed
       ? prevalidated
         ? `The submitted source matched the server-owned repair snapshot associated with ${testResult.passedCount} passing tests and ${changedLines} changed line${changedLines === 1 ? "" : "s"}.`
         : `${testResult.passedCount} Code Interpreter tests passed with ${changedLines} changed line${changedLines === 1 ? "" : "s"}.`
@@ -303,6 +315,18 @@ function deterministicAssessment(
         ? `The submitted source did not match the prevalidated repair; the fixture's ${testResult.failedCount}-failure evidence remains authoritative.`
         : `${testResult.failedCount} Code Interpreter test${testResult.failedCount === 1 ? "" : "s"} still failed; verified status is blocked by executed evidence.`,
     nextPracticeRecommendation: `Practice another ${fixture.targetSkill.toLowerCase()} challenge with one fewer hint.`,
+  };
+}
+
+function applyModelScores(
+  assessment: AssessmentResult,
+  scores: ModelAssessmentScores,
+): AssessmentResult {
+  return {
+    ...assessment,
+    rootCauseScore: scores.rootCauseScore,
+    reasoningScore: scores.reasoningScore,
+    conceptUnderstandingScore: scores.conceptUnderstandingScore,
   };
 }
 
@@ -336,20 +360,24 @@ export async function assessChallengeWorkflow(
 
   if (live.liveAvailable && live.gateway) {
     try {
-      assessment = await live.gateway.assess(
+      const scores = await live.gateway.assess(
         fixture,
         request,
         execution.testResult,
         changedLines,
         changedFiles,
       );
+      assessment = applyModelScores(assessment, scores);
       assessmentSource = "gpt-5.6";
     } catch {
       assessmentSource = "deterministic_fallback";
     }
   }
 
-  if (execution.testResult.status !== "passed") {
+  if (
+    execution.testResult.status !== "passed" ||
+    changedLines > fixture.maxChangedLines
+  ) {
     assessment = { ...assessment, completionStatus: "not_verified" };
   }
 

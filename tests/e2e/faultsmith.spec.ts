@@ -163,6 +163,61 @@ test("a failing guided patch is never verified or recorded as progress", async (
   expect(savedProgress).toBeNull();
 });
 
+test("network actions remain single-flight under same-tick duplicate activation", async ({ page }) => {
+  const counts = {
+    generate: 0,
+    execute: 0,
+    hint: 0,
+    assess: 0,
+  };
+  page.on("request", (request) => {
+    if (request.method() !== "POST") return;
+    const action = new URL(request.url()).pathname.split("/").at(-1);
+    if (action && action in counts) counts[action as keyof typeof counts] += 1;
+  });
+
+  await openClean(page);
+  await page.getByRole("button", { name: "Practice by skill", exact: true }).click();
+  await page.getByRole("combobox", { name: "Target skill" }).selectOption({ label: "Boundary conditions" });
+  await page.getByRole("button", { name: "Intermediate" }).click();
+  await page.getByRole("button", { name: "Prevalidated Reliable demo fixture" }).click();
+  await page.getByRole("button", { name: "Forge debugging lab" }).evaluate((button) => {
+    (button as HTMLButtonElement).click();
+    (button as HTMLButtonElement).click();
+  });
+  await expect(page.getByRole("button", { name: "Run tests" })).toBeVisible();
+  expect(counts.generate).toBe(1);
+
+  await page.getByRole("textbox", { name: "Current hypothesis" }).fill(
+    "The exact threshold is excluded because the boundary comparison is strict.",
+  );
+  await page.getByRole("button", { name: "Reveal hint 1" }).evaluate((button) => {
+    (button as HTMLButtonElement).click();
+    (button as HTMLButtonElement).click();
+  });
+  await expect(page.getByText("1/3 used")).toBeVisible();
+  expect(counts.hint).toBe(1);
+
+  const editor = page.getByRole("textbox", { name: "Python code editor" });
+  await editor.fill((await editor.inputValue()).replace("expense.amount > 500", "expense.amount >= 500"));
+  await page.getByRole("button", { name: "Run tests" }).evaluate((button) => {
+    (button as HTMLButtonElement).click();
+    (button as HTMLButtonElement).click();
+  });
+  await expect(page.getByText("passed · 6 passed · 0 failed · 47ms")).toBeVisible();
+  expect(counts.execute).toBe(1);
+
+  await page.getByRole("textbox", { name: "Root-cause explanation" }).fill(
+    "The strict comparison excluded exactly $500. Restoring the inclusive boundary fixes that case without changing values below the threshold.",
+  );
+  await page.getByRole("button", { name: "Submit patch + reasoning" }).evaluate((button) => {
+    (button as HTMLButtonElement).click();
+    (button as HTMLButtonElement).click();
+  });
+  await expect(page.getByRole("heading", { name: "You proved the fix, not just the outcome." })).toBeVisible();
+  expect(counts.assess).toBe(1);
+});
+
 test("selection and workspace are keyboard reachable and axe-clean", async ({ page }) => {
   await openClean(page);
   const selectionResults = await new AxeBuilder({ page }).analyze();

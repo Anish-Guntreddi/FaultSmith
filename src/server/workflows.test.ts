@@ -4,13 +4,17 @@ vi.mock("server-only", () => ({}));
 
 import type {
   AssessRequest,
-  AssessmentResult,
   GenerateChallengeRequest,
   TestResult,
 } from "@/lib/contracts";
 import type { MutationPlan } from "@/server/mutation-contract";
 import type { ValidationInterpretation } from "@/server/validation-contract";
-import type { AIGateway } from "./ai-gateway";
+import {
+  buildAssessmentInput,
+  modelAssessmentScoresSchema,
+  type AIGateway,
+  type ModelAssessmentScores,
+} from "./ai-gateway";
 import { runFixtureTests } from "./fixture-runner";
 import { challengeFixtures, type ChallengeFixture } from "./fixtures";
 import {
@@ -40,16 +44,10 @@ function planFor(fixture: ChallengeFixture, request: GenerateChallengeRequest): 
   };
 }
 
-const verifiedAssessment: AssessmentResult = {
-  completionStatus: "verified",
+const modelScores: ModelAssessmentScores = {
   rootCauseScore: 90,
   reasoningScore: 88,
-  patchDisciplineScore: 96,
   conceptUnderstandingScore: 89,
-  strengths: ["Clear causal explanation."],
-  improvementAreas: ["Add one more observation."],
-  evidenceSummary: "The model says this is verified.",
-  nextPracticeRecommendation: "Try a harder boundary challenge.",
 };
 
 class MockGateway implements AIGateway {
@@ -60,7 +58,7 @@ class MockGateway implements AIGateway {
       originalResult?: TestResult;
       mutatedResult?: TestResult;
       executionResult?: TestResult;
-      assessment?: AssessmentResult;
+      assessment?: ModelAssessmentScores;
       hint?: string;
       validationInterpretation?: ValidationInterpretation;
     } = {},
@@ -87,7 +85,7 @@ class MockGateway implements AIGateway {
   }
 
   async assess() {
-    return this.behavior.assessment ?? verifiedAssessment;
+    return this.behavior.assessment ?? modelScores;
   }
 
   async revealHint(fixture: ChallengeFixture, request: { hintIndex: number }) {
@@ -343,7 +341,7 @@ describe("OpenAI-backed workflows with mocked provider calls", () => {
       assessmentRequest(fixture.mutatedFiles, "code_interpreter"),
       {
         liveAvailable: true,
-        gateway: new MockGateway({ assessment: verifiedAssessment }),
+        gateway: new MockGateway({ assessment: modelScores }),
       },
     );
 
@@ -361,6 +359,85 @@ describe("OpenAI-backed workflows with mocked provider calls", () => {
       expect(score).toBeGreaterThanOrEqual(0);
       expect(score).toBeLessThanOrEqual(100);
     }
+  });
+
+  it("keeps all live assessment prose server-owned even if a gateway returns extra hidden text", async () => {
+    const fixture = challengeFixtures[0];
+    const hiddenText = fixture.hiddenReferenceSolution;
+    const maliciousGateway = new MockGateway({
+      assessment: {
+        ...modelScores,
+        strengths: [hiddenText],
+        improvementAreas: [fixture.hiddenRootCause],
+        evidenceSummary: fixture.fixedSnippet,
+        nextPracticeRecommendation: fixture.hints[2],
+      } as ModelAssessmentScores,
+    });
+    const response = await assessChallengeWorkflow(
+      assessmentRequest(fixture.originalFiles, "code_interpreter"),
+      { liveAvailable: true, gateway: maliciousGateway },
+    );
+    const serialized = JSON.stringify(response);
+
+    expect(response.assessmentSource).toBe("gpt-5.6");
+    expect(response.assessment.completionStatus).toBe("verified");
+    expect(response.assessment.rootCauseScore).toBe(modelScores.rootCauseScore);
+    expect(serialized).not.toContain(hiddenText);
+    expect(serialized).not.toContain(fixture.hiddenRootCause);
+    expect(serialized).not.toContain(fixture.fixedSnippet);
+    expect(serialized).not.toContain(fixture.hints[2]);
+  });
+
+  it("withholds hidden fixture knowledge from score-only live assessment input", () => {
+    const fixture = challengeFixtures[0];
+    const request = assessmentRequest(fixture.originalFiles, "code_interpreter");
+    const modelInput = buildAssessmentInput(
+      fixture,
+      request,
+      runFixtureTests(fixture, fixture.originalFiles),
+      1,
+      fixture.allowedFiles,
+    );
+    const serialized = JSON.stringify(modelInput);
+
+    expect(serialized).not.toContain(fixture.hiddenRootCause);
+    expect(serialized).not.toContain(fixture.hiddenReferenceSolution);
+    expect(serialized).not.toContain(fixture.fixedSnippet);
+    expect(serialized).not.toContain(fixture.hints[2]);
+    expect(modelAssessmentScoresSchema.safeParse({
+      ...modelScores,
+      strengths: [fixture.hiddenRootCause],
+    }).success).toBe(false);
+  });
+
+  it("withholds live verification when a passing repair exceeds the minimal-change boundary", async () => {
+    const fixture = challengeFixtures[0];
+    const broadFiles = fixture.mutatedFiles.map((file) => ({
+      ...file,
+      content: `${fixture.originalFiles[0].content}\n# broad rewrite\n# unrelated line`,
+    }));
+    const passing: TestResult = {
+      status: "passed",
+      passedCount: fixture.passedCount,
+      failedCount: 0,
+      durationMs: 80,
+      sanitizedOutput: `${fixture.passedCount} passed`,
+      matchedExpectedFailure: false,
+      executionMode: "code_interpreter",
+    };
+    const response = await assessChallengeWorkflow(
+      assessmentRequest(broadFiles, "code_interpreter"),
+      {
+        liveAvailable: true,
+        gateway: new MockGateway({ executionResult: passing }),
+      },
+    );
+
+    expect(response.testResult.status).toBe("passed");
+    expect(response.changedLines).toBeGreaterThan(fixture.maxChangedLines);
+    expect(response.assessment.completionStatus).toBe("not_verified");
+    expect(response.assessment.patchDisciplineScore).toBe(45);
+    expect(response.assessment.evidenceSummary).toContain("minimal-repair boundary");
   });
 
   it("does not award high fallback reasoning scores for verbose irrelevant prose", async () => {

@@ -3,7 +3,7 @@
 [![CI](https://github.com/Anish-Guntreddi/FaultSmith/actions/workflows/ci.yml/badge.svg)](https://github.com/Anish-Guntreddi/FaultSmith/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-FaultSmith turns working Python projects into validated debugging labs. A guided nine-lesson roadmap helps students build evidence-first debugging habits before they rely on open-ended AI, while the direct skill catalog preserves adaptive GPT-5.6 practice for advanced learners. FaultSmith introduces one controlled root cause, proves the failure with tests, coaches the learner without revealing the answer, and evaluates both the repaired code and the learner's reasoning.
+FaultSmith turns working Python projects into validated debugging labs. A guided nine-lesson roadmap helps students build evidence-first debugging habits before they rely on open-ended AI, while the direct skill catalog preserves optional constrained GPT-5.6 validation and scoring for advanced learners. FaultSmith introduces one controlled root cause, proves the failure with tests, coaches the learner without revealing the answer, and evaluates both the repaired code and the learner's reasoning.
 
 > AI that breaks your code on purpose so you learn how to fix it.
 
@@ -12,7 +12,7 @@ FaultSmith is an Education-track OpenAI Build Week project. The primary demonstr
 ## Learning loop
 
 1. Follow the zero-token guided roadmap or choose a project, skill, and difficulty directly.
-2. Forge a validated challenge with GPT-5.6 or load the preserved prevalidated fixture.
+2. Load a preserved prevalidated challenge or request the constrained live validation path.
 3. Inspect the mutated project and authoritative failing evidence from the prevalidated gate or live Code Interpreter tests.
 4. Record a hypothesis, request up to three progressive hints, edit only the allowlisted source, and rerun tests.
 5. Submit the exact code snapshot with a root-cause explanation.
@@ -24,7 +24,7 @@ A failing suite can never receive verified status, regardless of the explanation
 
 - **Browser:** a Next.js client workspace with browser-local anonymous attempt and curriculum progress. Guided progress contains only bounded lesson IDs and evidence metrics; attempt storage contains only public challenge fields, learner code, journal revisions, revealed hints, and the report. A separate capped event log contains no learner prose.
 - **Server routes:** strict Zod contracts, JSON/content-size checks, per-route request limiting, safe error responses, and no-store responses.
-- **GPT-5.6:** separate Responses API prompts/schemas return a strict mutation contract, interpret validation evidence, deliver one approved progressive hint at a time, and provide bounded assessment feedback after tests execute.
+- **GPT-5.6:** separate Responses API prompts/schemas emit the exact approved mutation contract, interpret validation evidence, deliver one approved progressive hint at a time, and return only bounded rubric scores after tests execute. Learner-facing feedback prose remains server-owned.
 - **Code Interpreter:** in live mode, original, mutated, and learner Python snapshots execute in an ephemeral OpenAI Code Interpreter container. The client cannot supply commands or container identifiers.
 - **Fixture fallback:** a deterministic, prevalidated evaluator keeps the full learning loop demonstrable when the key or live service is unavailable. The UI labels this mode.
 
@@ -84,7 +84,7 @@ Residual risks and verification evidence are documented in [docs/THREAT_MODEL.md
 
 ## Build Week provenance
 
-Codex is the primary implementation environment and this task is the primary build record. Codex implemented the application, API integration, fixtures, validation, security hardening, tests, browser review, and documentation. GPT-5.6 is substantive runtime functionality for strict mutation planning and explanation assessment; Code Interpreter is the live Python execution boundary.
+Codex is the primary implementation environment and this task is the primary build record. Codex implemented the application, API integration, fixtures, validation, security hardening, tests, browser review, and documentation. GPT-5.6 is substantive optional runtime functionality for constrained contract emission, validation interpretation, approved hint delivery, and bounded explanation scoring; Code Interpreter is the live Python execution boundary.
 
 No secondary Claude Code review was performed. That absence is recorded rather than represented as completed. The fixture fallback is a reliability feature, not a claim that live verification occurred without a credential.
 

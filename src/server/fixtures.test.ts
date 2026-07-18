@@ -112,13 +112,63 @@ describe("prevalidated fixture registry", () => {
     }
   });
 
-  it("sanitizes secrets, local paths, ANSI escapes, and oversized output", () => {
-    const dirty = `sk-abcdefghijklmnop /Users/alice/project \u001b[31mred${"x".repeat(9_000)}`;
-    const clean = sanitizeTestOutput(dirty);
+  it("sanitizes credential families and authentication forms without disclosure", () => {
+    const values = [
+      ["sk", "project", "a".repeat(20)].join("-"),
+      "gh" + "p_" + "b".repeat(24),
+      "AK" + "IA" + "C".repeat(16),
+      "xox" + "b-" + "d".repeat(20),
+      "AI" + "za" + "E".repeat(35),
+      ["sk", "live", "f".repeat(20)].join("_"),
+      "npm" + "_" + "g".repeat(24),
+      "pypi" + "-" + "h".repeat(24),
+      "glpat" + "-" + "i".repeat(24),
+      "S" + "G." + "j".repeat(20) + "." + "k".repeat(20),
+      "Authorization: Bearer " + "l".repeat(24),
+      "https://user:" + "m".repeat(20) + "@registry.example.test/package",
+      "//registry.example.test/:_authToken=" + "n".repeat(24),
+    ];
+    const clean = sanitizeTestOutput(values.join("\n"));
 
-    expect(clean).toContain("[REDACTED_API_KEY]");
+    for (const value of values) expect(clean).not.toContain(value);
+    expect(clean).toContain("[REDACTED_CREDENTIAL]");
+    expect(clean).toContain("[REDACTED_AUTH]");
+  });
+
+  it("sanitizes private keys, home paths, terminal controls, and provider identifiers", () => {
+    const privateKey =
+      "-----BE" + "GIN RSA PRIVATE KEY-----\n" + "q".repeat(48) + "\n-----END RSA PRIVATE KEY-----";
+    const sensitiveValues = [
+      privateKey,
+      "/Users/alice/project",
+      "/home/bob/project",
+      "/root/project",
+      "C:\\Users\\carol\\project",
+      "container_" + "r".repeat(20),
+      "request id=" + "s".repeat(20),
+      "container " + "a".repeat(64),
+    ];
+    const controls = "\u001b[31mred\u001b[0m\u001b]0;private title\u0007nul\u0000back\u0008";
+    const clean = sanitizeTestOutput([...sensitiveValues, controls].join("\n"));
+
+    expect(clean).not.toContain("PRIVATE KEY");
+    expect(clean).not.toContain("alice");
+    expect(clean).not.toContain("bob");
+    expect(clean).not.toContain("carol");
+    for (const value of sensitiveValues.slice(5)) expect(clean).not.toContain(value);
+    for (const control of ["\u001b", "\u0007", "\u0000", "\u0008"]) {
+      expect(clean).not.toContain(control);
+    }
     expect(clean).toContain("/workspace/project");
-    expect(clean).not.toContain("\u001b[31m");
-    expect(clean.length).toBeLessThanOrEqual(8_000);
+    expect(clean).toContain("[REDACTED_PROVIDER_ID]");
+  });
+
+  it("truncates only after replacing sensitive values", () => {
+    const secret = ["sk", "project", "z".repeat(20)].join("-");
+    const clean = sanitizeTestOutput(`${"x".repeat(7_950)}\n${secret}\n${"y".repeat(1_000)}`);
+
+    expect(clean).not.toContain(secret);
+    expect(clean).toContain("[REDACTED_CREDENTIAL]");
+    expect(clean.length).toBe(8_000);
   });
 });

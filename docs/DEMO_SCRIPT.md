@@ -24,7 +24,7 @@ Show the three-phase, nine-lesson Guided roadmap and the **Prevalidated lab · n
 
 Click **Start guided lab**.
 
-“GPT-5.6 produces a strict mutation contract. Before the lab opens, FaultSmith proves the original passes and the mutation fails with the expected signature. If the live service is unavailable, this same workflow recovers to a real prevalidated fixture.”
+“This guided lesson intentionally makes no model call. It loads a real server-owned fixture whose original-pass and intended-failure evidence was validated before release. The mode label keeps that provenance visible.”
 
 Point briefly to the mode label and validation evidence. Do not dwell on loading animation.
 
@@ -40,7 +40,7 @@ Enter: `The approval threshold excludes the exact boundary value.` Reveal the fi
 
 Click **Run test suite**.
 
-“Learner Python runs only in OpenAI Code Interpreter in live mode. Executed tests are authoritative, output is sanitized, and a plausible explanation can never override a failing suite.”
+“This prevalidated mode compares the exact submitted snapshot with the approved repair and does not execute learner Python. In the separately verified live mode, learner snapshots run only in OpenAI Code Interpreter. Either way, evidence is authoritative and prose cannot override a failure.”
 
 Show `6 passed · 0 failed`.
 
@@ -52,7 +52,7 @@ Click **Submit patch + reasoning**.
 
 ### 2:15–2:35 — Evidence, progress, and close
 
-“The final report separates deterministic test evidence from GPT-5.6 feedback. FaultSmith measures whether the learner repaired the code and whether they can explain the root cause—without pretending the model is a test runner.”
+“The final report separates deterministic repair evidence from reasoning feedback. In this guided run the rubric is deterministic. In a verified live run, GPT-5.6 may supply only bounded scores while the feedback text and verification decision remain server-owned.”
 
 Show verified status, score, changed-line count, executed tests, assessment feedback, **Guided roadmap updated**, and the deterministic next lesson.
 
@@ -61,6 +61,8 @@ Close: “FaultSmith: AI that breaks your code on purpose so you learn how to fi
 ## Recording fallback
 
 If generation or sandbox execution fails, continue on the labeled prevalidated fixture path. Do not retry repeatedly on camera. The fallback is a designed reliability mode and still demonstrates the complete learner experience; describe live verification only if a separate controlled live smoke test has passed.
+
+If a controlled live smoke has passed and a direct-catalog live run is recorded, describe GPT-5.6 as emitting a contract constrained to the exact approved challenge—not as choosing or inventing an arbitrary mutation.
 
 ## Claims to avoid
 

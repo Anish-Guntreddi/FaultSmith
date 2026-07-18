@@ -14,7 +14,7 @@ Education
 
 ## Elevator pitch
 
-FaultSmith transforms small working Python projects into deliberate debugging labs. GPT-5.6 selects a minimal, single-root-cause mutation through a strict structured contract; OpenAI Code Interpreter proves the original passes and the mutation fails; then the learner investigates, patches, and explains the failure. Deterministic tests control verification, while GPT-5.6 evaluates reasoning without being allowed to override the evidence.
+FaultSmith transforms small working Python projects into deliberate debugging labs. Beginners follow nine zero-token, prevalidated lessons; advanced learners can request an optional live path where GPT-5.6 emits an exact, server-approved mutation contract and OpenAI Code Interpreter proves the original passes and mutation fails. The learner then investigates, patches, and explains the failure. Executed or prevalidated evidence controls verification, while live GPT-5.6 may contribute only bounded reasoning scores.
 
 ## Inspiration
 
@@ -24,23 +24,23 @@ Most programming education shows the happy path, while increasingly capable AI c
 
 - Offers three curated Python systems: Expense Approval, Inventory Service, and Notification Preferences.
 - Organizes the nine validated labs into a three-phase beginner-to-advanced roadmap with concept guides, investigation checklists, local mastery evidence, and deterministic next-step recommendations.
-- Preserves a direct Practice by skill catalog for advanced learners and live GPT-5.6 generation.
-- Forges one validated bug aligned to a chosen skill and difficulty.
+- Preserves a direct Practice by skill catalog for advanced learners and an optional constrained GPT-5.6 live path.
+- Loads one validated bug aligned to the chosen system and skill; the current practice-level control labels the attempt rather than changing fixture content.
 - Verifies original-pass and mutated-fail behavior before presenting the lab.
 - Provides an allowlisted editor, authoritative test output, a revision-aware hypothesis journal, and separately delivered progressive hints.
 - Reruns the exact submitted snapshot and blocks verified status whenever tests fail.
-- Uses GPT-5.6 for bounded feedback on the learner's root-cause explanation.
+- In live mode, uses GPT-5.6 for three bounded rubric scores; server-owned templates provide learner-facing feedback.
 - Recovers to nine real prevalidated fixtures when a key or live service is unavailable.
 
 ## How it was built
 
-FaultSmith is a Next.js 16 and TypeScript application. Zod defines every request, public response, mutation plan, execution result, and assessment. Server-only fixture modules contain hidden root causes and reference repairs; public DTO construction strips those fields. The OpenAI Responses API uses separate GPT-5.6 Structured Outputs for mutation planning, validation interpretation, progressive hint delivery, and assessment. Python execution uses the Code Interpreter tool with a fixed server-owned test command, ephemeral containers, bounded execution time, and sanitized output.
+FaultSmith is a Next.js 16 and TypeScript application. Zod defines every request, public response, mutation plan, execution result, and assessment. Server-only fixture modules contain hidden root causes and reference repairs; public DTO construction strips those fields. The OpenAI Responses API uses separate GPT-5.6 Structured Outputs for exact approved-contract emission, validation interpretation, progressive hint delivery, and score-only assessment. Python execution uses the Code Interpreter tool with a fixed server-owned test command, ephemeral containers, bounded execution time, and sanitized output.
 
 The browser stores anonymous attempt and curriculum progress locally so a refresh does not erase a lab or roadmap. Guided progress contains only approved lesson IDs and bounded evidence metrics. It never stores the API key, hidden answer, reference solution, internal prompt, provider container identifier, learner prose, or source code.
 
 ## How OpenAI is substantive
 
-GPT-5.6 is part of the product's control plane, not a decorative chatbot. It returns a schema-valid mutation contract, interprets authoritative validation evidence through a separate strict contract, receives structured feedback when release is rejected, and can retry once. Code Interpreter supplies execution evidence for original, mutated, and learner snapshots. GPT-5.6 then delivers an approved progressive hint or assesses the learner's explanation through separate bounded contracts, but deterministic tests retain final authority.
+GPT-5.6 is an optional constrained part of the live control plane, not a decorative chatbot. It emits a schema-valid contract that must exactly match the server-approved challenge, interprets authoritative validation evidence through a separate strict contract, receives bounded retry feedback, and can retry once. Code Interpreter supplies execution evidence for original, mutated, and learner snapshots. GPT-5.6 can then deliver exactly one approved progressive hint or return three bounded explanation scores; deterministic policy supplies feedback prose and retains final authority.
 
 ## How Codex was used
 
@@ -50,13 +50,13 @@ No secondary Claude Code review was performed. This is disclosed explicitly.
 
 ## Challenges
 
-The hardest design constraint was combining generative behavior with trustworthy evidence. A model response alone cannot prove a debugging challenge is valid. FaultSmith solves this by constraining generation to an approved contract, executing before presentation, and making tests—not the assessment model—the verification authority. A second challenge was keeping the demo reliable without misrepresenting the live path, which led to an explicitly labeled, fully functional fixture fallback.
+The hardest design constraint was combining model-assisted behavior with trustworthy evidence. A model response alone cannot prove a debugging challenge is valid. FaultSmith solves this by constraining live output to an exact approved contract, executing before presentation, and making deterministic policy—not the assessment model—the verification authority. A second challenge was keeping the demo reliable without misrepresenting the live path, which led to an explicitly labeled, fully functional fixture fallback.
 
 ## Accomplishments
 
 - Nine prevalidated single-root-cause challenges across three domains
 - A zero-token guided roadmap that makes evidence-first debugging accessible without requiring prompt-writing skill
-- Verified-only local progress and deterministic recommendations that reserve AI credits for adaptive advanced practice
+- Verified-only local progress and deterministic recommendations that reserve live model use for explicitly selected advanced practice
 - A complete selection-to-report workflow with refresh recovery
 - Hidden-answer stripping and server-side file allowlists
 - Adversarial coverage for injection-shaped text, traversal, arbitrary commands, container IDs, malformed plans, timeouts, and failing-patch promotion
