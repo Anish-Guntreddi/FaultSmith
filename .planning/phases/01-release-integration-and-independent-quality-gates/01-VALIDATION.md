@@ -39,17 +39,19 @@ created: 2026-07-18
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 01-01-01 | 01 | 1 | CI-01–04 | workflow/static | `npm run lint && npm run typecheck && npm test && npm run build && npm run security:bundle && npm run test:e2e` | ✅ | ⬜ pending |
-| 01-01-02 | 01 | 1 | CI-03, SEC-02, SAFE-02 | security scan | source/history scan success plus controlled false-positive/failure exercise | ✅ existing git/tooling | ⬜ pending |
+| 01-01-01 | 01 | 1 | CI-03, SEC-02, SAFE-02 | security scan | `npm test -- scripts/check-source-security.test.mjs && npm run security:source` plus controlled failure fixtures | ❌ W1 output | ⬜ pending |
+| 01-01-02 | 01 | 1 | CI-01–04 | workflow/static | `npm run lint && npm run typecheck && npm test && npm run build && npm run security:bundle && npm run test:e2e` | ✅ | ⬜ pending |
 | 01-01-03 | 01 | 1 | CI-05, SAFE-01 | regression | `npm run quality && npm audit --audit-level=moderate` | ✅ | ⬜ pending |
+| 01-01-04 | 01 | 1 | DEV-02, CI-05 | SHA manifest | resolve manifest commit and verify clean captured tree/gate results | ❌ W1 output | ⬜ pending |
 | 01-02-01 | 02 | 2 | DEV-02–03, QA-01 | review artifact | `git diff --check && test -s <product-review-file>` | ❌ W2 output | ⬜ pending |
 | 01-03-01 | 03 | 2 | DEV-02–03, QA-02 | review + browser | `npm run test:e2e` | ❌ W2 output | ⬜ pending |
 | 01-04-01 | 04 | 2 | DEV-02–03, SEC-01–02 | adversarial review | `npm test && npm audit --audit-level=moderate && npm run security:bundle` | ❌ W2 output | ⬜ pending |
 | 01-05-01 | 05 | 3 | QA-01–02, SEC-01 | regression | narrow test named by each accepted finding | ❌ only if finding | ⬜ pending |
 | 01-05-02 | 05 | 3 | DEV-03, SAFE-01–02 | downstream gate | `npm run quality && npm audit --audit-level=moderate` | ✅ | ⬜ pending |
 | 01-06-01 | 06 | 4 | DEV-01, DOC-01 | docs/evidence | `git diff --check` plus stale-claim/link searches | ✅ | ⬜ pending |
-| 01-06-02 | 06 | 4 | CI-01–06 | remote CI/protection | `gh pr checks 13` and GitHub branch-protection API readback | ✅ external repo | ⬜ pending |
-| 01-06-03 | 06 | 4 | QA/SEC/SAFE | production/manual | build/start/curl smoke plus browser desktop/mobile review | ✅ | ⬜ pending |
+| 01-06-02 | 06 | 4 | QA/SEC/SAFE | production/manual | `npm run security:source && npm run quality && npm audit --audit-level=moderate` plus build/start/curl/browser review | ✅ | ⬜ pending |
+| 01-06-03 | 06 | 4 | CI-01–06 | remote CI/protection | `gh pr checks 13` and GitHub branch-protection API readback | ✅ external repo | ⬜ pending |
+| 01-POST | coordinator | post-execution | CI-06, DEV-01 | final metadata publication | push final GSD metadata head, wait four required checks, post immutable PR evidence, verify clean/synced tree | ✅ external repo | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
