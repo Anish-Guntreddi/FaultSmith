@@ -1,0 +1,54 @@
+name: Bug report
+description: Report a reproducible FaultSmith defect or reliability regression.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping make FaultSmith more reliable. Do not include API keys, private learner data, or hidden challenge answers.
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Observed behavior
+      description: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Select...
+        2. Forge...
+        3. Observe...
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Validation mode
+      options:
+        - Prevalidated fixture
+        - Live GPT-5.6 and Code Interpreter
+        - Unknown
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, operating system, Node.js version, and commit SHA when known.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Add screenshots or logs only after removing credentials, personal data, provider identifiers, and hidden answers.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: I removed credentials and private data from this report.
+          required: true

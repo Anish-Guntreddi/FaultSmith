@@ -1,0 +1,33 @@
+name: Feature request
+description: Propose an improvement that stays aligned with deliberate debugging practice.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Learner or instructor problem
+      description: What concrete problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed outcome
+      description: Describe the behavior and how it preserves learning-before-automation.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and tradeoffs
+      description: Identify affected fixtures, prompts, execution boundaries, privacy, accessibility, and demo reliability.
+  - type: checkboxes
+    id: alignment
+    attributes:
+      label: PRD alignment
+      options:
+        - label: This does not automatically solve the active challenge for the learner.
+          required: true
+        - label: I identified any material change to the locked MVP in the scope above.
+          required: true
