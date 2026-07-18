@@ -12,6 +12,34 @@ updates:
       - dependencies
     commit-message:
       prefix: deps
+    groups:
+      react-stack:
+        applies-to: version-updates
+        patterns:
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+        update-types:
+          - minor
+          - patch
+      development-tools:
+        applies-to: version-updates
+        dependency-type: development
+        patterns:
+          - "*"
+        exclude-patterns:
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+        update-types:
+          - minor
+          - patch
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
   - package-ecosystem: github-actions
     directory: /
     schedule:

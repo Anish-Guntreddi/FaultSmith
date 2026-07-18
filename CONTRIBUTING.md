@@ -27,6 +27,7 @@ Normal automated tests must not make external OpenAI calls.
 - Update `docs/BUILD_LOG.md`, `docs/TESTING.md`, `docs/THREAT_MODEL.md`, or `docs/ROADMAP.md` when the corresponding evidence changes.
 - Wait for the GitHub Actions quality gate before merging.
 - Prefer squash merging and remove the source branch after merge.
+- Treat major dependency upgrades as planned compatibility work rather than automatic maintenance; Dependabot groups coupled minor and patch updates and leaves major upgrades for explicit branches.
 
 ## Product and security boundaries
 
