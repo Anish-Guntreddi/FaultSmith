@@ -91,6 +91,12 @@ test("primary Expense Approval demo completes with persisted evidence", async ({
   ]));
   expect(JSON.stringify(anonymousEvents)).not.toContain("hypothesis");
   expect(JSON.stringify(anonymousEvents)).not.toContain("explanation");
+
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "You proved the fix, not just the outcome." })).toBeVisible();
+  await expect(page.getByText("The missing exact-threshold approval", { exact: true })).toBeVisible();
+  await expect(page.getByText("PASSED · 6 passed · 0 failed")).toBeVisible();
+  await expect(page.getByText("Hypothesis revisions: 1")).toBeVisible();
 });
 
 test("a failing patch is never marked verified", async ({ page }) => {

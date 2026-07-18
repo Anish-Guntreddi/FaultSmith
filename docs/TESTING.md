@@ -84,7 +84,7 @@ npm run test:e2e
 
 The suite starts a separate development server on port 3101 and covers:
 
-1. Complete Expense Approval selection → missing-key recovery → failing evidence → hypothesis → hint → edit → refresh restoration → passing evidence → report.
+1. Complete Expense Approval selection → missing-key recovery → failing evidence → hypothesis → hint → edit → workspace refresh restoration → passing evidence → report → completed-report refresh restoration.
 2. An unchanged failing patch remains not verified.
 3. Project selection and workspace keyboard reachability plus axe scans with zero violations.
 4. Inventory and Notification selection-to-workspace fallback flows.
