@@ -18,11 +18,13 @@ FaultSmith transforms small working Python projects into deliberate debugging la
 
 ## Inspiration
 
-Most programming education shows the happy path. Real engineering work is dominated by ambiguous symptoms, boundary cases, state transitions, and incomplete mental models. FaultSmith makes debugging itself the exercise: it gives learners a safe failure that has already been proven reproducible, then asks them to reason from evidence.
+Most programming education shows the happy path, while increasingly capable AI can hand students a patch before they learn to parse a failure. That dependency becomes expensive when they inherit unfamiliar software and cannot reproduce, explain, or safely repair it. FaultSmith makes debugging itself the exercise: it gives learners an organized evidence-first roadmap and safe failures that have already been proven reproducible, then asks them to reason before AI can help.
 
 ## What it does
 
 - Offers three curated Python systems: Expense Approval, Inventory Service, and Notification Preferences.
+- Organizes the nine validated labs into a three-phase beginner-to-advanced roadmap with concept guides, investigation checklists, local mastery evidence, and deterministic next-step recommendations.
+- Preserves a direct Practice by skill catalog for advanced learners and live GPT-5.6 generation.
 - Forges one validated bug aligned to a chosen skill and difficulty.
 - Verifies original-pass and mutated-fail behavior before presenting the lab.
 - Provides an allowlisted editor, authoritative test output, a revision-aware hypothesis journal, and separately delivered progressive hints.
@@ -34,7 +36,7 @@ Most programming education shows the happy path. Real engineering work is domina
 
 FaultSmith is a Next.js 16 and TypeScript application. Zod defines every request, public response, mutation plan, execution result, and assessment. Server-only fixture modules contain hidden root causes and reference repairs; public DTO construction strips those fields. The OpenAI Responses API uses separate GPT-5.6 Structured Outputs for mutation planning, validation interpretation, progressive hint delivery, and assessment. Python execution uses the Code Interpreter tool with a fixed server-owned test command, ephemeral containers, bounded execution time, and sanitized output.
 
-The browser stores anonymous progress locally so a refresh does not erase a lab. It never stores the API key, hidden answer, reference solution, internal prompt, or provider container identifier.
+The browser stores anonymous attempt and curriculum progress locally so a refresh does not erase a lab or roadmap. Guided progress contains only approved lesson IDs and bounded evidence metrics. It never stores the API key, hidden answer, reference solution, internal prompt, provider container identifier, learner prose, or source code.
 
 ## How OpenAI is substantive
 
@@ -53,6 +55,8 @@ The hardest design constraint was combining generative behavior with trustworthy
 ## Accomplishments
 
 - Nine prevalidated single-root-cause challenges across three domains
+- A zero-token guided roadmap that makes evidence-first debugging accessible without requiring prompt-writing skill
+- Verified-only local progress and deterministic recommendations that reserve AI credits for adaptive advanced practice
 - A complete selection-to-report workflow with refresh recovery
 - Hidden-answer stripping and server-side file allowlists
 - Adversarial coverage for injection-shaped text, traversal, arbitrary commands, container IDs, malformed plans, timeouts, and failing-patch promotion
@@ -65,7 +69,7 @@ AI-generated educational content becomes trustworthy only when its claims are in
 
 ## What's next
 
-After the Build Week MVP, FaultSmith could add instructor-authored fixture packs, cohort analytics, more Python domains, and carefully reviewed repository ingestion. Arbitrary code execution and arbitrary repository mutation remain intentionally outside this release.
+After the Build Week MVP, FaultSmith could add instructor-authored fixture packs, cohort analytics, more Python domains, constrained natural-language challenge requests, and carefully reviewed repository ingestion. Arbitrary code execution and arbitrary repository mutation remain intentionally outside this release.
 
 ## Links and submission fields
 

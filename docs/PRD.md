@@ -1,5 +1,7 @@
 # FaultSmith Product Requirements Document
 
+> **Approved July 18, 2026 scope amendment:** The submission build adds a guided learning roadmap over the existing nine validated fixtures while preserving the direct skill catalog. Guided lessons default to the zero-token prevalidated path, store bounded anonymous progress, and provide deterministic next-step recommendations. Open-ended custom prompting remains deferred. See `docs/GUIDED_LEARNING_MVP.md` for the locked requirements and acceptance criteria.
+
 **Document status:** Locked for OpenAI Build Week MVP  
 **Version:** 1.0  
 **Date:** July 17, 2026  

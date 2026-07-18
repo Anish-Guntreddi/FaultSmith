@@ -1,7 +1,7 @@
 # FaultSmith Completion Report
 
 **Checkpoint:** July 18, 2026  
-**Release state:** public-source release candidate green; credential/deployment/submission actions explicitly pending
+**Release state:** guided-learning release candidate green locally; GitHub CI plus credential/deployment/submission actions explicitly pending
 **Primary evidence:** `docs/TESTING.md`, `docs/BUILD_LOG.md`, `docs/THREAT_MODEL.md`
 
 ## Executive result
@@ -25,7 +25,7 @@ The goal is not represented as globally finished because live OpenAI verificatio
 | 9 | Inventory and Notification functioning fixtures | Verified | three lifecycle-tested scenarios per project, all nine route combinations, and selection-to-workspace E2E for both secondary projects |
 | 10 | Security review/threat model without blocker/high | Verified locally | threat model conclusion, zero audit vulnerabilities, adversarial tests, secret/bundle scans |
 | 11 | QA matrix complete | Verified | `docs/TESTING.md` maps every required quality item to automated/manual evidence |
-| 12 | Lint, types, tests, build, server smoke pass | Verified locally and on GitHub | final local quality run: 36 unit/integration, five E2E, build, bundle check; seven-route production server ready in 71 ms and returned HTTP 200; public baseline CI run 29650774197 passed |
+| 12 | Lint, types, tests, build, server smoke pass | Verified locally; expanded branch awaits GitHub CI | guided-MVP quality run: 40 unit/integration, six E2E, build, 17-artifact bundle check, zero audit vulnerabilities; prior public baseline CI run 29650774197 passed |
 | 13 | Primary workflow manually tested at recording resolution | Verified locally | controlled production browser run at 1440 × 900 plus 390 × 844 after the journal/report revision; no overflow |
 | 14 | Keyboard, labels, focus, contrast, reduced motion | Verified | keyboard E2E, zero axe violations, visible focus classes, contrast repair, reduced-motion CSS |
 | 15 | Complete submission documentation | Verified as drafts/evidence | README, testing, build log, roadmap, threat model, demo script, Devpost draft, execution goal, completion report, env example, license |
@@ -49,7 +49,7 @@ The goal is not represented as globally finished because live OpenAI verificatio
 | 8 | Failing patch never verified | Verified | unit, route, and E2E regression |
 | 9 | Report separates evidence and assessment | Verified | report UI and E2E assertions |
 | 10 | Real live-failure fallback | Verified for missing/malformed/timeout paths | nine real fixtures; actual provider outage recovery awaits live credential |
-| 11 | Critical rules automated | Verified | 36 unit/integration plus five E2E and bundle check |
+| 11 | Critical rules automated | Verified | 40 unit/integration plus six E2E and bundle check |
 | 12 | README/build log document Codex/GPT/review | Verified | accurate provenance and no-secondary-review disclosure |
 | 13 | Public demo/repository available through judging | Repository verified; demo pending deployment | source is public at `https://github.com/Anish-Guntreddi/FaultSmith`; deploy the app and monitor both through judging |
 | 14 | Public clear video under three minutes | Pending recording/publication | 2:35 script ready; local primary flow 2.6 seconds |
@@ -77,6 +77,10 @@ The goal is not represented as globally finished because live OpenAI verificatio
 - Recruit at least five external testers.
 - Record whether at least four understand the purpose without added explanation.
 - Time the complete narrated recording at no more than 2:45.
+
+## Guided learning scope amendment
+
+The approved July 18 amendment is implemented locally. The default entry point is a three-phase, nine-lesson evidence-first roadmap backed by the existing prevalidated fixtures. Guided starts make no OpenAI call, progress records only after a verified assessment, strict local parsing excludes learner prose/source/unknown lesson IDs, and deterministic recommendations reserve API usage for the direct advanced catalog. Open-ended natural-language prompting remains explicitly deferred. Objective evidence is in `docs/GUIDED_LEARNING_MVP.md`, `src/lib/learning-paths.test.ts`, `src/server/fixtures.test.ts`, and the guided Playwright workflows.
 
 ## Required user-authorized next actions
 

@@ -3,7 +3,7 @@
 [![CI](https://github.com/Anish-Guntreddi/FaultSmith/actions/workflows/ci.yml/badge.svg)](https://github.com/Anish-Guntreddi/FaultSmith/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-FaultSmith turns working Python projects into validated debugging labs. It introduces one controlled root cause, proves the failure with tests, coaches the learner without revealing the answer, and evaluates both the repaired code and the learner's reasoning.
+FaultSmith turns working Python projects into validated debugging labs. A guided nine-lesson roadmap helps students build evidence-first debugging habits before they rely on open-ended AI, while the direct skill catalog preserves adaptive GPT-5.6 practice for advanced learners. FaultSmith introduces one controlled root cause, proves the failure with tests, coaches the learner without revealing the answer, and evaluates both the repaired code and the learner's reasoning.
 
 > AI that breaks your code on purpose so you learn how to fix it.
 
@@ -11,8 +11,8 @@ FaultSmith is an Education-track OpenAI Build Week project. The primary demonstr
 
 ## Learning loop
 
-1. Choose a curated project, skill, and difficulty.
-2. Forge a validated challenge with GPT-5.6 or load the preserved fixture fallback.
+1. Follow the zero-token guided roadmap or choose a project, skill, and difficulty directly.
+2. Forge a validated challenge with GPT-5.6 or load the preserved prevalidated fixture.
 3. Inspect the mutated project and authoritative failing evidence from the prevalidated gate or live Code Interpreter tests.
 4. Record a hypothesis, request up to three progressive hints, edit only the allowlisted source, and rerun tests.
 5. Submit the exact code snapshot with a root-cause explanation.
@@ -22,7 +22,7 @@ A failing suite can never receive verified status, regardless of the explanation
 
 ## Runtime architecture
 
-- **Browser:** a Next.js client workspace with browser-local anonymous progress. Only public challenge fields, learner code, recorded journal revisions, revealed hints, and the report are persisted. A separate capped event log contains no learner prose.
+- **Browser:** a Next.js client workspace with browser-local anonymous attempt and curriculum progress. Guided progress contains only bounded lesson IDs and evidence metrics; attempt storage contains only public challenge fields, learner code, journal revisions, revealed hints, and the report. A separate capped event log contains no learner prose.
 - **Server routes:** strict Zod contracts, JSON/content-size checks, per-route request limiting, safe error responses, and no-store responses.
 - **GPT-5.6:** separate Responses API prompts/schemas return a strict mutation contract, interpret validation evidence, deliver one approved progressive hint at a time, and provide bounded assessment feedback after tests execute.
 - **Code Interpreter:** in live mode, original, mutated, and learner Python snapshots execute in an ephemeral OpenAI Code Interpreter container. The client cannot supply commands or container identifiers.
@@ -91,6 +91,7 @@ No secondary Claude Code review was performed. That absence is recorded rather t
 ## Documentation
 
 - [Product requirements](docs/PRD.md)
+- [Guided learning MVP](docs/GUIDED_LEARNING_MVP.md)
 - [Sample project catalog](docs/SAMPLE_PROJECTS.md)
 - [Persistent execution goal](docs/EXECUTION_GOAL.md)
 - [Build and review log](docs/BUILD_LOG.md)

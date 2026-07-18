@@ -14,15 +14,15 @@
 
 ## Timed narrative
 
-### 0:00–0:20 — The problem
+### 0:00–0:25 — The problem and roadmap
 
-“Developers do not get better at debugging by watching another tutorial. FaultSmith gives them deliberate practice: AI introduces one validated failure into a working Python project, then the learner has to find, fix, and explain it.”
+“Students can now ask AI for a patch before they learn to parse a failure. That dependency breaks down when they inherit unfamiliar software. FaultSmith builds the missing habit: read evidence, form a hypothesis, and prove the smallest repair.”
 
-Show the three curated projects. Select **Expense Approval**, **Boundary conditions**, and **Guided**.
+Show the three-phase, nine-lesson Guided roadmap and the **Prevalidated lab · no API credits required** label. Briefly point to **Practice by skill** as the advanced/live path, then start Lesson 1.
 
-### 0:20–0:45 — Forge and validate
+### 0:25–0:45 — Forge and validate
 
-Click **Forge debugging lab**.
+Click **Start guided lab**.
 
 “GPT-5.6 produces a strict mutation contract. Before the lab opens, FaultSmith proves the original passes and the mutation fails with the expected signature. If the live service is unavailable, this same workflow recovers to a real prevalidated fixture.”
 
@@ -50,11 +50,11 @@ Enter: `The mutation excluded exactly 500 even though the requirement is inclusi
 
 Click **Submit patch + reasoning**.
 
-### 2:15–2:35 — Evidence report and close
+### 2:15–2:35 — Evidence, progress, and close
 
 “The final report separates deterministic test evidence from GPT-5.6 feedback. FaultSmith measures whether the learner repaired the code and whether they can explain the root cause—without pretending the model is a test runner.”
 
-Show verified status, score, changed-line count, executed tests, and assessment feedback.
+Show verified status, score, changed-line count, executed tests, assessment feedback, **Guided roadmap updated**, and the deterministic next lesson.
 
 Close: “FaultSmith: AI that breaks your code on purpose so you learn how to fix it.”
 

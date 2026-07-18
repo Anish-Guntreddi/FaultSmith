@@ -19,10 +19,10 @@ The final local run produced:
 | --- | --- |
 | ESLint | Pass; zero errors/warnings |
 | TypeScript `tsc --noEmit` | Pass |
-| Vitest | 5 files, 36 tests passed |
+| Vitest | 6 files, 40 tests passed |
 | Next.js production build | Pass; seven routes generated, five dynamic API routes |
 | Client bundle leakage check | Pass; 17 static artifacts inspected |
-| Playwright | 5 tests passed in 5.4 seconds; primary workflow 2.6 seconds |
+| Playwright | 6 tests passed in 5.8 seconds; primary workflow 2.9 seconds |
 | npm audit at moderate threshold | Pass; zero vulnerabilities |
 | Production startup | Pass; ready on `127.0.0.1:3100` in 71 ms |
 | Production root/health/generation smoke | HTTP 200; fallback ready; initial challenge failed as designed |
@@ -71,6 +71,9 @@ npm test
 | Fixture evidence transparency | workspace and report use mode-aware labels and explicitly disclose server-owned snapshot comparison rather than claiming fresh Python execution |
 | Anonymous event privacy | strict local event log caps 100 entries and excludes learner hypotheses/explanations |
 | Rate-key abuse | malformed forwarded-address rotation shares the bounded unknown-address bucket |
+| Guided registry integrity | three phases contain nine unique ordered lessons, and every lesson maps to exactly one approved project-skill fixture |
+| Guided progress safety | strict parsing discards unknown, malformed, duplicate, oversized, or learner-text-shaped completion entries |
+| Deterministic recommendations | weak verified attempts recommend reinforcement; strong attempts advance to the next unlocked lesson without a model call |
 
 External OpenAI behavior is represented by injected gateways/mocks in this suite. This proves workflow policy without spending credits; it does not replace the live smoke test below.
 
@@ -84,13 +87,14 @@ npm run test:e2e
 
 The suite starts a separate development server on port 3101 and covers:
 
-1. Complete Expense Approval selection → missing-key recovery → failing evidence → hypothesis → hint → edit → refresh restoration → passing evidence → report.
-2. An unchanged failing patch remains not verified.
-3. Project selection and workspace keyboard reachability plus axe scans with zero violations.
-4. Inventory and Notification selection-to-workspace fallback flows.
-5. A 390 × 844 workspace with no horizontal overflow and accessible editor/submission controls.
+1. Complete direct-catalog Expense Approval selection → missing-key recovery → failing evidence → hypothesis → hint → edit → refresh restoration → passing evidence → report → completed-report restoration.
+2. Complete guided Lesson 1 → zero-token fixture launch → verified repair → bounded progress → deterministic Lesson 2 recommendation → report and roadmap restoration.
+3. Prove that an unchanged failing guided patch remains not verified and records no curriculum progress.
+4. Guided selection, direct catalog, and workspace keyboard reachability plus axe scans with zero violations.
+5. Inventory and Notification selection-to-workspace fallback flows.
+6. A 390 × 844 workspace with no horizontal overflow and accessible editor/submission controls.
 
-The primary automated workflow completed in 2.6 seconds in fixture mode, well within the under-three-minute demo budget. The previously flaky secondary-project clean-session loop also passed 10 consecutive parallel repetitions before the final full gate.
+The primary automated workflow completed in 2.9 seconds in fixture mode, well within the under-three-minute demo budget. The guided success workflow completed in 2.3 seconds. The previously flaky secondary-project clean-session loop also passed 10 consecutive parallel repetitions before the final full gate.
 
 ### Client-bundle leakage regression
 

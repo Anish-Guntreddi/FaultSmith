@@ -15,6 +15,7 @@ async function openClean(page: Page) {
 
 async function openPrimaryFixture(page: Page) {
   await openClean(page);
+  await page.getByRole("button", { name: "Practice by skill", exact: true }).click();
   await page.getByRole("combobox", { name: "Target skill" }).selectOption({ label: "Boundary conditions" });
   await page.getByRole("button", { name: "Intermediate" }).click();
   await page.getByRole("button", { name: "Prevalidated Reliable demo fixture" }).click();
@@ -26,6 +27,9 @@ async function openPrimaryFixture(page: Page) {
 
 test("primary Expense Approval demo completes with persisted evidence", async ({ page }) => {
   await openClean(page);
+  await expect(page.getByRole("button", { name: "Guided roadmap", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("heading", { name: "Your debugging roadmap" })).toBeVisible();
+  await page.getByRole("button", { name: "Practice by skill", exact: true }).click();
   await expect(page.getByRole("heading", { level: 3 })).toHaveCount(3);
   await expect(page.getByRole("button", { name: "Forge debugging lab" })).toBeDisabled();
 
@@ -91,10 +95,58 @@ test("primary Expense Approval demo completes with persisted evidence", async ({
   ]));
   expect(JSON.stringify(anonymousEvents)).not.toContain("hypothesis");
   expect(JSON.stringify(anonymousEvents)).not.toContain("explanation");
+
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "You proved the fix, not just the outcome." })).toBeVisible();
+  await expect(page.getByText("PASSED · 6 passed · 0 failed")).toBeVisible();
 });
 
-test("a failing patch is never marked verified", async ({ page }) => {
-  await openPrimaryFixture(page);
+test("guided roadmap records only verified progress and restores the next lesson", async ({ page }) => {
+  await openClean(page);
+  await expect(page.getByText("0/9 verified")).toBeVisible();
+  await expect(page.getByText("Prevalidated lab · no API credits required")).toBeVisible();
+  await page.getByRole("button", { name: "Start guided lab", exact: false }).click();
+
+  await expect(page.getByRole("heading", { level: 1, name: "The missing exact-threshold approval" })).toBeVisible();
+  await expect(page.getByText("Prevalidated fixture · deterministic verifier")).toBeVisible();
+  await page.getByRole("textbox", { name: "Current hypothesis" }).fill(
+    "The exact threshold is excluded because the boundary comparison is strict.",
+  );
+  const editor = page.getByRole("textbox", { name: "Python code editor" });
+  await editor.fill((await editor.inputValue()).replace("expense.amount > 500", "expense.amount >= 500"));
+  await page.getByRole("textbox", { name: "Root-cause explanation" }).fill(
+    "The strict comparison excluded exactly $500. Restoring the inclusive boundary fixes that case without changing values below the threshold.",
+  );
+  await page.getByRole("button", { name: "Run tests" }).click();
+  await expect(page.getByText("passed · 6 passed · 0 failed · 47ms")).toBeVisible();
+  await page.getByRole("button", { name: "Submit patch + reasoning" }).click();
+
+  await expect(page.getByText("Guided roadmap updated")).toBeVisible();
+  await expect(page.getByText(/1\/9 lessons verified/)).toBeVisible();
+  await expect(page.getByText("Next: Lesson 2")).toBeVisible();
+  const savedProgress = await page.evaluate(() => JSON.parse(window.localStorage.getItem("faultsmith:learning-progress:v1") ?? "{}"));
+  expect(savedProgress).toEqual({
+    version: 1,
+    completions: [expect.objectContaining({
+      stepId: "evidence-boundaries",
+      hintsUsed: 0,
+    })],
+  });
+  expect(JSON.stringify(savedProgress)).not.toContain("hypothesis");
+  expect(JSON.stringify(savedProgress)).not.toContain("explanation");
+  expect(JSON.stringify(savedProgress)).not.toContain("approvals.py");
+
+  await page.reload();
+  await expect(page.getByText("Guided roadmap updated")).toBeVisible();
+  await page.getByRole("button", { name: "Continue guided roadmap" }).click();
+  await expect(page.getByText("1/9 verified")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Lesson 1 Complete/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Lesson 2 Ready/ })).toBeVisible();
+});
+
+test("a failing guided patch is never verified or recorded as progress", async ({ page }) => {
+  await openClean(page);
+  await page.getByRole("button", { name: "Start guided lab", exact: false }).click();
   await page.getByRole("textbox", { name: "Current hypothesis" }).fill(
     "The threshold comparison appears to exclude the exact policy boundary.",
   );
@@ -106,6 +158,9 @@ test("a failing patch is never marked verified", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "The evidence found more work to do." })).toBeVisible();
   await expect(page.getByText("Repair not verified")).toBeVisible();
   await expect(page.getByText("FAILED · 5 passed · 1 failed")).toBeVisible();
+  await expect(page.getByText("Lesson remains incomplete")).toBeVisible();
+  const savedProgress = await page.evaluate(() => window.localStorage.getItem("faultsmith:learning-progress:v1"));
+  expect(savedProgress).toBeNull();
 });
 
 test("selection and workspace are keyboard reachable and axe-clean", async ({ page }) => {
@@ -113,8 +168,12 @@ test("selection and workspace are keyboard reachable and axe-clean", async ({ pa
   const selectionResults = await new AxeBuilder({ page }).analyze();
   expect(selectionResults.violations).toEqual([]);
 
-  await page.keyboard.press("Tab");
-  await page.keyboard.press("Tab");
+  await page.getByRole("button", { name: "Guided roadmap", exact: true }).focus();
+  await expect(page.getByRole("button", { name: "Guided roadmap", exact: true })).toBeFocused();
+  await page.getByRole("button", { name: "Start guided lab", exact: false }).focus();
+  await expect(page.getByRole("button", { name: "Start guided lab", exact: false })).toBeFocused();
+  await page.getByRole("button", { name: "Practice by skill", exact: true }).click();
+  await page.getByRole("button", { name: /Inventory Reservation/ }).focus();
   await expect(page.getByRole("button", { name: /Inventory Reservation/ })).toBeFocused();
 
   await openPrimaryFixture(page);
@@ -138,6 +197,7 @@ test("Inventory and Notification each forge a functioning prevalidated workspace
 
   for (const project of secondaryProjects) {
     await openClean(page);
+    await page.getByRole("button", { name: "Practice by skill", exact: true }).click();
     await page.getByRole("button", { name: project.card }).click();
     await page.getByRole("combobox", { name: "Target skill" }).selectOption({ label: project.skill });
     await page.getByRole("button", { name: "Beginner", exact: true }).click();
@@ -153,6 +213,14 @@ test("Inventory and Notification each forge a functioning prevalidated workspace
 
 test("narrow recording layout has no horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  await openClean(page);
+  const roadmapLayout = await page.evaluate(() => ({
+    viewport: window.innerWidth,
+    content: document.documentElement.scrollWidth,
+  }));
+  expect(roadmapLayout.content).toBeLessThanOrEqual(roadmapLayout.viewport);
+  await expect(page.getByRole("button", { name: "Start guided lab", exact: false })).toBeVisible();
+
   await openPrimaryFixture(page);
   const layout = await page.evaluate(() => ({
     viewport: window.innerWidth,

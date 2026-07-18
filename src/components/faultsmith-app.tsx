@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { GuidedRoadmap } from "@/components/guided-roadmap";
 import { projects } from "@/lib/catalog";
 import {
   appendAnonymousAttemptEvent,
@@ -21,12 +22,25 @@ import {
   type PublicChallenge,
   type TestResult,
 } from "@/lib/contracts";
+import {
+  emptyLearningProgress,
+  getLearningRecommendation,
+  getLearningStep,
+  learningSteps,
+  parseLearningProgress,
+  recordLearningCompletion,
+  type LearningProgress,
+  type LearningStep,
+  type LearningStepId,
+} from "@/lib/learning-paths";
 
 type Stage = "configure" | "forging" | "workspace" | "report";
 type RequestState = "idle" | "running";
+type LearningMode = "guided" | "catalog";
 
 const ATTEMPT_KEY = "faultsmith:attempt:v2";
 const EVENT_KEY = "faultsmith:events:v1";
+const LEARNING_PROGRESS_KEY = "faultsmith:learning-progress:v1";
 const difficultyOptions: Array<{ value: Difficulty; label: string }> = [
   { value: "beginner", label: "Beginner" },
   { value: "intermediate", label: "Intermediate" },
@@ -53,7 +67,7 @@ function StatusDot({ tone = "amber" }: { tone?: "amber" | "green" | "red" }) {
 function AppHeader({ stage, verified }: { stage: Stage; verified: boolean }) {
   const status =
     stage === "configure"
-      ? "Lab catalog ready"
+      ? "Learning roadmap ready"
       : stage === "forging"
         ? "Validation in progress"
         : stage === "workspace"
@@ -116,6 +130,11 @@ function elapsedLabel(seconds: number) {
   return minutes > 0 ? `${minutes}m ${remainder}s` : `${remainder}s`;
 }
 
+function overallAssessmentScore(response: AssessmentResponse) {
+  const result = response.assessment;
+  return Math.round((result.rootCauseScore + result.reasoningScore + result.patchDisciplineScore + result.conceptUnderstandingScore) / 4);
+}
+
 function trackAnonymousEvent(
   name: AttemptEventName,
   context: Omit<AnonymousAttemptEvent, "name" | "occurredAt"> = {},
@@ -132,6 +151,10 @@ function trackAnonymousEvent(
 
 export function FaultSmithApp() {
   const [stage, setStage] = useState<Stage>("configure");
+  const [learningMode, setLearningMode] = useState<LearningMode>("guided");
+  const [learningProgress, setLearningProgress] = useState<LearningProgress>(emptyLearningProgress);
+  const [selectedLearningStepId, setSelectedLearningStepId] = useState<LearningStepId>(learningSteps[0].id);
+  const [activeLearningStepId, setActiveLearningStepId] = useState<LearningStepId | null>(null);
   const [projectId, setProjectId] = useState<ProjectId>("expense-approval");
   const [skill, setSkill] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty | "">("");
@@ -156,6 +179,22 @@ export function FaultSmithApp() {
     () => projects.find((item) => item.id === projectId) ?? projects[0],
     [projectId],
   );
+
+  useEffect(() => {
+    const progressTimer = window.setTimeout(() => {
+      try {
+        const raw = window.localStorage.getItem(LEARNING_PROGRESS_KEY);
+        if (!raw) return;
+        const restoredProgress = parseLearningProgress(JSON.parse(raw));
+        const recommendation = getLearningRecommendation(restoredProgress);
+        setLearningProgress(restoredProgress);
+        if (recommendation.step) setSelectedLearningStepId(recommendation.step.id);
+      } catch {
+        window.localStorage.removeItem(LEARNING_PROGRESS_KEY);
+      }
+    }, 0);
+    return () => window.clearTimeout(progressTimer);
+  }, []);
 
   useEffect(() => {
     const restoreTimer = window.setTimeout(() => {
@@ -194,6 +233,18 @@ export function FaultSmithApp() {
             : [],
         );
         setTestResult(savedChallenge.data.initialTestResult);
+        const restoredLearningStep = getLearningStep(
+          typeof saved.learningStepId === "string" ? saved.learningStepId : null,
+        );
+        if (
+          restoredLearningStep
+          && restoredLearningStep.projectId === savedChallenge.data.projectId
+          && restoredLearningStep.targetSkill === savedChallenge.data.targetSkill
+        ) {
+          setActiveLearningStepId(restoredLearningStep.id);
+          setSelectedLearningStepId(restoredLearningStep.id);
+          setLearningMode("guided");
+        }
         if (savedAssessment.success) {
           setAssessment(savedAssessment.data);
           setTestResult(savedAssessment.data.testResult);
@@ -224,10 +275,11 @@ export function FaultSmithApp() {
           testRuns,
           startedAt,
           assessment,
+          learningStepId: activeLearningStepId,
         }),
       );
     } catch {}
-  }, [challenge, files, activeFile, hypothesis, hypothesisHistory, revealedHints, explanation, testRuns, startedAt, assessment, stage]);
+  }, [challenge, files, activeFile, hypothesis, hypothesisHistory, revealedHints, explanation, testRuns, startedAt, assessment, activeLearningStepId, stage]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -243,11 +295,17 @@ export function FaultSmithApp() {
     return nextHistory;
   }
 
-  async function forgeChallenge(useLive = preferLive) {
-    if (!skill || !difficulty) return;
-    trackAnonymousEvent("project_selected", { projectId, outcome: "generation_confirmed" });
+  async function forgeChallenge(
+    useLive = preferLive,
+    selection?: { projectId: ProjectId; targetSkill: string; difficulty: Difficulty },
+  ) {
+    const selectedProjectId = selection?.projectId ?? projectId;
+    const selectedSkill = selection?.targetSkill ?? skill;
+    const selectedDifficulty = selection?.difficulty ?? difficulty;
+    if (!selectedSkill || !selectedDifficulty) return;
+    trackAnonymousEvent("project_selected", { projectId: selectedProjectId, outcome: "generation_confirmed" });
     trackAnonymousEvent("generation_started", {
-      projectId,
+      projectId: selectedProjectId,
       outcome: useLive ? "live_requested" : "fixture_requested",
     });
     setStage("forging");
@@ -261,9 +319,9 @@ export function FaultSmithApp() {
     try {
       const [data] = await Promise.all([
         postJson("/api/challenges/generate", {
-          projectId,
-          targetSkill: skill,
-          difficulty,
+          projectId: selectedProjectId,
+          targetSkill: selectedSkill,
+          difficulty: selectedDifficulty,
           preferLive: useLive,
         }),
         new Promise((resolve) => window.setTimeout(resolve, 850)),
@@ -312,14 +370,29 @@ export function FaultSmithApp() {
       });
       setStage("workspace");
     } catch (requestError) {
-      trackAnonymousEvent("generation_failed", { projectId, outcome: "safe_error" });
-      trackAnonymousEvent("validation_failed", { projectId, outcome: "challenge_not_released" });
+      trackAnonymousEvent("generation_failed", { projectId: selectedProjectId, outcome: "safe_error" });
+      trackAnonymousEvent("validation_failed", { projectId: selectedProjectId, outcome: "challenge_not_released" });
       setError(requestError instanceof Error ? requestError.message : "Challenge generation failed.");
       setStage("configure");
     } finally {
       window.clearInterval(timer);
       setRequestState("idle");
     }
+  }
+
+  function startGuidedStep(step: LearningStep) {
+    setLearningMode("guided");
+    setSelectedLearningStepId(step.id);
+    setActiveLearningStepId(step.id);
+    setProjectId(step.projectId);
+    setSkill(step.targetSkill);
+    setDifficulty(step.difficulty);
+    setPreferLive(false);
+    void forgeChallenge(false, {
+      projectId: step.projectId,
+      targetSkill: step.targetSkill,
+      difficulty: step.difficulty,
+    });
   }
 
   async function runTests() {
@@ -433,6 +506,21 @@ export function FaultSmithApp() {
           outcome: parsed.data.testResult.status,
         },
       );
+      if (parsed.data.assessment.completionStatus === "verified" && activeLearningStepId) {
+        const nextProgress = recordLearningCompletion(learningProgress, {
+          stepId: activeLearningStepId,
+          completedAt: Date.now(),
+          overallScore: overallAssessmentScore(parsed.data),
+          hintsUsed: revealedHints.length,
+          testRuns: submittedRuns,
+        });
+        setLearningProgress(nextProgress);
+        try {
+          window.localStorage.setItem(LEARNING_PROGRESS_KEY, JSON.stringify(nextProgress));
+        } catch {
+          // Guided progress is optional local state and never blocks an authoritative report.
+        }
+      }
       setStage("report");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "The submission failed safely.");
@@ -466,10 +554,13 @@ export function FaultSmithApp() {
 
   function chooseNewLab() {
     window.localStorage.removeItem(ATTEMPT_KEY);
+    const recommendation = getLearningRecommendation(learningProgress);
     setChallenge(null);
     setFiles([]);
     setSkill("");
     setDifficulty("");
+    setActiveLearningStepId(null);
+    if (recommendation.step) setSelectedLearningStepId(recommendation.step.id);
     setAssessment(null);
     setMessage("");
     setError("");
@@ -477,6 +568,7 @@ export function FaultSmithApp() {
   }
 
   const verified = assessment?.assessment.completionStatus === "verified";
+  const activeLearningStep = getLearningStep(activeLearningStepId);
 
   return (
     <main className="min-h-screen">
@@ -484,9 +576,16 @@ export function FaultSmithApp() {
       <div className="sr-only" aria-live="polite">{requestState === "running" ? "Request in progress" : message || error}</div>
       {stage === "configure" && (
         <ConfigureView
+          learningMode={learningMode}
+          setLearningMode={setLearningMode}
+          learningProgress={learningProgress}
+          selectedLearningStepId={selectedLearningStepId}
+          setSelectedLearningStepId={setSelectedLearningStepId}
+          onStartGuidedStep={startGuidedStep}
           projectId={projectId}
           setProjectId={(id) => {
             trackAnonymousEvent("project_selected", { projectId: id, outcome: "selected" });
+            setActiveLearningStepId(null);
             setProjectId(id);
             setSkill("");
           }}
@@ -496,8 +595,14 @@ export function FaultSmithApp() {
           setDifficulty={setDifficulty}
           preferLive={preferLive}
           setPreferLive={setPreferLive}
-          onForge={() => forgeChallenge()}
-          onFallback={() => forgeChallenge(false)}
+          onForge={() => {
+            setActiveLearningStepId(null);
+            void forgeChallenge();
+          }}
+          onFallback={() => {
+            setActiveLearningStepId(null);
+            void forgeChallenge(false);
+          }}
           error={error}
         />
       )}
@@ -528,13 +633,26 @@ export function FaultSmithApp() {
         />
       )}
       {stage === "report" && challenge && assessment && (
-        <ReportView challenge={challenge} response={assessment} onPracticeAgain={resetLab} onNewLab={chooseNewLab} />
+        <ReportView
+          challenge={challenge}
+          response={assessment}
+          guidedStep={activeLearningStep}
+          learningProgress={learningProgress}
+          onPracticeAgain={resetLab}
+          onNewLab={chooseNewLab}
+        />
       )}
     </main>
   );
 }
 
 type ConfigureProps = {
+  learningMode: LearningMode;
+  setLearningMode: (mode: LearningMode) => void;
+  learningProgress: LearningProgress;
+  selectedLearningStepId: LearningStepId;
+  setSelectedLearningStepId: (stepId: LearningStepId) => void;
+  onStartGuidedStep: (step: LearningStep) => void;
   projectId: ProjectId;
   setProjectId: (id: ProjectId) => void;
   skill: string;
@@ -558,8 +676,22 @@ function ConfigureView(props: ConfigureProps) {
         <div className="max-w-3xl">
           <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-300"><span className="h-px w-8 bg-amber-300/70" />Controlled failure. Measurable learning.</div>
           <h1 className="max-w-2xl text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-white sm:text-6xl">Learn to debug code you<span className="text-zinc-500"> didn&apos;t write.</span></h1>
-          <p className="mt-6 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">FaultSmith injects one validated bug into a working Python project, then coaches your investigation without handing you the answer.</p>
+          <p className="mt-6 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">Build the habit AI shortcuts skip: read evidence, form a hypothesis, and prove the smallest repair inside a validated Python lab.</p>
         </div>
+        <div role="group" aria-label="Learning mode" className="mt-9 inline-flex rounded-xl border border-white/9 bg-[#101318]/90 p-1">
+          <button type="button" aria-pressed={props.learningMode === "guided"} onClick={() => props.setLearningMode("guided")} className={`rounded-lg px-4 py-2.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${props.learningMode === "guided" ? "bg-amber-400 text-[#1a1105]" : "text-zinc-400 hover:text-white"}`}>Guided roadmap</button>
+          <button type="button" aria-pressed={props.learningMode === "catalog"} onClick={() => props.setLearningMode("catalog")} className={`rounded-lg px-4 py-2.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${props.learningMode === "catalog" ? "bg-amber-400 text-[#1a1105]" : "text-zinc-400 hover:text-white"}`}>Practice by skill</button>
+        </div>
+        {props.learningMode === "guided" ? (
+          <div className="mt-10">
+            <GuidedRoadmap
+              progress={props.learningProgress}
+              selectedStepId={props.selectedLearningStepId}
+              onSelectStep={props.setSelectedLearningStepId}
+              onStartStep={props.onStartGuidedStep}
+            />
+          </div>
+        ) : (
         <div className="mt-12 grid gap-7 xl:grid-cols-[1fr_390px]">
           <section aria-labelledby="project-heading">
             <div className="mb-4 flex items-end justify-between"><div><div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Step 01</div><h2 id="project-heading" className="mt-1 text-xl font-medium text-white">Choose a system to investigate</h2></div><div className="hidden text-xs text-zinc-600 md:block">3 curated Python systems</div></div>
@@ -591,6 +723,7 @@ function ConfigureView(props: ConfigureProps) {
             </div>
           </aside>
         </div>
+        )}
       </div>
     </div>
   );
@@ -678,17 +811,22 @@ function WorkspaceView(props: WorkspaceProps) {
 function ReportView({
   challenge,
   response,
+  guidedStep,
+  learningProgress,
   onPracticeAgain,
   onNewLab,
 }: {
   challenge: PublicChallenge;
   response: AssessmentResponse;
+  guidedStep?: LearningStep;
+  learningProgress: LearningProgress;
   onPracticeAgain: () => void;
   onNewLab: () => void;
 }) {
   const result = response.assessment;
   const verified = result.completionStatus === "verified";
-  const overall = Math.round((result.rootCauseScore + result.reasoningScore + result.patchDisciplineScore + result.conceptUnderstandingScore) / 4);
+  const overall = overallAssessmentScore(response);
+  const roadmapRecommendation = getLearningRecommendation(learningProgress);
   const reasoningSource = response.assessmentSource === "gpt-5.6" ? "GPT-5.6 structured rubric" : "Deterministic reasoning rubric";
   const prevalidatedEvidence = response.testResult.executionMode === "prevalidated_fixture";
   const cards = [["Root-cause accuracy", result.rootCauseScore, reasoningSource], ["Causal reasoning", result.reasoningScore, reasoningSource], ["Patch discipline", result.patchDisciplineScore, `${response.changedLines} changed line${response.changedLines === 1 ? "" : "s"}`], ["Concept understanding", result.conceptUnderstandingScore, challenge.targetSkill]] as const;
@@ -738,8 +876,20 @@ function ReportView({
             </div>
           </section>
         </div>
+        {guidedStep && (
+          <section aria-label="Guided roadmap result" className={`mt-5 rounded-xl border p-4 ${verified ? "border-emerald-400/15 bg-emerald-400/[0.04]" : "border-amber-400/15 bg-amber-400/[0.04]"}`}>
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+              <div>
+                <div className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${verified ? "text-emerald-300" : "text-amber-300"}`}>{verified ? "Guided roadmap updated" : "Lesson remains incomplete"}</div>
+                <h2 className="mt-1 text-sm font-medium text-zinc-100">Lesson {guidedStep.order}: {guidedStep.title}</h2>
+                <p className="mt-1 text-xs leading-5 text-zinc-400">{verified ? `${learningProgress.completions.length}/9 lessons verified. ${roadmapRecommendation.reason}` : "Only a verified repair records curriculum progress. Review the evidence and try this lesson again."}</p>
+              </div>
+              {roadmapRecommendation.step && verified && <span className="shrink-0 rounded-full border border-white/8 px-3 py-1.5 text-[10px] text-zinc-300">Next: Lesson {roadmapRecommendation.step.order}</span>}
+            </div>
+          </section>
+        )}
         <div className="mt-5 rounded-xl border border-white/8 bg-[#111419]/90 p-4 text-center text-xs text-zinc-500"><span className="font-medium text-zinc-300">Practice next:</span> {result.nextPracticeRecommendation}</div>
-        <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row"><button type="button" onClick={onPracticeAgain} className="rounded-xl border border-white/10 px-5 py-3 text-sm text-zinc-300 hover:border-white/20">Practice this lab again</button><button type="button" onClick={onNewLab} className="rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-[#1b1206] hover:bg-amber-300">Choose another system</button></div>
+        <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row"><button type="button" onClick={onPracticeAgain} className="rounded-xl border border-white/10 px-5 py-3 text-sm text-zinc-300 hover:border-white/20">Practice this lab again</button><button type="button" onClick={onNewLab} className="rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-[#1b1206] hover:bg-amber-300">{guidedStep ? "Continue guided roadmap" : "Choose another system"}</button></div>
       </div>
     </div>
   );

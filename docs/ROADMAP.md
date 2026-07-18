@@ -3,17 +3,18 @@
 **Last direction review:** July 18, 2026  
 **Locked track:** Education  
 **Locked primary demo:** Expense Approval boundary condition  
-**Current state:** Public-source release candidate; live credential smoke, deployment, and remaining submission actions pending
+**Current state:** Guided-learning release candidate green locally; GitHub review/CI, live credential smoke, deployment, and remaining submission actions pending
 
 ## Completed milestones
 
 | Milestone | Evidence |
 | --- | --- |
-| Secure challenge domain | Strict contracts, public DTO stripping, nine fixtures, allowlisted edits, exact prevalidated repair matching, challenge-grounded fallback scoring, sanitized output, 36 passing unit/integration tests |
+| Secure challenge domain | Strict contracts, public DTO stripping, nine fixtures, allowlisted edits, exact prevalidated repair matching, challenge-grounded fallback scoring, sanitized output, 40 passing unit/integration tests |
 | Validated generation | Separate GPT-5.6 mutation and validation schemas are constrained by approved contracts; deterministic original-pass/mutated-fail/signature checks remain authoritative and one retry precedes fallback |
 | Isolated execution | Live Python path uses Code Interpreter only; client has no command or container-ID input; local fallback is deterministic and explicitly labeled |
 | Deterministic assessment | Exact submitted snapshot is rerun; failing evidence forces `not_verified`; model scores are bounded and subordinate |
 | Complete learning UI | Project/skill/difficulty selection, forge state, editor, tests, revision-aware hypothesis journal, separately delivered hints, explanation, evidence report, reset and refresh restoration |
+| Guided learning MVP | Three-phase, nine-lesson evidence-first roadmap; concept guides; investigation checklists; zero-token guided launches; bounded local progress; verified-only completion; deterministic reinforcement/next-step recommendations; direct catalog preserved |
 | Reliability breadth | Three projects and three scenarios per project; missing-key, malformed plan, timeout, expiration, and invalid patch paths covered |
 | Quality hardening | Keyboard and axe checks, secondary-project E2E, narrow viewport check, reduced-motion CSS, secure headers, bounded local telemetry/rate buckets, zero-audit dependency state, production build |
 | Submission package | README, build log, testing guide, threat model, demo script, Devpost draft, license, and completion report |
@@ -36,6 +37,7 @@ These are intentionally not marked complete by local fallback evidence.
 - **Highest security risk:** the in-memory rate limiter is per process and not globally coordinated across a multi-instance deployment. Mitigation: conservative route limits now; add provider/edge rate limiting before high-traffic public use.
 - **Highest judging opportunity:** show that GPT does more than chat—it creates a constrained mutation plan, Code Interpreter proves the failure, and deterministic evidence controls the final result.
 - **API-credit constraint:** live generation can require original and mutated executions, plus assessment. The fixture path allows unlimited rehearsal without spend.
+- **Curriculum boundary:** guided metadata must never contain hidden answers or become an alternate execution authority. Mitigation: lesson data references only public project-skill IDs; fixtures and assessments remain server-owned.
 - **Time constraint:** prioritize the public deployment, five-tester study, and concise recording over new product breadth.
 
 ## Recommended next milestone
@@ -44,6 +46,7 @@ With user authorization and a server-only API key, deploy a preview release, run
 
 ## Explicitly deferred scope
 
+- Natural-language custom challenge prompting
 - Arbitrary repository upload or arbitrary Python execution
 - Accounts, cross-device synchronization, cohorts, and instructor dashboards
 - Languages other than Python
@@ -58,4 +61,4 @@ With user authorization and a server-only API key, deploy a preview release, run
 - **Potential impact:** a reusable practice loop can turn passive tutorials into deliberate debugging exercises.
 - **Quality of idea:** the deliberate, validated failure is the differentiator; adding broad project ingestion before submission would weaken reliability and safety.
 
-Direction remains aligned with the locked PRD. No material product change is recommended.
+Direction remains aligned with the approved PRD amendment. No further material product expansion is recommended before submission.

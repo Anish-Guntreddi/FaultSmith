@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import { publicChallengeSchema } from "@/lib/contracts";
+import { learningSteps } from "@/lib/learning-paths";
 import { toPublicChallenge } from "./challenge-service";
 import { runFixtureTests, sanitizeTestOutput } from "./fixture-runner";
 import { challengeFixtures } from "./fixtures";
@@ -19,6 +20,15 @@ describe("prevalidated fixture registry", () => {
       const tests = fixture.visibleFiles.find((file) => file.path.startsWith("tests/"));
       expect(tests).toBeDefined();
       expect(tests?.content.match(/^def test_/gm)).toHaveLength(fixture.passedCount);
+    }
+  });
+
+  it("backs every guided lesson with exactly one approved fixture", () => {
+    for (const step of learningSteps) {
+      const matches = challengeFixtures.filter(
+        (fixture) => fixture.projectId === step.projectId && fixture.targetSkill === step.targetSkill,
+      );
+      expect(matches).toHaveLength(1);
     }
   });
 
