@@ -83,45 +83,46 @@ Deferred until the submission milestone is complete and a new requirements/PRD c
 
 ## Traceability
 
-Roadmap phase mappings are populated during GSD roadmap creation.
+Each v1 requirement is owned by exactly one roadmap phase. Canonical scope and finish authority remain in `docs/PRD.md`, `docs/EXECUTION_GOAL.md`, and `docs/ROADMAP.md`.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DEV-01 | TBD | Pending |
-| DEV-02 | TBD | Pending |
-| DEV-03 | TBD | Pending |
-| CI-01 | TBD | Pending |
-| CI-02 | TBD | Pending |
-| CI-03 | TBD | Pending |
-| CI-04 | TBD | Pending |
-| CI-05 | TBD | Pending |
-| CI-06 | TBD | Pending |
-| QA-01 | TBD | Pending |
-| QA-02 | TBD | Pending |
-| SEC-01 | TBD | Pending |
-| SEC-02 | TBD | Pending |
-| SAFE-01 | TBD | Pending |
-| SAFE-02 | TBD | Pending |
-| DOC-01 | TBD | Pending |
-| LIVE-01 | TBD | Pending |
-| LIVE-02 | TBD | Pending |
-| LIVE-03 | TBD | Pending |
-| LIVE-04 | TBD | Pending |
-| DEP-01 | TBD | Pending |
-| DEP-02 | TBD | Pending |
-| DEP-03 | TBD | Pending |
-| DEP-04 | TBD | Pending |
-| UAT-01 | TBD | Pending |
-| UAT-02 | TBD | Pending |
-| SUB-01 | TBD | Pending |
-| SUB-02 | TBD | Pending |
-| SUB-03 | TBD | Pending |
+| DEV-01 | Phase 1 | Pending |
+| DEV-02 | Phase 1 | Pending |
+| DEV-03 | Phase 1 | Pending |
+| CI-01 | Phase 1 | Pending |
+| CI-02 | Phase 1 | Pending |
+| CI-03 | Phase 1 | Pending |
+| CI-04 | Phase 1 | Pending |
+| CI-05 | Phase 1 | Pending |
+| CI-06 | Phase 1 | Pending |
+| QA-01 | Phase 1 | Pending |
+| QA-02 | Phase 1 | Pending |
+| SEC-01 | Phase 1 | Pending |
+| SEC-02 | Phase 1 | Pending |
+| SAFE-01 | Phase 1 | Pending |
+| SAFE-02 | Phase 1 | Pending |
+| DOC-01 | Phase 1 | Pending |
+| LIVE-01 | Phase 2 | Pending — credential gate |
+| LIVE-02 | Phase 2 | Pending — credential gate |
+| LIVE-03 | Phase 2 | Pending — credential gate |
+| LIVE-04 | Phase 2 | Pending — credential gate |
+| DEP-01 | Phase 3 | Pending — approval gate |
+| DEP-02 | Phase 3 | Pending — approval gate |
+| DEP-03 | Phase 3 | Pending — approval gate |
+| DEP-04 | Phase 3 | Pending — approval gate |
+| UAT-01 | Phase 4 | Pending — external evidence |
+| UAT-02 | Phase 4 | Pending — external evidence |
+| SUB-01 | Phase 4 | Pending — external evidence |
+| SUB-02 | Phase 4 | Pending — external evidence |
+| SUB-03 | Phase 4 | Pending — external evidence |
 
 **Coverage:**
 - v1 requirements: 29 total
-- Mapped to phases: 0
-- Unmapped: 29 ⚠️
+- Mapped to phases: 29
+- Unmapped: 0 ✓
+- Duplicate phase ownership: 0 ✓
 
 ---
 *Requirements defined: July 18, 2026*  
-*Last updated: July 18, 2026 after GSD brownfield research*
+*Last updated: July 18, 2026 after four-phase GSD roadmap creation*
