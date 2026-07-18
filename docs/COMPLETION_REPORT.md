@@ -1,7 +1,7 @@
 # FaultSmith Completion Report
 
 **Checkpoint:** July 18, 2026  
-**Release state:** independently reviewed Phase 1 candidate `fee208737b9814eb72b2f7582d0aad4d1a7fab9e` green locally; publication-head GitHub CI plus credential/deployment/submission actions explicitly pending
+**Release state:** independently reviewed Phase 1 candidate `fee208737b9814eb72b2f7582d0aad4d1a7fab9e` green locally; evidence head `71f2379d9285b5f7dad8bd7f7946d0952c50ef9f` passed four required GitHub gates; live credential/deployment/submission actions explicitly pending
 **Primary evidence:** `docs/TESTING.md`, `docs/BUILD_LOG.md`, `docs/THREAT_MODEL.md`
 
 ## Executive result
@@ -25,14 +25,14 @@ The goal is not represented as globally finished because live OpenAI verificatio
 | 9 | Inventory and Notification functioning fixtures | Verified | three lifecycle-tested scenarios per project, all nine route combinations, and selection-to-workspace E2E for both secondary projects |
 | 10 | Security review/threat model without blocker/high | Verified locally | independent product/QA/security reports, complete finding disposition, both highs repaired, zero audit vulnerabilities, adversarial tests, source/history and all-fixture bundle scans |
 | 11 | QA matrix complete | Verified | `docs/TESTING.md` maps every required quality item to automated/manual evidence |
-| 12 | Lint, types, tests, build, server smoke pass | Verified locally; publication head awaits GitHub CI | 63 unit/integration tests across nine files, seven E2E, seven-route build, 17-artifact/63-marker bundle check, 109-file/26-commit source scan, and zero audit vulnerabilities; prior public baseline CI run 29650774197 passed |
+| 12 | Lint, types, tests, build, server smoke pass | Verified locally and on evidence publication head | 63 unit/integration tests across nine files, seven E2E, seven-route build, 17-artifact/63-marker bundle check, candidate-era main-checkout source scan across 109 files/26 commits, independent detached recheck across 110 files/26 commits, zero audit vulnerabilities, and four green required checks in GitHub run 29658002877 |
 | 13 | Primary workflow manually tested at recording resolution | Verified locally | exact-candidate controlled production browser run completed the guided repair/report at 1440 × 900, then rechecked the persisted report at 390 × 844; no overflow or runtime warnings/errors |
 | 14 | Keyboard, labels, focus, contrast, reduced motion | Verified | keyboard E2E, zero axe violations, visible focus classes, contrast repair, reduced-motion CSS |
 | 15 | Complete submission documentation | Verified as drafts/evidence | README, testing, build log, roadmap, threat model, demo script, Devpost draft, execution goal, completion report, env example, license |
-| 16 | No secrets/artifacts/misleading or fake features | Verified locally; publication head awaits GitHub CI | scans clean except deliberate fake redaction test; client bundle clean; generated artifacts ignored; public baseline contains no credential; live claims clearly qualified |
+| 16 | No secrets/artifacts/misleading or fake features | Verified locally and on evidence publication head | scans clean except deliberate fake redaction test; client bundle clean; generated artifacts ignored; public branch contains no credential; live claims clearly qualified; final metadata-head proof is recorded externally on PR #13 to avoid self-reference |
 | 17 | Deployment-ready | Verified locally; deployment pending | production build/start/headers/health pass, env/setup documented; public deployment needs approval |
 | 18 | Video-intended features consistent | Verified in fallback mode | primary flow passed repeatedly in manual browser and Playwright; live mode awaits smoke |
-| 19 | Majority built in primary Codex thread documented | Verified; Session ID pending | README, BUILD_LOG, SUBMISSION document Codex work and no secondary review; `/feedback` ID not yet supplied |
+| 19 | Majority built in primary Codex thread documented | Verified; Session ID pending | README, BUILD_LOG, and SUBMISSION distinguish the primary Codex build thread, independent Codex development reviews, and absence of Claude Code review; `/feedback` ID not yet supplied |
 | 20 | Final report objective and transparent | Verified | this report separates verified, credential-blocked, and approval/external items |
 
 ## PRD Definition of Done
@@ -50,7 +50,7 @@ The goal is not represented as globally finished because live OpenAI verificatio
 | 9 | Report separates evidence and assessment | Verified | report UI and E2E assertions |
 | 10 | Real live-failure fallback | Verified for missing/malformed/timeout paths | nine real fixtures; actual provider outage recovery awaits live credential |
 | 11 | Critical rules automated | Verified | 63 unit/integration tests, seven E2E workflows, source/history scan, and all-fixture bundle check |
-| 12 | README/build log document Codex/GPT/review | Verified | accurate provenance and no-secondary-review disclosure |
+| 12 | README/build log document Codex/GPT/review | Verified | accurate provenance: primary Codex build, independent Codex development reviews, and no Claude Code review |
 | 13 | Public demo/repository available through judging | Repository verified; demo pending deployment | source is public at `https://github.com/Anish-Guntreddi/FaultSmith`; deploy the app and monitor both through judging |
 | 14 | Public clear video under three minutes | Pending recording/publication | 2:35 script ready; automated primary workflow completes in 3.5 seconds |
 | 15 | `/feedback` Session ID from primary task | Pending user/Codex action | capture after the primary build task is ready for submission |

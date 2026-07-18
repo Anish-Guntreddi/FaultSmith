@@ -25,9 +25,10 @@ The final local run produced:
 | Client bundle leakage check | Pass; 17 static artifacts inspected |
 | Playwright | 7 tests passed in 6.6 seconds; primary workflow 3.5 seconds |
 | npm audit at moderate threshold | Pass; zero vulnerabilities |
-| Source/history security scan | Pass; 109 working-tree files and 26 reachable commits inspected without printing matched values |
+| Source/history security scan | Pass; candidate-era main checkout inspected 109 files/26 commits and the detached security recheck inspected 110 files/the same 26 commits, without printing matched values |
 | Production startup | Pass; ready on `127.0.0.1:3118` in 93 ms |
 | Production root/health/full fallback API smoke | HTTP 200; fallback labeled; intended fail → repaired pass → verified assessment |
+| GitHub Actions Phase 1 evidence | Pass; evidence head `71f2379` completed all four required checks in [run 29658002877](https://github.com/Anish-Guntreddi/FaultSmith/actions/runs/29658002877) |
 | GitHub Actions baseline | Pass; public `main` run [29650774197](https://github.com/Anish-Guntreddi/FaultSmith/actions/runs/29650774197) completed successfully |
 
 The earlier final-gate lint failure in the new 404 page and the client-bundle hidden-schema finding were repaired and all downstream gates were rerun. See `docs/BUILD_LOG.md`.

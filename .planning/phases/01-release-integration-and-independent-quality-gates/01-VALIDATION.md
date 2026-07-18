@@ -1,7 +1,7 @@
 ---
 phase: 1
 slug: release-integration-and-independent-quality-gates
-status: ready
+status: complete
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-07-18
@@ -20,7 +20,7 @@ created: 2026-07-18
 | **Framework** | Vitest 4, Playwright 1.61, axe, Next.js 16 build/start, GitHub Actions/API |
 | **Config files** | `vitest.config.mts`, `playwright.config.ts`, `.github/workflows/ci.yml` |
 | **Quick run command** | `npm run lint && npm run typecheck && npm test` |
-| **Full suite command** | `npm run quality && npm audit --audit-level=moderate` |
+| **Full suite command** | `npm run security:source && npm run quality && npm audit --audit-level=moderate` |
 | **Estimated runtime** | quick ~20 seconds; full ~1–2 minutes locally |
 
 ---
@@ -39,21 +39,21 @@ created: 2026-07-18
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 01-01-01 | 01 | 1 | CI-03, SEC-02, SAFE-02 | security scan | `npm test -- scripts/check-source-security.test.mjs && npm run security:source` plus controlled failure fixtures | ❌ W1 output | ⬜ pending |
-| 01-01-02 | 01 | 1 | CI-01–04 | workflow/static | `npm run lint && npm run typecheck && npm test && npm run build && npm run security:bundle && npm run test:e2e` | ✅ | ⬜ pending |
-| 01-01-03 | 01 | 1 | CI-05, SAFE-01 | regression | `npm run quality && npm audit --audit-level=moderate` | ✅ | ⬜ pending |
-| 01-01-04 | 01 | 1 | DEV-02, CI-05 | SHA manifest | resolve manifest commit and verify clean captured tree/gate results | ❌ W1 output | ⬜ pending |
-| 01-02-01 | 02 | 2 | DEV-02–03, QA-01 | review artifact | `git diff --check && test -s <product-review-file>` | ❌ W2 output | ⬜ pending |
-| 01-03-01 | 03 | 2 | DEV-02–03, QA-02 | review + browser | `npm run test:e2e` | ❌ W2 output | ⬜ pending |
-| 01-04-01 | 04 | 2 | DEV-02–03, SEC-01–02 | adversarial review | `npm test && npm audit --audit-level=moderate && npm run security:bundle` | ❌ W2 output | ⬜ pending |
-| 01-05-01 | 05 | 3 | QA-01–02, SEC-01 | regression | narrow test named by each accepted finding | ❌ only if finding | ⬜ pending |
-| 01-05-02 | 05 | 3 | DEV-03, SAFE-01–02 | downstream gate | `npm run quality && npm audit --audit-level=moderate` | ✅ | ⬜ pending |
-| 01-06-01 | 06 | 4 | DEV-01, DOC-01 | docs/evidence | `git diff --check` plus stale-claim/link searches | ✅ | ⬜ pending |
-| 01-06-02 | 06 | 4 | QA/SEC/SAFE | production/manual | `npm run security:source && npm run quality && npm audit --audit-level=moderate` plus build/start/curl/browser review | ✅ | ⬜ pending |
-| 01-06-03 | 06 | 4 | CI-01–06 | remote CI/protection | `gh pr checks 13` and GitHub branch-protection API readback | ✅ external repo | ⬜ pending |
-| 01-POST | coordinator | post-execution | CI-06, DEV-01 | final metadata publication | push final GSD metadata head, wait four required checks, post immutable PR evidence, verify clean/synced tree | ✅ external repo | ⬜ pending |
+| 01-01-01 | 01 | 1 | CI-03, SEC-02, SAFE-02 | security scan | `npm test -- scripts/check-source-security.test.mjs && npm run security:source` plus controlled failure fixtures | ✅ | ✅ green |
+| 01-01-02 | 01 | 1 | CI-01–04 | workflow/static | `npm run lint && npm run typecheck && npm test && npm run build && npm run security:bundle && npm run test:e2e` | ✅ | ✅ green |
+| 01-01-03 | 01 | 1 | CI-05, SAFE-01 | regression | `npm run quality && npm audit --audit-level=moderate` | ✅ | ✅ green |
+| 01-01-04 | 01 | 1 | DEV-02, CI-05 | SHA manifest | resolve manifest commit and verify clean captured tree/gate results | ✅ | ✅ green |
+| 01-02-01 | 02 | 2 | DEV-02–03, QA-01 | review artifact | `git diff --check && test -s <product-review-file>` | ✅ | ✅ green |
+| 01-03-01 | 03 | 2 | DEV-02–03, QA-02 | review + browser | `npm run test:e2e` | ✅ | ✅ green |
+| 01-04-01 | 04 | 2 | DEV-02–03, SEC-01–02 | adversarial review | `npm test && npm audit --audit-level=moderate && npm run security:bundle` | ✅ | ✅ green |
+| 01-05-01 | 05 | 3 | QA-01–02, SEC-01 | regression | narrow test named by each accepted finding | ✅ | ✅ green |
+| 01-05-02 | 05 | 3 | DEV-03, SAFE-01–02 | downstream gate | `npm run quality && npm audit --audit-level=moderate` | ✅ | ✅ green |
+| 01-06-01 | 06 | 4 | DEV-01, DOC-01 | docs/evidence | `git diff --check` plus stale-claim/link searches | ✅ | ✅ green |
+| 01-06-02 | 06 | 4 | QA/SEC/SAFE | production/manual | `npm run security:source && npm run quality && npm audit --audit-level=moderate` plus build/start/curl/browser review | ✅ | ✅ green |
+| 01-06-03 | 06 | 4 | CI-01–06 | remote CI/protection | `gh pr checks 13` and GitHub branch-protection API readback | ✅ external repo | ✅ green |
+| 01-POST | coordinator | post-execution | CI-06, DEV-01 | final metadata publication | push final GSD metadata head, wait four required checks, post immutable PR evidence, verify clean/synced tree | ✅ external repo | 🔗 immutable PR evidence |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+The `01-POST` result is intentionally recorded in an immutable PR comment after this metadata file is committed; editing this file afterward would invalidate the head it claims to verify.
 
 ---
 
@@ -88,4 +88,4 @@ Existing Vitest, Playwright/axe, production build/start, bundle scan, git, GitHu
 - [x] Local feedback latency target is under 120 seconds.
 - [x] `nyquist_compliant: true` is set in frontmatter.
 
-**Approval:** approved for planning July 18, 2026
+**Approval:** completed July 18, 2026; final metadata-head check links are recorded externally on PR #13

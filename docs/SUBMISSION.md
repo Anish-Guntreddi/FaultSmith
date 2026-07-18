@@ -89,5 +89,5 @@ The application has a production-ready local fallback, automated mocked coverage
 - Runtime: Next.js, React, OpenAI JavaScript SDK, Zod, Tailwind CSS, and `server-only`.
 - Development verification: TypeScript, ESLint, Vitest, Playwright, and axe-core.
 - Transitive dependency licenses were reviewed; see `docs/THREAT_MODEL.md`.
-- Codex is the primary builder and reviewer. No Claude Code or other secondary code-review agent was used.
+- Codex is the primary builder. Independent Codex development agents performed the documented product, QA/accessibility, and security reviews; no Claude Code review was used.
 - The application contains no third-party project content, music, school records, learner accounts, or paid analytics service.

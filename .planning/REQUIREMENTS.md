@@ -9,28 +9,28 @@ Requirements for the current release/submission milestone. Existing learner-faci
 
 ### Development Orchestration
 
-- [ ] **DEV-01**: Maintainers can use a tracked GSD brownfield map, project context, requirements, roadmap, state, and phase plans that link to—not replace—the canonical PRD and execution documents.
-- [ ] **DEV-02**: The coordinator can run independent product, QA/accessibility, and security/adversarial review streams with non-overlapping ownership and consolidate their evidence against one commit SHA.
-- [ ] **DEV-03**: Every accepted material review finding records severity, affected surface, reproducible failure path, repair, regression coverage, and rerun evidence; rejected findings record a technical rationale.
+- [x] **DEV-01**: Maintainers can use a tracked GSD brownfield map, project context, requirements, roadmap, state, and phase plans that link to—not replace—the canonical PRD and execution documents.
+- [x] **DEV-02**: The coordinator can run independent product, QA/accessibility, and security/adversarial review streams with non-overlapping ownership and consolidate their evidence against one commit SHA.
+- [x] **DEV-03**: Every accepted material review finding records severity, affected surface, reproducible failure path, repair, regression coverage, and rerun evidence; rejected findings record a technical rationale.
 
 ### Continuous Integration
 
-- [ ] **CI-01**: Every pull request and main-branch push runs an independently named static-analysis gate containing lint and TypeScript checks.
-- [ ] **CI-02**: Every pull request and main-branch push runs an independently named unit/integration gate containing the mocked/offline Vitest suite.
-- [ ] **CI-03**: Every pull request and main-branch push runs an independently named build/security gate containing the production build, client leakage scan, dependency audit, and targeted repository safety scans.
-- [ ] **CI-04**: Every pull request and main-branch push runs an independently named browser/accessibility gate containing the Playwright workflows and Chromium/axe setup.
-- [ ] **CI-05**: The complete local `npm run quality` command remains green and the new CI jobs call the same package scripts rather than implementing divergent checks.
-- [ ] **CI-06**: Branch protection requires the unique green CI gates after they have successfully run, without leaving `main` unprotected or blocked by a removed check name.
+- [x] **CI-01**: Every pull request and main-branch push runs an independently named static-analysis gate containing lint and TypeScript checks.
+- [x] **CI-02**: Every pull request and main-branch push runs an independently named unit/integration gate containing the mocked/offline Vitest suite.
+- [x] **CI-03**: Every pull request and main-branch push runs an independently named build/security gate containing the production build, client leakage scan, dependency audit, and targeted repository safety scans.
+- [x] **CI-04**: Every pull request and main-branch push runs an independently named browser/accessibility gate containing the Playwright workflows and Chromium/axe setup.
+- [x] **CI-05**: The complete local `npm run quality` command remains green and the new CI jobs call the same package scripts rather than implementing divergent checks.
+- [x] **CI-06**: Branch protection requires the unique green CI gates after they have successfully run, without leaving `main` unprotected or blocked by a removed check name.
 
 ### Quality and Security Evidence
 
-- [ ] **QA-01**: Independent product-completeness review finds no unresolved blocker/high defect in the guided roadmap, advanced catalog, primary demo, fallback disclosure, persistence, or report workflow.
-- [ ] **QA-02**: Independent QA/accessibility review finds no unresolved blocker/high defect and verifies keyboard use, labels, focus, axe, contrast, reduced motion, responsive recording layout, refresh, reset, retry, duplicate action, and failure recovery.
-- [ ] **SEC-01**: Independent security/adversarial review finds no unresolved blocker/high defect across untrusted inputs, strict schemas, allowlists, hidden-answer containment, model authority, host execution, output sanitation, errors, rate limiting, secrets, dependencies, and bundles.
-- [ ] **SEC-02**: The current working tree and reachable Git history contain no real credential or private-key material, and all deliberate fake-token/test matches are documented as false positives.
-- [ ] **SAFE-01**: The validated fixture fallback remains functional, visibly labeled, and covered by missing-key/provider-failure tests after all orchestration, quality, and documentation changes.
-- [ ] **SAFE-02**: No new client import, response field, browser storage value, bundle string, command input, repository ingestion path, or runtime agent may weaken hidden-answer containment or deterministic test authority.
-- [ ] **DOC-01**: `docs/BUILD_LOG.md`, `docs/ROADMAP.md`, `docs/THREAT_MODEL.md`, `docs/TESTING.md`, and `docs/COMPLETION_REPORT.md` contain current branch/SHA-specific evidence and no stale pre-GitHub or unsupported completion claim.
+- [x] **QA-01**: Independent product-completeness review finds no unresolved blocker/high defect in the guided roadmap, advanced catalog, primary demo, fallback disclosure, persistence, or report workflow.
+- [x] **QA-02**: Independent QA/accessibility review finds no unresolved blocker/high defect and verifies keyboard use, labels, focus, axe, contrast, reduced motion, responsive recording layout, refresh, reset, retry, duplicate action, and failure recovery.
+- [x] **SEC-01**: Independent security/adversarial review finds no unresolved blocker/high defect across untrusted inputs, strict schemas, allowlists, hidden-answer containment, model authority, host execution, output sanitation, errors, rate limiting, secrets, dependencies, and bundles.
+- [x] **SEC-02**: The current working tree and reachable Git history contain no real credential or private-key material, and all deliberate fake-token/test matches are documented as false positives.
+- [x] **SAFE-01**: The validated fixture fallback remains functional, visibly labeled, and covered by missing-key/provider-failure tests after all orchestration, quality, and documentation changes.
+- [x] **SAFE-02**: No new client import, response field, browser storage value, bundle string, command input, repository ingestion path, or runtime agent may weaken hidden-answer containment or deterministic test authority.
+- [x] **DOC-01**: `docs/BUILD_LOG.md`, `docs/ROADMAP.md`, `docs/THREAT_MODEL.md`, `docs/TESTING.md`, and `docs/COMPLETION_REPORT.md` contain current branch/SHA-specific evidence and no stale pre-GitHub or unsupported completion claim.
 
 ### Live OpenAI Verification
 
@@ -87,22 +87,22 @@ Each v1 requirement is owned by exactly one roadmap phase. Canonical scope and f
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DEV-01 | Phase 1 | Pending |
-| DEV-02 | Phase 1 | Pending |
-| DEV-03 | Phase 1 | Pending |
-| CI-01 | Phase 1 | Pending |
-| CI-02 | Phase 1 | Pending |
-| CI-03 | Phase 1 | Pending |
-| CI-04 | Phase 1 | Pending |
-| CI-05 | Phase 1 | Pending |
-| CI-06 | Phase 1 | Pending |
-| QA-01 | Phase 1 | Pending |
-| QA-02 | Phase 1 | Pending |
-| SEC-01 | Phase 1 | Pending |
-| SEC-02 | Phase 1 | Pending |
-| SAFE-01 | Phase 1 | Pending |
-| SAFE-02 | Phase 1 | Pending |
-| DOC-01 | Phase 1 | Pending |
+| DEV-01 | Phase 1 | Complete |
+| DEV-02 | Phase 1 | Complete |
+| DEV-03 | Phase 1 | Complete |
+| CI-01 | Phase 1 | Complete |
+| CI-02 | Phase 1 | Complete |
+| CI-03 | Phase 1 | Complete |
+| CI-04 | Phase 1 | Complete |
+| CI-05 | Phase 1 | Complete |
+| CI-06 | Phase 1 | Complete |
+| QA-01 | Phase 1 | Complete |
+| QA-02 | Phase 1 | Complete |
+| SEC-01 | Phase 1 | Complete |
+| SEC-02 | Phase 1 | Complete |
+| SAFE-01 | Phase 1 | Complete |
+| SAFE-02 | Phase 1 | Complete |
+| DOC-01 | Phase 1 | Complete |
 | LIVE-01 | Phase 2 | Pending — credential gate |
 | LIVE-02 | Phase 2 | Pending — credential gate |
 | LIVE-03 | Phase 2 | Pending — credential gate |

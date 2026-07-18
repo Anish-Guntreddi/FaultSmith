@@ -37,6 +37,7 @@
 
 - `POST /api/challenges/generate`
 - `POST /api/challenges/execute`
+- `POST /api/challenges/hint`
 - `POST /api/challenges/assess`
 - `GET /api/health`
 - Project/skill/difficulty controls
@@ -68,14 +69,14 @@
 | Medium; mitigated | Fixture transcripts are mistaken for a fresh Python execution | fallback UI/report | mode-aware labels say prevalidated verification/snapshot comparison and explicitly state that no learner Python ran on the host; Code Interpreter evidence uses separate wording | primary E2E asserts workspace and report disclosures | judge must still distinguish prevalidated fixture evidence from credentialed live proof |
 | Low; mitigated | Anonymous observability accidentally captures learner prose | local event log | strict event schema allows only names, timestamps, bounded IDs/source/outcomes; cap 100 | event-schema unit tests and primary E2E prove no hypothesis/explanation keys | local browser owner can inspect or clear their own event log |
 | Medium; mitigated | Verbose irrelevant prose receives a misleadingly high fallback reasoning score | deterministic assessment | challenge-specific server-only causal signal groups and causal-language evidence replace length-based scoring; source is visibly labeled deterministic fallback | passing-repair/irrelevant-prose regression compares grounded and ungrounded scores | heuristic fallback scores are provisional learning feedback, not certification; GPT rubric still requires live credentials |
-| Low; partially mitigated | XSS/clickjacking/data exfiltration | app/config | React escaping, strict JSON, CSP, frame denial, no-referrer, restrictive permissions, same-origin policies | production header smoke and axe/browser checks | CSP retains `unsafe-inline`; migrate to nonce-based CSP post-MVP |
+| Low; partially mitigated | XSS/clickjacking/data exfiltration | app/config | React escaping, strict JSON, CSP, frame denial, no-referrer, restrictive permissions, same-origin policies | production header smoke and axe/browser checks | CSP retains `unsafe-inline`; Phase 3 must re-evaluate nonce/hash hardening and document the accepted residual if the selected host cannot support it safely |
 
 ## Secret and sensitive-file review
 
 - `.env*` is ignored; `.env.example` is explicitly allowed and empty.
 - No live `OPENAI_API_KEY` was present during the July 18 review.
 - The non-disclosing scanner covers common credential/auth/private-key families, public-secret environment names, tracked/working text including the lockfile and large files, working-tree symlinks, and reachable Git history.
-- Candidate `fee208737b9814eb72b2f7582d0aad4d1a7fab9e` passed across 109 working-tree files and 26 reachable commits; no private key or committed credential was found.
+- The candidate-era main checkout passed across 109 working-tree files and 26 reachable commits; an independent detached recheck of candidate `fee208737b9814eb72b2f7582d0aad4d1a7fab9e` passed across 110 files and the same 26 commits. No private key or committed credential was found.
 - `tsconfig.tsbuildinfo`, `.next`, test results, and screenshots are generated artifacts and ignored or excluded from scans/distribution.
 - The workspace is a Git repository connected to the public `Anish-Guntreddi/FaultSmith` origin; reachable-history scanning is an automated required gate.
 
@@ -92,4 +93,4 @@ See `docs/TESTING.md` for executable commands. Security-specific gates include s
 
 ## Review conclusion
 
-The independent security review found one high live-assessment disclosure path and three medium issues; the high was repaired by excluding hidden fixture knowledge from model input, accepting only score output, and keeping all prose/authority server-owned. No accepted blocker/high remains open. Distributed rate limiting and inline CSP are explicit deployment residuals, not inferred successes.
+The independent security review found one high live-assessment disclosure path and three medium issues; the high was repaired by excluding hidden fixture knowledge from model input, accepting only score output, and keeping all prose/authority server-owned. No accepted blocker/high remains open. Distributed rate limiting must be added before a paid credential is exposed publicly; nonce/hash CSP feasibility must be re-evaluated and documented during deployment. Neither residual is represented as already solved.

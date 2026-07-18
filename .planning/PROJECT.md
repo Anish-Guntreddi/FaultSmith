@@ -24,13 +24,12 @@ Learners must practice reading real failure evidence, reasoning about root cause
 - ✓ Missing credentials, malformed model output, provider timeout, and expired execution recover to a visibly labeled real fixture challenge — automated evidence.
 - ✓ Keyboard, axe, responsive, reduced-motion, production-build, startup, secure-header, dependency-audit, and leakage gates pass locally — current quality evidence.
 - ✓ The public GitHub repository, contribution/security policy, Dependabot, branch protection, CI, issue templates, and draft submission documentation exist — repository baseline.
+- ✓ GSD is the tracked brownfield control plane; three independent review streams inspected one frozen SHA, all material findings were dispositioned/self-healed, and exact-candidate rechecks approved the result — Phase 1 evidence.
+- ✓ Four independently named CI gates passed on evidence head `71f2379`; strict protected `main` now requires those exact Actions contexts — Phase 1 publication evidence.
+- ✓ Canonical build, roadmap, threat, testing, completion, and submission docs distinguish verified candidate/publication evidence from credential-, deployment-, and human-gated work — Phase 1 documentation evidence.
 
 ### Active
 
-- [ ] Make GSD the tracked development control plane with a mapped brownfield architecture, atomic phases, parallel independent reviews, requirement traceability, and verification state.
-- [ ] Split CI into independently named static, unit/integration, build/security, and browser/accessibility gates while keeping the complete local `npm run quality` command green.
-- [ ] Perform independent product-completeness, QA/accessibility, and security/adversarial audits; validate findings, repair every in-scope blocker/high issue, add regressions, and rerun affected gates.
-- [ ] Correct repository-era documentation drift and preserve objective, branch-specific evidence in `docs/BUILD_LOG.md`, `docs/ROADMAP.md`, `docs/THREAT_MODEL.md`, `docs/TESTING.md`, and `docs/COMPLETION_REPORT.md`.
 - [ ] Run a credential-controlled live GPT-5.6 and Code Interpreter smoke without weakening or removing the validated fixture fallback.
 - [ ] With explicit deployment approval, publish an unauthenticated demo and verify the primary workflow, security headers, health endpoint, fallback, and recording layout in production.
 - [ ] Collect five external tester results, publish the under-three-minute demo video, and capture the primary Codex `/feedback` Session ID for the final submission.
@@ -48,7 +47,7 @@ Learners must practice reading real failure evidence, reasoning about root cause
 
 - The product was expanded through an approved July 18, 2026 PRD amendment to address a growing educational problem: students can generate code with AI but often cannot parse failures, debug behavior, or maintain what was produced.
 - Beginners need organized categories, concept guides, and hardcoded validated exercises that ground them without consuming model tokens. Advanced users retain the live-capable direct catalog for more dynamic practice.
-- The guided-learning implementation is committed on `agent/guided-learning-mvp` and is represented by draft GitHub PR #13. The branch currently contains the latest product code and evidence.
+- The guided-learning implementation is committed on `agent/guided-learning-mvp` and is represented by draft GitHub PR #13. Reviewed implementation candidate `fee2087` and green evidence head `71f2379` are externally recorded on that PR; the PR remains unmerged.
 - All normal automated tests mock or avoid paid OpenAI calls. The live smoke is separate and explicitly credential controlled.
 - The validated fallback is a core reliability and demo feature, not a temporary fake. It compares learner snapshots against server-owned approved fixtures without executing untrusted Python on the Next.js host.
 - The remaining globally unfinished criteria depend on a server-only API credential, deployment authorization, five external testers, video publication, or the Codex `/feedback` flow.
@@ -71,13 +70,13 @@ Learners must practice reading real failure evidence, reasoning about root cause
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Use GSD as the development control plane, not a learner-facing runtime dependency | Parallel planning/review accelerates development without adding latency or nondeterministic authority to the product | ✓ Good |
-| Use parallel independent product, QA, and security workstreams with a coordinating integrator | Independent reviews reduce blind spots while separated file ownership prevents edit conflicts | — Pending |
+| Use parallel independent product, QA, and security workstreams with a coordinating integrator | Independent reviews reduce blind spots while separated file ownership prevents edit conflicts | ✓ Good |
 | Preserve curated fixtures as the beginner roadmap substrate | Produces reliable, zero-token practice and keeps hidden answers and execution authority server-owned | ✓ Good |
 | Keep the direct project/skill catalog as advanced mode | Preserves versatility and the live GPT-5.6 path without forcing novices into open-ended prompting | ✓ Good |
 | Defer open-ended prompts and repository ingestion | They materially expand locked scope and security risk during the submission-critical window | ✓ Good |
-| Split CI into visible independent gates | Improves failure isolation, parallelism, branch protection, and objective QA/security evidence | — Pending |
+| Split CI into visible independent gates | Improves failure isolation, parallelism, branch protection, and objective QA/security evidence | ✓ Good |
 | Keep fixture mode explicitly labeled as prevalidated evidence | Avoids misleading claims while maintaining a dependable demo path | ✓ Good |
 | Require explicit authorization for live credential use and deployment | Protects secrets, spend, external state, and submission ownership | ✓ Good |
 
 ---
-*Last updated: July 18, 2026 after GSD brownfield initialization*
+*Last updated: July 18, 2026 after Phase 1 verification/publication*

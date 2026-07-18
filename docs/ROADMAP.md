@@ -3,7 +3,7 @@
 **Last direction review:** July 18, 2026  
 **Locked track:** Education  
 **Locked primary demo:** Expense Approval boundary condition  
-**Current state:** Phase 1 candidate `fee208737b9814eb72b2f7582d0aad4d1a7fab9e` green locally after independent review/remediation; publication-head GitHub CI, live credential smoke, deployment, and remaining submission actions pending
+**Current state:** Phase 1 complete: candidate `fee208737b9814eb72b2f7582d0aad4d1a7fab9e` independently approved, evidence head `71f2379d9285b5f7dad8bd7f7946d0952c50ef9f` green in four required GitHub gates, and protected `main` synchronized; live credential smoke, deployment, and remaining submission actions pending
 
 ## Completed milestones
 
@@ -34,7 +34,7 @@ These are intentionally not marked complete by local fallback evidence.
 
 - **Highest technical risk:** live provider response or container behavior can drift from mocked/typed expectations. Mitigation: strict parse/validation, timeout, one retry, safe recovery, and a separate live smoke procedure.
 - **Highest demo risk:** network or credential failure during recording. Mitigation: the primary lab is prevalidated and automatically recovers to fixture mode with visible labeling.
-- **Highest security risk:** the in-memory rate limiter is per process and not globally coordinated across a multi-instance deployment. Mitigation: conservative route limits now; add provider/edge rate limiting before high-traffic public use.
+- **Highest security risk:** the in-memory rate limiter is per process and not globally coordinated across a multi-instance deployment. Mitigation: conservative route limits now; add provider/edge rate limiting before any public exposure of a paid server credential.
 - **Highest judging opportunity:** accurately show the zero-token guided curriculum, then—only after credentialed proof—show GPT emitting the exact approved live contract, Code Interpreter producing execution evidence, and deterministic policy controlling release.
 - **API-credit constraint:** live generation can require original and mutated executions, plus assessment. The fixture path allows unlimited rehearsal without spend.
 - **Curriculum boundary:** guided metadata must never contain hidden answers or become an alternate execution authority. Mitigation: lesson data references only public project-skill IDs; fixtures and assessments remain server-owned.
@@ -42,7 +42,7 @@ These are intentionally not marked complete by local fallback evidence.
 
 ## Recommended next milestone
 
-With user authorization and a server-only API key, deploy a preview release, run the live smoke checklist, resolve any environment-specific failure, and then complete the five-person usability pass. If the live service is unstable near recording time, record the labeled fixture path while accurately describing the live architecture and separate live evidence.
+With user authorization and a server-only API key, first run the controlled local live smoke and resolve any provider-contract failure without weakening fallback. Then obtain separate deployment approval, configure edge controls, publish the reviewed head, run production smoke, and complete the five-person usability pass. If the live service is unstable near recording time, record the labeled fixture path while accurately describing the live architecture and separate live evidence.
 
 ## Explicitly deferred scope
 

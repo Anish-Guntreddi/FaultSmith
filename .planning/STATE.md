@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 01-05-PLAN.md; executing 01-06 evidence and publication
-last_updated: "2026-07-18T19:24:00.000Z"
-last_activity: July 18, 2026 — Completed Plan 01-01 and froze implementation SHA 506dae9 for independent reviews.
+status: awaiting_external_input
+stopped_at: Phase 1 complete; Phase 2 requires an authorized server-only OPENAI_API_KEY
+last_updated: "2026-07-18T19:37:28.000Z"
+last_activity: July 18, 2026 — Phase 1 passed local, independent, manual, remote CI, and branch-protection gates.
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 6
-  completed_plans: 5
-  percent: 83
+  completed_plans: 6
+  percent: 25
 ---
 
 # Project State
@@ -21,33 +21,33 @@ progress:
 See: `.planning/PROJECT.md` (updated July 18, 2026)
 
 **Core value:** Learners must practice reading real failure evidence, reasoning about root causes, and proving minimal repairs instead of receiving an answer that bypasses the debugging process.
-**Current focus:** Phase 1 — Release Integration and Independent Quality Gates
+**Current focus:** Phase 2 — Credential-Controlled Live OpenAI Proof
 
 ## Current Position
 
-Phase: 1 of 4 (Release Integration and Independent Quality Gates)
-Plan: 6 of 6 in current phase
-Status: In progress — final evidence and GitHub publication
-Last activity: July 18, 2026 — Remediated all independent findings; candidate `fee2087` passed full gates and focused product/QA/security rechecks.
+Phase: 2 of 4 (Credential-Controlled Live OpenAI Proof)
+Plan: not planned while credential-gated
+Status: Awaiting explicit authorization and a valid server-only `OPENAI_API_KEY`
+Last activity: July 18, 2026 — Candidate `fee2087` approved; evidence head `71f2379` passed four GitHub checks; strict branch protection synchronized.
 
-Progress: [████████░░] 83%
+Progress: [███░░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 16 min
-- Total execution time: 81 min
+- Total execution time: 94 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| Phase 1 | 5 | 81 min | 16 min |
+| Phase 1 | 6 | 94 min | 16 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 11 min, 13 min, 15 min, 34 min
-- Trend: Review and self-heal complete; publication evidence active
+- Last 5 plans: 11 min, 13 min, 15 min, 34 min, 13 min
+- Trend: Phase 1 complete; external credential gate is the next legitimate dependency
 
 *Updated after each plan completion*
 | Phase 01 P01 | 8 min | 4 tasks | 5 files |
@@ -55,6 +55,7 @@ Progress: [████████░░] 83%
 | Phase 01 P03 | 13 min | independent QA/accessibility review | 2 files |
 | Phase 01 P04 | 15 min | independent security/adversarial review | 2 files |
 | Phase 01 P05 | 34 min | 13 findings disposition, repairs, regressions, rechecks | 24 files |
+| Phase 01 P06 | 13 min | canonical evidence, manual production review, remote CI/protection | 13 files + GitHub state |
 
 ## Accumulated Context
 
@@ -80,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-18T19:24:00.000Z
-Stopped at: Completed 01-05-PLAN.md; executing 01-06 evidence and publication
+Last session: 2026-07-18T19:37:28.000Z
+Stopped at: Phase 1 complete; Phase 2 requires an authorized server-only `OPENAI_API_KEY`
 Resume file: None
