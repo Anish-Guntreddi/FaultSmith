@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -14,21 +14,46 @@ const ignoredDirectories = new Set([
   "test-results",
 ]);
 
-const ignoredFiles = new Set(["package-lock.json"]);
-const maximumTextBytes = 1_000_000;
-
 export const secretRules = [
   { id: "openai-key", pattern: /\bsk-[A-Za-z0-9_-]{12,}\b/g },
   { id: "github-token", pattern: /\bgh[pousr]_[A-Za-z0-9]{20,}\b/g },
-  { id: "aws-access-key", pattern: /\bAKIA[A-Z0-9]{16}\b/g },
+  { id: "aws-access-key", pattern: /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/g },
   { id: "slack-token", pattern: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/g },
+  { id: "google-api-key", pattern: /\bAIza[0-9A-Za-z_-]{35}\b/g },
+  { id: "stripe-live-key", pattern: /\b(?:sk|rk)_live_[A-Za-z0-9]{16,}\b/g },
+  { id: "npm-token", pattern: /\bnpm_[A-Za-z0-9]{20,}\b/g },
+  { id: "pypi-token", pattern: /\bpypi-[A-Za-z0-9_-]{20,}\b/g },
+  { id: "gitlab-token", pattern: /\bglpat-[A-Za-z0-9_-]{20,}\b/g },
+  {
+    id: "sendgrid-key",
+    pattern: /\bSG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}\b/g,
+  },
   {
     id: "private-key",
-    pattern: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g,
+    pattern: /-----BEGIN [A-Z0-9 ]{0,40}PRIVATE KEY-----/g,
   },
   {
     id: "openai-env-assignment",
     pattern: /\bOPENAI_API_KEY\s*=\s*["']?[^"'\s#]{8,}/g,
+  },
+  {
+    id: "secret-assignment",
+    pattern:
+      /\b(?:API_KEY|ACCESS_TOKEN|AUTH_TOKEN|CLIENT_SECRET|PASSWORD|NPM_TOKEN)\s*[:=]\s*["']?[^"'\\,\s#]{8,}/gi,
+  },
+  {
+    id: "registry-auth",
+    pattern:
+      /(?:(?:"?\/\/[^"'\s]*:)?_auth(?:Token)?"?)\s*[:=]\s*["']?[^"'\\,\s]{8,}/gi,
+  },
+  {
+    id: "authorization-header",
+    pattern:
+      /\b(?:Authorization|Proxy-Authorization)\s*:\s*(?:Bearer|Basic)\s+[A-Za-z0-9._~+/-]{12,}={0,2}/gi,
+  },
+  {
+    id: "credential-url",
+    pattern: /\bhttps?:\/\/[^/\s:@]{1,128}:[^/\s@]{8,}@/gi,
   },
 ];
 
@@ -121,23 +146,41 @@ export function inspectText(path, text) {
   return findings;
 }
 
-function workingTreeFiles(directory = repositoryRoot) {
+function workingTreeFiles(directory, scanRoot) {
   const files = [];
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     if (entry.isDirectory() && ignoredDirectories.has(entry.name)) continue;
 
     const absolutePath = resolve(directory, entry.name);
+    const path = normalizePath(relative(scanRoot, absolutePath));
+    if (entry.isSymbolicLink()) {
+      files.push({ absolutePath, path, symbolicLink: true });
+      continue;
+    }
     if (entry.isDirectory()) {
-      files.push(...workingTreeFiles(absolutePath));
+      files.push(...workingTreeFiles(absolutePath, scanRoot));
       continue;
     }
     if (!entry.isFile()) continue;
 
-    const path = normalizePath(relative(repositoryRoot, absolutePath));
-    if (ignoredFiles.has(path) || statSync(absolutePath).size > maximumTextBytes) continue;
-    files.push({ absolutePath, path });
+    files.push({ absolutePath, path, symbolicLink: false });
   }
   return files;
+}
+
+function trackedWorkingTreeFiles() {
+  return git(["ls-files", "-z"])
+    .split("\0")
+    .filter(Boolean)
+    .map((path) => {
+      const absolutePath = resolve(repositoryRoot, path);
+      const stats = lstatSync(absolutePath);
+      return {
+        absolutePath,
+        path: normalizePath(path),
+        symbolicLink: stats.isSymbolicLink(),
+      };
+    });
 }
 
 function git(args, options = {}) {
@@ -154,10 +197,20 @@ function candidateHistoryPaths(commit) {
   const expression = [
     "sk-[A-Za-z0-9_-]{12,}",
     "gh[pousr]_[A-Za-z0-9]{20,}",
-    "AKIA[A-Z0-9]{16}",
+    "(AKIA|ASIA)[A-Z0-9]{16}",
     "xox[baprs]-[A-Za-z0-9-]{10,}",
-    "-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----",
+    "AIza[0-9A-Za-z_-]{35}",
+    "(sk|rk)_live_[A-Za-z0-9]{16,}",
+    "npm_[A-Za-z0-9]{20,}",
+    "pypi-[A-Za-z0-9_-]{20,}",
+    "glpat-[A-Za-z0-9_-]{20,}",
+    "SG\\.[A-Za-z0-9_-]{16,}\\.[A-Za-z0-9_-]{16,}",
+    "-----BEGIN [A-Z0-9 ]{0,40}PRIVATE KEY-----",
     "OPENAI_API_KEY[[:space:]]*=[[:space:]]*[\"']?[^\"'[:space:]#]{8,}",
+    "(API_KEY|ACCESS_TOKEN|AUTH_TOKEN|CLIENT_SECRET|PASSWORD|NPM_TOKEN)[[:space:]]*[:=][[:space:]]*[\"']?[^\"'\\,[:space:]#]{8,}",
+    "_auth(Token)?[\"']?[[:space:]]*[:=][[:space:]]*[\"']?[^\"'\\,[:space:]]{8,}",
+    "(Authorization|Proxy-Authorization)[[:space:]]*:[[:space:]]*(Bearer|Basic)[[:space:]]+[A-Za-z0-9._~+/-]{12,}",
+    "https?://[^/[:space:]:@]{1,128}:[^/[:space:]@]{8,}@",
   ].join("|");
 
   try {
@@ -173,11 +226,23 @@ function candidateHistoryPaths(commit) {
   }
 }
 
-export function scanWorkingTree() {
+export function scanWorkingTree(scanRoot = repositoryRoot) {
   const findings = [];
   let inspectedFiles = 0;
+  const entries = workingTreeFiles(scanRoot, scanRoot);
 
-  for (const { absolutePath, path } of workingTreeFiles()) {
+  if (scanRoot === repositoryRoot) {
+    const knownPaths = new Set(entries.map(({ path }) => path));
+    for (const entry of trackedWorkingTreeFiles()) {
+      if (!knownPaths.has(entry.path)) entries.push(entry);
+    }
+  }
+
+  for (const { absolutePath, path, symbolicLink } of entries) {
+    if (symbolicLink) {
+      findings.push({ path, line: 1, rule: "symbolic-link" });
+      continue;
+    }
     const buffer = readFileSync(absolutePath);
     if (!isProbablyText(buffer)) continue;
     inspectedFiles += 1;
@@ -194,7 +259,6 @@ export function scanReachableHistory() {
   for (const commit of commits) {
     const shortCommit = commit.slice(0, 12);
     for (const path of candidateHistoryPaths(commit)) {
-      if (ignoredFiles.has(path)) continue;
       const text = git(["show", `${commit}:${path}`]);
       for (const finding of findRuleMatches(text, secretRules, path)) {
         findings.push({ ...finding, commit: shortCommit });
