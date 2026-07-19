@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready_to_execute
-stopped_at: Phase 01.1 planned and independently verified; ready to execute Plans 01 and 02 in Wave 1
-last_updated: "2026-07-19T14:00:00.000Z"
-last_activity: July 19, 2026 — Three-path guest/email-password/Google amendment passed the GSD verification and revision loop.
+status: executing
+stopped_at: Completed 01.1-01-PLAN.md
+last_updated: "2026-07-19T07:51:26.859Z"
+last_activity: July 19, 2026 — Plan 01.1-01 delivered strict progress/attempt contracts, deterministic migration/merge/metrics, and the offline guest My Progress dashboard with full local gates green.
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 11
-  percent: 20
+  completed_plans: 12
+  percent: 67
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: `.planning/PROJECT.md` (updated July 18, 2026)
 ## Current Position
 
 Phase: 01.1 of 5 (Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard)
-Plan: 0 of 6 complete; Plans 01 and 02 are ready in parallel Wave 1
-Status: Planned and independently verified; credential-free implementation and emulator verification precede real Firebase configuration
-Last activity: July 19, 2026 — Six plans across four implementation waves plus a human provider/deployment checkpoint passed structural and independent plan checks after two targeted self-heal revisions.
+Plan: 1 of 6 complete (Plan 01 executed); Wave 1 Plan 02 in parallel
+Status: Executing Wave 1; credential-free implementation and emulator verification precede real Firebase configuration
+Last activity: July 19, 2026 — Plan 01.1-01 delivered strict progress/attempt contracts, deterministic migration/merge/metrics, and the offline guest My Progress dashboard with full local gates green.
 
-Progress: [██░░░░░░░░] 20%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 02 P03 | 8 min | explicit fallback/live operator CLI | 2 files |
 | Phase 02 P04 | 10 min | production smoke and deployment/rollback runbook | 3 files |
 | Phase 02 P05 | 31 min | integration, adversarial self-heal, full local/remote gates | 14 files + GitHub state |
+| Phase 01.1 P01 | 19 min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Decisions are logged in `.planning/PROJECT.md`. Recent decisions affecting curre
 - Keep guest/local progress as the default reliability path; optional verified email/password or Google identity and Firestore synchronization are configuration-gated and server-mediated.
 - Firebase owns passwords, verification, reset, and provider identity. Unverified password accounts stay local; provider collisions cannot silently merge or split progress.
 - If real Firebase or preview gates miss the release cutoff, disable cloud mode and retain the local personalized dashboard on the last known-green candidate.
+- [Phase 01.1]: Keep v1 learning-progress key untouched; v2 learner profile composes v1 completions plus a dedicated bounded attempt-history key, migrating deterministically without fabricating history
+- [Phase 01.1]: Certified progress metrics count only server_verified verified attempts; migrated/local-import data advances the roadmap but never verified score averages
+- [Phase 01.1]: Test-run counts are descriptive process evidence only and never enter any score computation
 
 ### Roadmap Evolution
 
@@ -95,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-19T03:16:00.000Z
-Stopped at: Phase 2 offline checkpoint complete and remotely green; awaiting private credential configuration for Plan 06
+Last session: 2026-07-19T07:51:26.857Z
+Stopped at: Completed 01.1-01-PLAN.md
 Resume file: None

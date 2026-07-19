@@ -42,14 +42,14 @@ FaultSmith_v0.1/
 **`src/components/`:**
 - Purpose: Hold feature UI outside the route tree.
 - Contains: React TSX modules named after the feature they render.
-- Key files: `src/components/faultsmith-app.tsx` owns the client state machine and all main views; `src/components/guided-roadmap.tsx` renders curriculum navigation.
+- Key files: `src/components/faultsmith-app.tsx` owns the client state machine and all main views; `src/components/guided-roadmap.tsx` renders curriculum navigation; `src/components/progress-dashboard.tsx` renders the guest My Progress dashboard.
 - Structure: Currently flat; view functions for configure/forging/workspace/report remain private to `faultsmith-app.tsx`.
 
 **`src/lib/`:**
 - Purpose: Hold modules safe to import from both client and server code.
 - Contains: Strict public DTO schemas, static display catalogs, local event validation, and pure curriculum progress logic.
-- Key files: `src/lib/contracts.ts`, `src/lib/catalog.ts`, `src/lib/attempt-events.ts`, and `src/lib/learning-paths.ts`.
-- Tests: Pure-module tests are colocated as `src/lib/attempt-events.test.ts` and `src/lib/learning-paths.test.ts`.
+- Key files: `src/lib/contracts.ts`, `src/lib/catalog.ts`, `src/lib/attempt-events.ts`, `src/lib/learning-paths.ts`, `src/lib/progress-contracts.ts`, `src/lib/progress-merge.ts`, and `src/lib/progress-metrics.ts`.
+- Tests: Pure-module tests are colocated as `src/lib/*.test.ts` (attempt events, learning paths, progress contracts/merge/metrics).
 
 **`src/server/`:**
 - Purpose: Protect hidden challenge data, server workflow policy, request defenses, execution logic, and provider credentials.
@@ -62,7 +62,7 @@ FaultSmith_v0.1/
 **`tests/e2e/`:**
 - Purpose: Verify the rendered learner journey, accessibility, persistence, security-facing disclosures, and recovery in a real browser.
 - Contains: Playwright specifications separate from colocated Vitest tests.
-- Key file: `tests/e2e/faultsmith.spec.ts`.
+- Key files: `tests/e2e/faultsmith.spec.ts` and `tests/e2e/guided-learning.spec.ts`.
 - Runtime: `playwright.config.ts` starts the app on `127.0.0.1:3101` and probes `src/app/api/health/route.ts`.
 
 **`scripts/`:**
@@ -113,7 +113,11 @@ FaultSmith_v0.1/
 **Client Data and Presentation:**
 - `src/lib/catalog.ts`: Three-project card metadata and skill choices.
 - `src/lib/attempt-events.ts`: Bounded local-only anonymous event model.
+- `src/lib/progress-contracts.ts`: Strict bounded attempt-summary and versioned learner-profile schemas with derivation helpers.
+- `src/lib/progress-merge.ts`: v1 migration, idempotent attempt recording, and monotonic profile merge.
+- `src/lib/progress-metrics.ts`: Deterministic dashboard metric selectors over the learner profile.
 - `src/components/guided-roadmap.tsx`: Nine-lesson roadmap UI.
+- `src/components/progress-dashboard.tsx`: Guest My Progress dashboard fed by local profile/attempt history.
 - `src/app/globals.css`: Global Tailwind import, theme, backgrounds, and motion/accessibility styling.
 
 **Configuration:**
