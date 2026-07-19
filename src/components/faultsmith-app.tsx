@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { GuidedRoadmap } from "@/components/guided-roadmap";
+import { ProgressDashboard } from "@/components/progress-dashboard";
 import { projects } from "@/lib/catalog";
 import {
   appendAnonymousAttemptEvent,
@@ -33,15 +34,25 @@ import {
   type LearningStep,
   type LearningStepId,
 } from "@/lib/learning-paths";
+import {
+  deriveAttemptSummary,
+  parseAttemptHistory,
+  type AttemptSummary,
+  type LearnerProfile,
+} from "@/lib/progress-contracts";
+import { buildLearnerProfile, recordAttemptSummary } from "@/lib/progress-merge";
 
 type Stage = "configure" | "forging" | "workspace" | "report";
 type RequestState = "idle" | "running";
-type LearningMode = "guided" | "catalog";
+type LearningMode = "guided" | "catalog" | "progress";
 type NetworkAction = "generate" | "execute" | "hint" | "assess";
 
 const ATTEMPT_KEY = "faultsmith:attempt:v2";
 const EVENT_KEY = "faultsmith:events:v1";
 const LEARNING_PROGRESS_KEY = "faultsmith:learning-progress:v1";
+// Attempt summaries live in a dedicated key, separate from the prose-rich
+// active attempt (ATTEMPT_KEY) and the anonymous telemetry stream (EVENT_KEY).
+const ATTEMPT_HISTORY_KEY = "faultsmith:attempt-history:v1";
 const difficultyOptions: Array<{ value: Difficulty; label: string }> = [
   { value: "beginner", label: "Beginner" },
   { value: "intermediate", label: "Intermediate" },
@@ -136,6 +147,13 @@ function overallAssessmentScore(response: AssessmentResponse) {
   return Math.round((result.rootCauseScore + result.reasoningScore + result.patchDisciplineScore + result.conceptUnderstandingScore) / 4);
 }
 
+function createAttemptId() {
+  try {
+    if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  } catch {}
+  return `attempt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function trackAnonymousEvent(
   name: AttemptEventName,
   context: Omit<AnonymousAttemptEvent, "name" | "occurredAt"> = {},
@@ -154,6 +172,7 @@ export function FaultSmithApp() {
   const [stage, setStage] = useState<Stage>("configure");
   const [learningMode, setLearningMode] = useState<LearningMode>("guided");
   const [learningProgress, setLearningProgress] = useState<LearningProgress>(emptyLearningProgress);
+  const [attemptHistory, setAttemptHistory] = useState<AttemptSummary[]>([]);
   const [selectedLearningStepId, setSelectedLearningStepId] = useState<LearningStepId>(learningSteps[0].id);
   const [activeLearningStepId, setActiveLearningStepId] = useState<LearningStepId | null>(null);
   const [projectId, setProjectId] = useState<ProjectId>("expense-approval");
@@ -182,6 +201,11 @@ export function FaultSmithApp() {
     [projectId],
   );
 
+  const learnerProfile = useMemo(
+    () => buildLearnerProfile(learningProgress, attemptHistory),
+    [learningProgress, attemptHistory],
+  );
+
   useEffect(() => {
     const progressTimer = window.setTimeout(() => {
       try {
@@ -193,6 +217,13 @@ export function FaultSmithApp() {
         if (recommendation.step) setSelectedLearningStepId(recommendation.step.id);
       } catch {
         window.localStorage.removeItem(LEARNING_PROGRESS_KEY);
+      }
+      try {
+        const rawHistory = window.localStorage.getItem(ATTEMPT_HISTORY_KEY);
+        if (!rawHistory) return;
+        setAttemptHistory(parseAttemptHistory(JSON.parse(rawHistory)));
+      } catch {
+        window.localStorage.removeItem(ATTEMPT_HISTORY_KEY);
       }
     }, 0);
     return () => window.clearTimeout(progressTimer);
@@ -525,6 +556,29 @@ export function FaultSmithApp() {
           outcome: parsed.data.testResult.status,
         },
       );
+      try {
+        // Persist only the strict bounded summary — no source, prose, hints,
+        // or test output — into the dedicated local attempt-history key.
+        const derivationBase = {
+          attemptId: createAttemptId(),
+          projectId: challenge.projectId,
+          skill: challenge.targetSkill,
+          difficulty: challenge.difficulty,
+          challengeSource: challenge.source,
+          completedAt: Date.now(),
+          response: parsed.data,
+        };
+        const attemptSummary =
+          deriveAttemptSummary({ ...derivationBase, lessonId: activeLearningStepId ?? null })
+          ?? deriveAttemptSummary({ ...derivationBase, lessonId: null });
+        if (attemptSummary) {
+          const nextHistory = recordAttemptSummary(attemptHistory, attemptSummary);
+          setAttemptHistory(nextHistory);
+          window.localStorage.setItem(ATTEMPT_HISTORY_KEY, JSON.stringify(nextHistory));
+        }
+      } catch {
+        // Local attempt history is optional evidence and never blocks the authoritative report.
+      }
       if (parsed.data.assessment.completionStatus === "verified" && activeLearningStepId) {
         const nextProgress = recordLearningCompletion(learningProgress, {
           stepId: activeLearningStepId,
@@ -599,6 +653,7 @@ export function FaultSmithApp() {
           learningMode={learningMode}
           setLearningMode={setLearningMode}
           learningProgress={learningProgress}
+          learnerProfile={learnerProfile}
           selectedLearningStepId={selectedLearningStepId}
           setSelectedLearningStepId={setSelectedLearningStepId}
           onStartGuidedStep={startGuidedStep}
@@ -670,6 +725,7 @@ type ConfigureProps = {
   learningMode: LearningMode;
   setLearningMode: (mode: LearningMode) => void;
   learningProgress: LearningProgress;
+  learnerProfile: LearnerProfile;
   selectedLearningStepId: LearningStepId;
   setSelectedLearningStepId: (stepId: LearningStepId) => void;
   onStartGuidedStep: (step: LearningStep) => void;
@@ -698,9 +754,10 @@ function ConfigureView(props: ConfigureProps) {
           <h1 className="max-w-2xl text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-white sm:text-6xl">Learn to debug code you<span className="text-zinc-500"> didn&apos;t write.</span></h1>
           <p className="mt-6 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">Build the habit AI shortcuts skip: read evidence, form a hypothesis, and prove the smallest repair inside a validated Python lab.</p>
         </div>
-        <div role="group" aria-label="Learning mode" className="mt-9 inline-flex rounded-xl border border-white/9 bg-[#101318]/90 p-1">
+        <div role="group" aria-label="Learning mode" className="mt-9 inline-flex flex-wrap rounded-xl border border-white/9 bg-[#101318]/90 p-1">
           <button type="button" aria-pressed={props.learningMode === "guided"} onClick={() => props.setLearningMode("guided")} className={`rounded-lg px-4 py-2.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${props.learningMode === "guided" ? "bg-amber-400 text-[#1a1105]" : "text-zinc-400 hover:text-white"}`}>Guided roadmap</button>
           <button type="button" aria-pressed={props.learningMode === "catalog"} onClick={() => props.setLearningMode("catalog")} className={`rounded-lg px-4 py-2.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${props.learningMode === "catalog" ? "bg-amber-400 text-[#1a1105]" : "text-zinc-400 hover:text-white"}`}>Practice by skill</button>
+          <button type="button" aria-pressed={props.learningMode === "progress"} onClick={() => props.setLearningMode("progress")} className={`rounded-lg px-4 py-2.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${props.learningMode === "progress" ? "bg-amber-400 text-[#1a1105]" : "text-zinc-400 hover:text-white"}`}>My Progress</button>
         </div>
         {props.learningMode === "guided" ? (
           <div className="mt-10">
@@ -710,6 +767,10 @@ function ConfigureView(props: ConfigureProps) {
               onSelectStep={props.setSelectedLearningStepId}
               onStartStep={props.onStartGuidedStep}
             />
+          </div>
+        ) : props.learningMode === "progress" ? (
+          <div className="mt-10">
+            <ProgressDashboard profile={props.learnerProfile} onStartStep={props.onStartGuidedStep} />
           </div>
         ) : (
         <div className="mt-12 grid gap-7 xl:grid-cols-[1fr_390px]">
