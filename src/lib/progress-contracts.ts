@@ -235,3 +235,53 @@ export const emptyLearnerProfile: LearnerProfile = {
   completions: [],
   attempts: [],
 };
+
+/**
+ * The exact-key snapshot returned by the authenticated cloud progress API.
+ * It carries only the bounded learner profile plus the one-time local-import
+ * marker — never identity, provider, or storage-path details.
+ */
+export const progressSnapshotSchema = z
+  .object({
+    profile: learnerProfileSchema,
+    localImportCompleted: z.boolean(),
+  })
+  .strict();
+export type ProgressSnapshot = {
+  profile: LearnerProfile;
+  localImportCompleted: boolean;
+};
+
+/**
+ * The exact-key body for the bounded one-time local-history import. The
+ * profile container is strict; the server re-tags every attempt as
+ * `local_import` regardless of what the client claims.
+ */
+export const progressImportRequestSchema = z
+  .object({
+    profile: learnerProfileSchema,
+  })
+  .strict();
+
+export const progressDeleteResponseSchema = z
+  .object({
+    deleted: z.literal(true),
+  })
+  .strict();
+
+/**
+ * Re-tag untrusted attempt records as `local_import` provenance. Records that
+ * do not validate after re-tagging are dropped deterministically, so imported
+ * history can never masquerade as server-verified evidence.
+ */
+export function toLocalImportAttempts(value: unknown): AttemptSummary[] {
+  if (!Array.isArray(value)) return [];
+  const retagged = value
+    .map((candidate): AttemptSummary | null => {
+      const parsed = attemptSummarySchema.safeParse(candidate);
+      if (!parsed.success) return null;
+      return { ...parsed.data, provenance: "local_import" };
+    })
+    .filter((attempt): attempt is AttemptSummary => attempt !== null);
+  return parseAttemptHistory(retagged);
+}

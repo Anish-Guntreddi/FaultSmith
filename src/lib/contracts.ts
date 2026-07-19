@@ -166,6 +166,19 @@ export const assessRequestSchema = executeRequestSchema
   );
 export type AssessRequest = z.infer<typeof assessRequestSchema>;
 
+/**
+ * Bounded, descriptive cloud synchronization outcome attached to assessment
+ * responses. It is informational only: it can never change completion or
+ * test authority, which remain owned by the deterministic assessment.
+ */
+export const cloudSyncStatusSchema = z.enum([
+  "cloud_saved",
+  "local_only",
+  "unauthorized",
+  "cloud_unavailable",
+]);
+export type CloudSyncStatus = z.infer<typeof cloudSyncStatusSchema>;
+
 export const safeErrorSchema = z
   .object({
     error: z.string().min(1).max(240),
