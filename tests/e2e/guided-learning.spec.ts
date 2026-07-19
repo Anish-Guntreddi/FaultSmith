@@ -156,6 +156,12 @@ test("the dashboard changes only after a verified submission and survives refres
     expect(serialized).not.toContain(forbidden);
   }
 
+  const savedProgress = await page.evaluate(
+    (key) => JSON.parse(window.localStorage.getItem(key) ?? "{}"),
+    PROGRESS_KEY,
+  );
+  expect(savedProgress.completions).toHaveLength(1);
+
   await page.reload();
   await openMyProgress(page);
   await expect(page.getByRole("region", { name: "Roadmap evidence" })).toContainText("1/ 9 lessons verified");
@@ -195,6 +201,11 @@ test("a failing submission records process evidence but never roadmap progress",
   expect(stored.progress).toBeNull();
   expect(stored.history).toHaveLength(1);
   expect(stored.history[0].status).toBe("not_verified");
+
+  await page.reload();
+  await openMyProgress(page);
+  await expect(page.getByRole("region", { name: "Roadmap evidence" })).toContainText("0/ 9 lessons verified");
+  await expect(page.getByRole("region", { name: "Recent attempts" })).toContainText("Not verified");
 });
 
 test("My Progress is keyboard reachable, axe-clean, and keeps the lesson launch reachable", async ({ page }) => {

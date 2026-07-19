@@ -66,6 +66,10 @@ test("primary Expense Approval demo completes with persisted evidence", async ({
     "The mutation made an inclusive boundary strict, so exactly $500 skipped finance. Restoring >= includes the threshold without changing other routing.",
   );
 
+  const savedImmediately = await page.evaluate(() => JSON.parse(window.localStorage.getItem("faultsmith:attempt:v2") ?? "{}"));
+  expect(savedImmediately.files?.[0]?.content).toContain("expense.amount >= 500");
+  expect(savedImmediately.explanation).toContain("Restoring >= includes the threshold");
+
   await page.reload();
   await expect(page.getByRole("textbox", { name: "Python code editor" })).toHaveValue(/expense\.amount >= 500/);
   await expect(page.getByText("1/3 used")).toBeVisible();

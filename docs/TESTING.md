@@ -64,12 +64,14 @@ The standard Playwright config now forces cloud-off variables in its child serve
 | Standard browser + accessibility | 18/18 passed; 16 Firebase-only scenarios correctly skipped |
 | Firebase emulator browser suite | 16/16 passed |
 | Dependency audit | Zero vulnerabilities at moderate threshold |
-| Credential-free source/history scan | 573 current source files and all 66 reachable commits passed; direct scan remains intentionally blocked only by the ignored live Firebase `.env.local` |
+| Credential-free source/history scan | Complete post-self-heal source and reachable history passed in an isolated copy excluding only the ignored live Firebase `.env.local`; the direct scan remains intentionally blocked by that operator file |
 | Visual review | Desktop Observe and Verify plus mobile static recovery reviewed at 1440×900 and 390×844; mobile content width 380 ≤ viewport 390 |
 
 The five story regressions prove semantic chapter order, deferred desktop enhancement, forward/back stage selection, mobile static behavior, reduced-motion static behavior, desktop-enhanced→mobile teardown, and runtime reduced-motion teardown. The last two assert visible Observe content, computed opacity `1`, and no stale inline opacity/transform on stages or monitor. Existing primary-demo coverage also proves that practice controls precede the narrative, the Expense Approval fallback workflow remains complete, and continuous Forge pulse is absent while idle.
 
 The motion review approved the final implementation after two self-heals: stale GSAP teardown styles that blanked the mobile monitor were reproduced and repaired, then permanent `will-change` promotion was reduced from every code line to the monitor plus four stage layers. No animation test relies on transient transform matrices.
+
+The first remote browser run then found two CI-only reload failures outside the animation component. The durable-state repair writes learner-edited files and prose synchronously at each input boundary, holds the mode controls until the queued local progress/history restore finishes, and restores the two evidence keys independently. The primary-demo and verified-dashboard tests assert their exact browser-storage snapshots before reload; those two scenarios passed 20/20 repetitions with the CI two-worker profile, followed by the complete 18-scenario standard suite and 16-scenario Firebase emulator suite.
 
 The earlier Phase 2 run below is preserved as historical evidence:
 

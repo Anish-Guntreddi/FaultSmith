@@ -196,6 +196,7 @@ export function FaultSmithApp() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [assessment, setAssessment] = useState<AssessmentResponse | null>(null);
+  const [localProgressReady, setLocalProgressReady] = useState(false);
   const requestLocks = useRef<Set<NetworkAction>>(new Set());
 
   const project = useMemo(
@@ -217,20 +218,27 @@ export function FaultSmithApp() {
     const progressTimer = window.setTimeout(() => {
       try {
         const raw = window.localStorage.getItem(LEARNING_PROGRESS_KEY);
-        if (!raw) return;
-        const restoredProgress = parseLearningProgress(JSON.parse(raw));
-        const recommendation = getLearningRecommendation(restoredProgress);
-        setLearningProgress(restoredProgress);
-        if (recommendation.step) setSelectedLearningStepId(recommendation.step.id);
+        if (raw) {
+          const restoredProgress = parseLearningProgress(JSON.parse(raw));
+          const recommendation = getLearningRecommendation(restoredProgress);
+          setLearningProgress(restoredProgress);
+          if (recommendation.step) setSelectedLearningStepId(recommendation.step.id);
+        }
       } catch {
         window.localStorage.removeItem(LEARNING_PROGRESS_KEY);
       }
       try {
         const rawHistory = window.localStorage.getItem(ATTEMPT_HISTORY_KEY);
-        if (!rawHistory) return;
-        setAttemptHistory(parseAttemptHistory(JSON.parse(rawHistory)));
+        if (rawHistory) {
+          setAttemptHistory(parseAttemptHistory(JSON.parse(rawHistory)));
+        }
       } catch {
         window.localStorage.removeItem(ATTEMPT_HISTORY_KEY);
+      } finally {
+        // Keep the dashboard controls inert until the local evidence snapshot
+        // has been read. This prevents a fast reload/click from rendering an
+        // empty profile while restoration is still queued.
+        setLocalProgressReady(true);
       }
     }, 0);
     return () => window.clearTimeout(progressTimer);
@@ -320,6 +328,35 @@ export function FaultSmithApp() {
       );
     } catch {}
   }, [challenge, files, activeFile, hypothesis, hypothesisHistory, revealedHints, explanation, testRuns, startedAt, assessment, activeLearningStepId, stage]);
+
+  function persistActiveAttempt(overrides: Partial<{
+    files: FileSnapshot[];
+    activeFile: string;
+    hypothesis: string;
+    explanation: string;
+  }> = {}) {
+    if (!challenge || (stage !== "workspace" && stage !== "report")) return;
+    try {
+      window.localStorage.setItem(
+        ATTEMPT_KEY,
+        JSON.stringify({
+          challenge,
+          files: overrides.files ?? files,
+          activeFile: overrides.activeFile ?? activeFile,
+          hypothesis: overrides.hypothesis ?? hypothesis,
+          hypothesisHistory,
+          revealedHints,
+          explanation: overrides.explanation ?? explanation,
+          testRuns,
+          startedAt,
+          assessment,
+          learningStepId: activeLearningStepId,
+        }),
+      );
+    } catch {
+      // The active attempt remains usable in memory when browser storage is unavailable.
+    }
+  }
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -670,6 +707,7 @@ export function FaultSmithApp() {
         <ConfigureView
           learningMode={learningMode}
           setLearningMode={setLearningMode}
+          localProgressReady={localProgressReady}
           learningProgress={learningProgress}
           cloudSync={cloudSync}
           selectedLearningStepId={selectedLearningStepId}
@@ -706,16 +744,28 @@ export function FaultSmithApp() {
           <WorkspaceView
           challenge={challenge}
           files={files}
-          setFiles={setFiles}
+          setFiles={(nextFiles) => {
+            setFiles(nextFiles);
+            persistActiveAttempt({ files: nextFiles });
+          }}
           activeFile={activeFile}
-          setActiveFile={setActiveFile}
+          setActiveFile={(nextActiveFile) => {
+            setActiveFile(nextActiveFile);
+            persistActiveAttempt({ activeFile: nextActiveFile });
+          }}
           testResult={testResult}
           onRunTests={runTests}
           hypothesis={hypothesis}
-          setHypothesis={setHypothesis}
+          setHypothesis={(nextHypothesis) => {
+            setHypothesis(nextHypothesis);
+            persistActiveAttempt({ hypothesis: nextHypothesis });
+          }}
           hypothesisHistory={hypothesisHistory}
           explanation={explanation}
-          setExplanation={setExplanation}
+          setExplanation={(nextExplanation) => {
+            setExplanation(nextExplanation);
+            persistActiveAttempt({ explanation: nextExplanation });
+          }}
           revealedHints={revealedHints}
           revealHint={revealHint}
           onSubmit={submitAttempt}
@@ -742,6 +792,7 @@ export function FaultSmithApp() {
 type ConfigureProps = {
   learningMode: LearningMode;
   setLearningMode: (mode: LearningMode) => void;
+  localProgressReady: boolean;
   learningProgress: LearningProgress;
   cloudSync: CloudProgressSync;
   selectedLearningStepId: LearningStepId;
@@ -792,9 +843,9 @@ function ConfigureView(props: ConfigureProps) {
           </aside>
         </div>
         <div role="group" aria-label="Learning mode" className="mode-switcher mt-9">
-          <button type="button" aria-pressed={props.learningMode === "guided"} onClick={() => props.setLearningMode("guided")} className="mode-tab">Guided roadmap</button>
-          <button type="button" aria-pressed={props.learningMode === "catalog"} onClick={() => props.setLearningMode("catalog")} className="mode-tab">Practice by skill</button>
-          <button type="button" aria-pressed={props.learningMode === "progress"} onClick={() => props.setLearningMode("progress")} className="mode-tab">My Progress</button>
+          <button type="button" disabled={!props.localProgressReady} aria-pressed={props.learningMode === "guided"} onClick={() => props.setLearningMode("guided")} className="mode-tab">Guided roadmap</button>
+          <button type="button" disabled={!props.localProgressReady} aria-pressed={props.learningMode === "catalog"} onClick={() => props.setLearningMode("catalog")} className="mode-tab">Practice by skill</button>
+          <button type="button" disabled={!props.localProgressReady} aria-pressed={props.learningMode === "progress"} onClick={() => props.setLearningMode("progress")} className="mode-tab">My Progress</button>
         </div>
         {props.learningMode === "guided" ? (
           <div className="mt-10">
