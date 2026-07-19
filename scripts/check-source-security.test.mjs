@@ -26,6 +26,30 @@ describe("source security rules", () => {
     expect(formatFinding(findings[0])).not.toContain(secret);
   });
 
+  it("flags password material crossing into server code without echoing values", () => {
+    // The literal stays below every secret-rule length threshold on purpose:
+    // this fixture must trip only the password-boundary rule.
+    const offending = [
+      'const password = "pw-x1";',
+      'persist({ password: value });',
+      'log(user.password);',
+    ].join("\n");
+    const findings = findRuleMatches(offending, passwordBoundaryRules, "src/server/example.ts");
+
+    expect(findings).toHaveLength(3);
+    for (const finding of findings) {
+      expect(finding.rule).toBe("password-boundary");
+      expect(JSON.stringify(finding)).not.toContain("pw-x1");
+      expect(formatFinding(finding)).not.toContain("pw-x1");
+    }
+    expect(findings.map((finding) => finding.line)).toEqual([1, 2, 3]);
+  });
+
+  it("does not match prose that merely mentions passwords", () => {
+    const prose = "Firebase owns password storage and reset emails end to end.";
+    expect(findRuleMatches(prose, passwordBoundaryRules, "docs/example.md")).toEqual([]);
+  });
+
   it("allows only the deliberate output-redaction fixture", () => {
     const deliberate = "sk-" + "abcdefghijklmnop";
     expect(findRuleMatches(deliberate, secretRules, "src/server/fixtures.test.ts")).toEqual([]);

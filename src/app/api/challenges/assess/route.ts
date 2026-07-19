@@ -1,6 +1,7 @@
 import { assessRequestSchema } from "@/lib/contracts";
 import { getDefaultProgressService } from "@/server/progress-service";
 import {
+  assertSameOrigin,
   checkRateLimit,
   readJsonBody,
   RequestError,
@@ -12,6 +13,9 @@ export const maxDuration = 30;
 
 export async function POST(request: Request) {
   try {
+    // The assess response can trigger an authenticated cloud write, so the
+    // same exact-origin containment as /api/progress applies here.
+    assertSameOrigin(request);
     if (checkRateLimit(request, "assess")) {
       throw new RequestError("Too many submissions. Try again shortly.", "RATE_LIMITED", 429, true);
     }

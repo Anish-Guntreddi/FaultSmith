@@ -4,7 +4,12 @@ import {
   progressSnapshotSchema,
 } from "@/lib/progress-contracts";
 import { getDefaultProgressService } from "@/server/progress-service";
-import { checkRateLimit, readJsonBody, RequestError } from "@/server/request-guard";
+import {
+  assertSameOrigin,
+  checkRateLimit,
+  readJsonBody,
+  RequestError,
+} from "@/server/request-guard";
 
 export const maxDuration = 15;
 
@@ -47,27 +52,6 @@ function accessDenied(kind: "unauthorized" | "unavailable"): Response {
     { error: "Cloud progress is temporarily unavailable.", code: "CLOUD_UNAVAILABLE", retryable: true },
     503,
   );
-}
-
-/**
- * Cross-origin browser requests must never reach the data boundary. When an
- * Origin header is present it must match the request host exactly; opaque
- * ("null") and unparsable origins fail closed.
- */
-function assertSameOrigin(request: Request) {
-  const origin = request.headers.get("origin");
-  if (origin === null) return;
-
-  let originHost = "";
-  try {
-    originHost = new URL(origin).host;
-  } catch {
-    throw new RequestError("Cross-origin requests are not allowed.", "CROSS_ORIGIN", 403);
-  }
-  const host = request.headers.get("host") ?? "";
-  if (originHost.length === 0 || host.length === 0 || originHost !== host) {
-    throw new RequestError("Cross-origin requests are not allowed.", "CROSS_ORIGIN", 403);
-  }
 }
 
 function guardRequest(request: Request) {

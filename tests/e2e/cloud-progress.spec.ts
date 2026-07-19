@@ -169,6 +169,15 @@ test.describe("cloud progress in Firebase emulator mode", () => {
     await resetEmulators();
   });
 
+  test("continuing as guest announces confirmation and keeps device storage", async ({ page }) => {
+    await openSeeded(page);
+    await openMyProgress(page);
+
+    await page.getByRole("button", { name: "Continue as guest", exact: true }).click();
+    await expect(page.locator('p[role="status"]')).toContainText("Guest practice is active");
+    await expect(page.getByText("On this device", { exact: true }).first()).toBeVisible();
+  });
+
   test("password creation enforces confirm match and the password policy", async ({ page }) => {
     await openSeeded(page);
     await openMyProgress(page);

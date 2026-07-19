@@ -76,6 +76,7 @@ export interface CloudProgressSync {
   accountDeletionState: AccountDeletionState;
   linkingSupported: boolean;
   collisionDetected: boolean;
+  continueAsGuest(): void;
   createAccount(email: string, password: string, confirmPassword: string): Promise<void>;
   signInEmail(email: string, password: string): Promise<void>;
   signInGoogle(): Promise<void>;
@@ -293,6 +294,13 @@ export function useCloudProgressSync(
     }
     return localProfile;
   }, [phase, cloudSnapshot, localProfile]);
+
+  const continueAsGuest = useCallback(() => {
+    setCollisionDetected(false);
+    setStatus(
+      "Guest practice is active. Progress stays on this device unless you add an optional account.",
+    );
+  }, [setStatus]);
 
   const createAccount = useCallback(
     async (email: string, password: string, confirmPassword: string) => {
@@ -604,6 +612,7 @@ export function useCloudProgressSync(
     accountDeletionState,
     linkingSupported: adapter.isProviderLinkingSupported(),
     collisionDetected,
+    continueAsGuest,
     createAccount,
     signInEmail,
     signInGoogle,
@@ -771,7 +780,15 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
 
           {mode === "summary" && (
             <div className="mt-3 flex flex-wrap gap-2">
-              <button type="button" className={secondaryButtonClass} onClick={() => setMode("summary")}>
+              <button
+                type="button"
+                className={secondaryButtonClass}
+                onClick={() => {
+                  resetForms();
+                  setMode("summary");
+                  sync.continueAsGuest();
+                }}
+              >
                 Continue as guest
               </button>
               <button

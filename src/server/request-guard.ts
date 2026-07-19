@@ -48,6 +48,29 @@ export function checkRateLimit(request: Request, scope: string) {
   return current.count > MAX_REQUESTS_PER_WINDOW;
 }
 
+/**
+ * Cross-origin browser requests must never reach a data boundary that
+ * accepts Authorization material. When an Origin header is present it must
+ * match the request host exactly; opaque ("null") and unparsable origins
+ * fail closed. Origin-less requests (non-browser clients, smokes, curl)
+ * pass unchanged.
+ */
+export function assertSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  if (origin === null) return;
+
+  let originHost = "";
+  try {
+    originHost = new URL(origin).host;
+  } catch {
+    throw new RequestError("Cross-origin requests are not allowed.", "CROSS_ORIGIN", 403);
+  }
+  const host = request.headers.get("host") ?? "";
+  if (originHost.length === 0 || host.length === 0 || originHost !== host) {
+    throw new RequestError("Cross-origin requests are not allowed.", "CROSS_ORIGIN", 403);
+  }
+}
+
 export async function readJsonBody(request: Request) {
   const contentType = request.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().startsWith("application/json")) {
