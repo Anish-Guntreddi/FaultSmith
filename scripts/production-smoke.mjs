@@ -6,10 +6,13 @@ import {
   normalizeBaseUrl,
   runChallengeLifecycle,
   SmokeFailure,
+  writeEvidence,
 } from "./release-smoke-core.mjs";
 
 const DEFAULT_BASE_URL = "http://127.0.0.1:3000";
-const DEFAULT_TIMEOUT_MS = 10_000;
+const DEFAULT_SURFACE_TIMEOUT_MS = 10_000;
+const DEFAULT_LIFECYCLE_TIMEOUT_MS = 35_000;
+const MAX_ROOT_BYTES = 512_000;
 
 function fail(ruleId, stage, status) {
   throw new SmokeFailure(ruleId, stage, Number.isInteger(status) ? { status } : {});
@@ -45,17 +48,63 @@ async function surfaceRequest(origin, path, stage, fetchImpl, timeoutMs) {
   return response;
 }
 
+async function readBoundedText(response, stage, maxBytes = MAX_ROOT_BYTES) {
+  const declared = Number(response.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > maxBytes) fail("PRODUCTION_SHELL", stage);
+  if (!response.body) fail("PRODUCTION_SHELL", stage);
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let total = 0;
+  let text = "";
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        fail("PRODUCTION_SHELL", stage);
+      }
+      text += decoder.decode(value, { stream: true });
+    }
+    text += decoder.decode();
+    return text;
+  } catch (error) {
+    if (error instanceof SmokeFailure) throw error;
+    fail("PRODUCTION_SHELL", stage);
+  }
+}
+
+function cspDirective(policy, name) {
+  const prefix = `${name.toLowerCase()} `;
+  return policy
+    .split(";")
+    .map((part) => part.trim().toLowerCase())
+    .find((part) => part.startsWith(prefix));
+}
+
 export async function assertProductionSurface({
   baseUrl,
   expectedMode = "fallback",
   repositorySha,
   fetchImpl = globalThis.fetch,
   lifecycle = runChallengeLifecycle,
-  timeoutMs = DEFAULT_TIMEOUT_MS,
+  surfaceTimeoutMs = DEFAULT_SURFACE_TIMEOUT_MS,
+  lifecycleTimeoutMs = DEFAULT_LIFECYCLE_TIMEOUT_MS,
 } = {}) {
   const origin = normalizeBaseUrl(baseUrl);
-  const root = await surfaceRequest(origin, "/", "root", fetchImpl, timeoutMs);
-  const health = await surfaceRequest(origin, "/api/health", "health", fetchImpl, timeoutMs);
+  const root = await surfaceRequest(origin, "/", "root", fetchImpl, surfaceTimeoutMs);
+  const health = await surfaceRequest(
+    origin,
+    "/api/health",
+    "health",
+    fetchImpl,
+    surfaceTimeoutMs,
+  );
+
+  requireHeader(root, "content-type", /^text\/html(?:;|$)/i, "root");
+  const rootHtml = await readBoundedText(root, "root");
+  if (!/<title[^>]*>\s*FaultSmith\b/i.test(rootHtml)) fail("PRODUCTION_SHELL", "root");
 
   const csp = requireHeader(root, "content-security-policy", /default-src\s+'self'/i, "root");
   for (const directive of [
@@ -65,6 +114,15 @@ export async function assertProductionSurface({
     /frame-ancestors\s+'none'/i,
   ]) {
     if (!directive.test(csp)) fail("PRODUCTION_CSP", "root:content-security-policy");
+  }
+  for (const directiveName of ["script-src", "connect-src"]) {
+    const directive = cspDirective(csp, directiveName);
+    if (!directive || !directive.includes("'self'") || /(?:^|\s)\*(?:\s|$)/.test(directive)) {
+      fail("PRODUCTION_CSP", `root:${directiveName}`);
+    }
+  }
+  if (cspDirective(csp, "script-src")?.includes("'unsafe-eval'")) {
+    fail("PRODUCTION_CSP", "root:script-src");
   }
   requireHeader(root, "cross-origin-opener-policy", "same-origin", "root");
   requireHeader(root, "cross-origin-resource-policy", "same-origin", "root");
@@ -76,16 +134,24 @@ export async function assertProductionSurface({
   requireHeader(root, "x-content-type-options", "nosniff", "root");
   requireHeader(root, "x-frame-options", "DENY", "root");
   if (origin.startsWith("https://")) {
-    requireHeader(root, "strict-transport-security", /max-age=\d+/i, "root");
+    requireHeader(
+      root,
+      "strict-transport-security",
+      /(?:^|;)\s*max-age=63072000(?:;|$)/i,
+      "root",
+    );
   }
   if (root.headers.has("x-powered-by")) fail("PRODUCTION_DISCLOSURE", "root:x-powered-by");
-  requireHeader(health, "cache-control", /(?:^|,)\s*(?:private,\s*)?no-store\b/i, "health");
+  const cacheControl = requireHeader(health, "cache-control", /(?:^|,)\s*no-store\b/i, "health");
+  if (/(?:^|,)\s*(?:public|s-maxage|max-age)\b/i.test(cacheControl)) {
+    fail("PRODUCTION_CACHE", "health:cache-control");
+  }
 
   const lifecycleEvidence = await lifecycle({
     baseUrl: origin,
     expectedMode,
     repositorySha,
-    timeoutMs,
+    timeoutMs: lifecycleTimeoutMs,
     fetchImpl,
   });
 
@@ -102,15 +168,20 @@ export async function assertProductionSurface({
 }
 
 function parseArguments(argv) {
-  const options = { baseUrl: DEFAULT_BASE_URL, expectedMode: "fallback", help: false };
+  const options = {
+    baseUrl: DEFAULT_BASE_URL,
+    expectedMode: "fallback",
+    evidence: null,
+    help: false,
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === "--help" || argument === "-h") options.help = true;
     else if (argument === "--live") options.expectedMode = "live";
-    else if (argument === "--base-url") {
+    else if (argument === "--base-url" || argument === "--evidence") {
       const value = argv[index + 1];
       if (!value || value.startsWith("--")) fail("CLI_ARGUMENT_VALUE", "cli");
-      options.baseUrl = value;
+      options[argument === "--base-url" ? "baseUrl" : "evidence"] = value;
       index += 1;
     } else fail("CLI_ARGUMENT_UNKNOWN", "cli");
   }
@@ -140,6 +211,8 @@ function safeFailure(error) {
 export async function runCli(argv, dependencies = {}) {
   const stdout = dependencies.stdout ?? ((line) => console.log(line));
   const stderr = dependencies.stderr ?? ((line) => console.error(line));
+  const cwd = dependencies.cwd ?? process.cwd();
+  const publishEvidence = dependencies.writeEvidenceFn ?? writeEvidence;
   let options;
   try {
     options = parseArguments(argv);
@@ -148,7 +221,9 @@ export async function runCli(argv, dependencies = {}) {
     return 1;
   }
   if (options.help) {
-    stdout("Usage: npm run smoke:production -- [--base-url URL] [--live]");
+    stdout(
+      "Usage: npm run smoke:production -- [--base-url URL] [--live] [--evidence test-results/file.json]",
+    );
     stdout("Live provider use occurs only when --live is present.");
     return 0;
   }
@@ -158,16 +233,24 @@ export async function runCli(argv, dependencies = {}) {
       baseUrl: options.baseUrl,
       expectedMode: options.expectedMode,
       repositorySha:
-        dependencies.repositorySha ?? readRepositorySha(dependencies.cwd ?? process.cwd()),
+        dependencies.repositorySha ?? readRepositorySha(cwd),
       fetchImpl: dependencies.fetchImpl,
       lifecycle: dependencies.lifecycle,
-      timeoutMs: dependencies.timeoutMs,
+      surfaceTimeoutMs: dependencies.surfaceTimeoutMs,
+      lifecycleTimeoutMs: dependencies.lifecycleTimeoutMs,
     });
+    if (options.evidence) {
+      publishEvidence(result.lifecycleEvidence, {
+        outputPath: resolve(cwd, options.evidence),
+        allowedDirectory: resolve(cwd, "test-results"),
+      });
+    }
     stdout(
       `Production smoke passed: mode=${result.mode} root=${result.rootStatus} ` +
         `health=${result.healthStatus} headers=${result.headerPolicy} cache=${result.apiCache} ` +
         `sha=${result.repositorySha.slice(0, 12)} origin=${result.origin}`,
     );
+    if (options.evidence) stdout("Sanitized lifecycle evidence written under test-results/.");
     return 0;
   } catch (error) {
     stderr(safeFailure(error));

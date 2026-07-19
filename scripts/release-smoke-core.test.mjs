@@ -93,7 +93,7 @@ function challengeResponse(mode) {
 function hintResponse(mode) {
   return {
     hintIndex: 0,
-    hint: "Compare the failing input with the closest passing values around the boundary.",
+    hint: "Compare the failing input with the closest passing inputs around the policy boundary.",
     source: mode === "live" ? "gpt-5.6" : "prevalidated",
     ...(mode === "fallback"
       ? { recoveryNotice: "The approved progressive hint was loaded." }
@@ -454,7 +454,7 @@ describe("release smoke lifecycle", () => {
     {
       name: "repair-shaped hint",
       mode: "live",
-      expectedRule: "HINT_REVEALS_REPAIR",
+      expectedRule: "HINT_CONTRACT",
       mutate(path, response) {
         if (path === "/api/challenges/hint") response.hint = "Use >= at this boundary.";
         return response;
@@ -525,6 +525,23 @@ describe("release smoke lifecycle", () => {
       ).rejects.toMatchObject({ ruleId: expectedRule });
     });
   });
+
+  it("rejects a repair-revealing hint paraphrase even when it avoids operator syntax", async () => {
+    await withLifecycleServer(
+      "fallback",
+      (path, response) => {
+        if (path === "/api/challenges/hint") {
+          response.hint = "Change the strict comparison to an inclusive boundary check at 500.";
+        }
+        return response;
+      },
+      async (server) => {
+        await expect(
+          runChallengeLifecycle(lifecycleOptions(server, "fallback")),
+        ).rejects.toMatchObject({ ruleId: "HINT_CONTRACT" });
+      },
+    );
+  });
 });
 
 describe("release smoke evidence writer", () => {
@@ -574,5 +591,21 @@ describe("release smoke evidence writer", () => {
     expect(() =>
       writeEvidence(evidence, { outputPath: "linked/escaped.json", allowedDirectory }),
     ).toThrowError(expect.objectContaining({ ruleId: "EVIDENCE_PATH" }));
+  });
+
+  it("rejects internally inconsistent evidence instead of publishing false success", async () => {
+    const evidence = await validEvidence();
+    const failedWithoutSignature = structuredClone(evidence);
+    failedWithoutSignature.stages.mutatedExecute.failedCount = 0;
+    failedWithoutSignature.stages.mutatedExecute.matchedExpectedFailure = false;
+    expect(() => assertSafeEvidence(failedWithoutSignature)).toThrowError(
+      expect.objectContaining({ ruleId: "MUTATED_SIGNATURE" }),
+    );
+
+    const passedWithoutTests = structuredClone(evidence);
+    passedWithoutTests.stages.repairedExecute.passedCount = 0;
+    expect(() => assertSafeEvidence(passedWithoutTests)).toThrowError(
+      expect.objectContaining({ ruleId: "REPAIRED_COUNTS" }),
+    );
   });
 });

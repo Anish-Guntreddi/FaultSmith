@@ -15,6 +15,8 @@ const EVIDENCE_SCHEMA_VERSION = "faultsmith.smoke-evidence.v1";
 const PRIMARY_CHALLENGE_ID = "expense-boundary-v1";
 const PRIMARY_BROKEN_LINE = "if expense.amount > 500:";
 const PRIMARY_REPAIRED_LINE = "if expense.amount >= 500:";
+const PRIMARY_FIRST_HINT =
+  "Compare the failing input with the closest passing inputs around the policy boundary.";
 const EXPECTED_MODE = new Set(["fallback", "live"]);
 const FORBIDDEN_FIELD =
   /(?:hidden|internal|credential|secret|api.?key|access.?token|auth.?token|container.?id|response.?id|provider.?id|system.?prompt|developer.?prompt|reference.?solution|answer.?key)/i;
@@ -576,13 +578,7 @@ export async function runChallengeLifecycle({
   } else if (Object.hasOwn(hint, "recoveryNotice")) {
     fail("HINT_RECOVERY", hintStage);
   }
-  if (
-    hintText.includes(PRIMARY_REPAIRED_LINE) ||
-    hintText.includes(">=") ||
-    /greater[ -]than or equal/i.test(hintText)
-  ) {
-    fail("HINT_REVEALS_REPAIR", hintStage);
-  }
+  assertExact(hintText, PRIMARY_FIRST_HINT, "HINT_CONTRACT", hintStage);
 
   const executionBody = (files) => ({
     challengeId: PRIMARY_CHALLENGE_ID,
@@ -813,6 +809,23 @@ export function assertSafeEvidence(evidence) {
     assertExact(stage.executionMode, executionMode, "EVIDENCE_SCHEMA", "evidence");
   }
   assertExact(stages.generate.status, "failed", "EVIDENCE_SCHEMA", "evidence");
+  assertFailureEvidence(stages.generate, "evidence:generate");
+  assertFailureEvidence(stages.mutatedExecute, "evidence:mutated-execute");
+  assertPassingEvidence(stages.repairedExecute, "evidence:repaired-execute");
+  assertPassingEvidence(stages.repairedAssess, "evidence:repaired-assess");
+  assertFailureEvidence(stages.failingAssess, "evidence:failing-assess");
+  assertExact(
+    stages.repairedExecute.matchedExpectedFailure,
+    false,
+    "EVIDENCE_SCHEMA",
+    "evidence:repaired-execute",
+  );
+  assertExact(
+    stages.repairedAssess.matchedExpectedFailure,
+    false,
+    "EVIDENCE_SCHEMA",
+    "evidence:repaired-assess",
+  );
   for (const key of ["mutatedExecute", "repairedExecute"]) {
     assertExact(
       requireBoolean(stages[key].fallbackUsed, "evidence"),
