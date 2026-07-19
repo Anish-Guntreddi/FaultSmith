@@ -8,6 +8,8 @@
 
 **Product boundary:** Preserve the validated fixture fallback and every existing security invariant.
 
+> **July 19 follow-on amendment:** Optional learner accounts, cross-device progress, and a personal metrics dashboard were promoted into a separate configuration-gated phase. Guest/local behavior in this document remains the required fallback and acceptance baseline. See `docs/PERSONALIZED_LEARNING_PRD.md`.
+
 ## Problem
 
 Students and early-career engineers increasingly reach for AI-generated fixes before they can reproduce a failure, parse evidence, form a hypothesis, or explain a root cause. Open-ended prompting can amplify that dependency because prompt quality becomes a prerequisite for learning and the model can remove the productive struggle that builds debugging skill.

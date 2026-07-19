@@ -42,7 +42,15 @@ This milestone converts the current guided-learning release candidate into one s
   4. Firebase absence, failure, quota exhaustion, sign-in cancellation, sign-out, and configuration-off rollback preserve local progress and never block a challenge or report.
   5. Emulator, route, E2E/accessibility, security, build, dependency, fallback, production, and independent review gates pass on one SHA; credentialed Netlify preview remains approval-gated and cloud mode may be disabled without a code rollback.
 **External dependency gate:** The credential-free implementation and emulator tests can run without user secrets. Real cross-device proof requires the user to create/configure a Firebase Spark project and Google provider privately. Netlify preview remains a separate explicit deployment approval gate.
-**Plans:** TBD during phase planning
+**Plans:** 6 plans across 5 waves; ready for execution
+
+Plans:
+- [ ] 01.1-01 — strict progress/history contracts, deterministic metrics, and guest dashboard
+- [ ] 01.1-02 — Firebase/runtime/emulator/CI/security-scanner foundation and lazy Google Auth client
+- [ ] 01.1-03 — verified identity DAL, server-only Firestore persistence, progress APIs, and assessment binding
+- [ ] 01.1-04 — sync/import/delete/degraded UX, exact CSP, and browser/accessibility hardening
+- [ ] 01.1-05 — independent product/QA/security review, self-heal, docs, and exact-SHA offline freeze
+- [ ] 01.1-06 — real Firebase and separately approval-gated Netlify preview evidence or cloud-off rollback
 
 ### Phase 2: Credential-Controlled Live OpenAI Proof
 
@@ -101,7 +109,7 @@ This milestone converts the current guided-learning release candidate into one s
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Release Integration and Independent Quality Gates | 6/6 | Complete | 2026-07-18 |
-| 01.1 Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard | 0/TBD | Planning | - |
+| 01.1 Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard | 0/6 | Planned — ready for execution | - |
 | 2. Credential-Controlled Live OpenAI Proof | 5/6 | Offline checkpoint complete — credential gate | - |
 | 3. Approved Public Deployment and Production Verification | 0/TBD | Not started — approval gate | - |
 | 4. External UAT, Video, and Final Submission | 0/TBD | Not started — external evidence | - |

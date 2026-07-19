@@ -1,9 +1,9 @@
 # FaultSmith Roadmap and Direction Review
 
-**Last direction review:** July 18, 2026  
+**Last direction review:** July 19, 2026
 **Locked track:** Education  
 **Locked primary demo:** Expense Approval boundary condition  
-**Current state:** Phase 2 offline preparation complete on runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1` and evidence head `953821e782531f59dcf5d21a3b76e7dc76dd1c38`: strict fallback/live/production smoke, sanitized evidence, UAT/readiness validation, and deployment/rollback procedures are implemented; 126 unit/integration tests, seven browser workflows, and four required GitHub jobs pass. Live credential proof, deployment approval, and remaining human submission actions are still pending.
+**Current state:** The last green offline runtime and evidence checkpoints remain preserved. The user approved an urgent pre-deployment Phase 01.1 for a guest-first personalized dashboard plus optional Firebase/Google cloud synchronization. Its PRD, official platform research, Nyquist validation strategy, and six executable plans across four implementation waves plus a human checkpoint passed structural and independent plan review. No Phase 01.1 application code or external service mutation has occurred yet. Live OpenAI proof, real Firebase proof, deployment approval, and remaining human submission actions are still pending.
 
 ## Completed milestones
 
@@ -23,11 +23,13 @@
 
 ## Remaining PRD gaps requiring external action
 
-1. Privately configure a funded `OPENAI_API_KEY` and run the single controlled local GPT-5.6 and Code Interpreter smoke command; clean up the credential before repository scanning.
-2. Obtain deployment approval, configure edge/shared abuse controls, deploy, and verify the public URL without authentication.
-3. Run the study with at least five external testers and record comprehension results.
-4. Record and publish the under-three-minute demonstration.
-5. Capture the primary Codex `/feedback` Session ID and place it in the submission.
+1. Complete Phase 01.1 credential-free contracts, metrics/dashboard, Firebase adapters, emulator tests, regression gates, and independent QA/security review.
+2. The user creates a Firebase Spark project, enables Google Authentication and Firestore, and privately configures its reviewed client/server values for real sync proof.
+3. Privately configure a funded `OPENAI_API_KEY` and run the single controlled local GPT-5.6 and Code Interpreter smoke command on the post-Phase-01.1 candidate; clean up the credential before repository scanning.
+4. Obtain Netlify deployment approval, configure shared/edge abuse controls, deploy a preview, and verify both guest and signed-in workflows before production promotion.
+5. Run the study with at least five external testers and record comprehension results.
+6. Record and publish the under-three-minute demonstration.
+7. Capture the primary Codex `/feedback` Session ID and place it in the submission.
 
 These are intentionally not marked complete by local fallback evidence.
 
@@ -36,21 +38,22 @@ These are intentionally not marked complete by local fallback evidence.
 - **Highest technical risk:** live provider response or container behavior can drift from mocked/typed expectations. Mitigation: strict parse/validation, timeout, one retry, safe recovery, and a separate live smoke procedure.
 - **Highest demo risk:** network or credential failure during recording. Mitigation: the primary lab is prevalidated and automatically recovers to fixture mode with visible labeling; the explicit live proof is performed before recording rather than improvised on camera.
 - **Highest security risk:** the in-memory rate limiter is per process and not globally coordinated across a multi-instance deployment. Mitigation: conservative route limits now; add provider/edge rate limiting before any public exposure of a paid server credential.
+- **Highest new privacy risk:** cloud persistence can accidentally widen learner-data collection or cross-user access. Mitigation: optional identity, server-derived UID, strict bounded DTOs, server-mediated writes, direct-client Firestore denial, no source/prose storage, deletion, emulator isolation tests, and independent adversarial review.
 - **Highest judging opportunity:** accurately show the zero-token guided curriculum, then—only after credentialed proof—show GPT emitting the exact approved live contract, Code Interpreter producing execution evidence, and deterministic policy controlling release.
 - **API-credit constraint:** live generation can require original and mutated executions, plus assessment. The fixture path allows unlimited rehearsal without spend.
 - **Curriculum boundary:** guided metadata must never contain hidden answers or become an alternate execution authority. Mitigation: lesson data references only public project-skill IDs; fixtures and assessments remain server-owned.
-- **Time constraint:** prioritize the public deployment, five-tester study, and concise recording over new product breadth.
+- **Time constraint:** Phase 01.1 has a mandatory configuration-off rollback. If real Firebase identity, isolation, CSP, preview, or complete gates miss the July 20 cutoff, ship the local personalized dashboard on the last known-green baseline.
 - **Competition access requirement:** the [official rules](https://openai.devpost.com/rules) require working project access through a website, functioning demo, or test build plus a public repository/video. For this browser application, a stable unauthenticated HTTPS deployment is the safest compliance path even though the rules do not name Vercel specifically.
 
 ## Recommended next milestone
 
-First publish the offline checkpoint and wait for four green required checks. With user authorization and a server-only API key, run the one-command controlled local live smoke and resolve any provider-contract failure without weakening fallback. Then remove the key locally, obtain separate deployment approval, configure edge controls, publish the exact reviewed head, run production smoke, and complete the five-person usability pass. If the live service is unstable near recording time, record the labeled fixture path while accurately describing the separate live evidence.
+Execute Phase 01.1 in credential-free waves first: domain contracts, deterministic metrics, local dashboard, Firebase boundaries, and emulator/adversarial tests. Freeze and independently review that candidate. With the user's private Firebase configuration, prove optional Google sync; then run the separately credentialed OpenAI smoke on the same runtime candidate. After explicit Netlify approval, configure platform controls, deploy a preview, run production smoke, and complete five-person UAT. If cloud sync misses its gate, disable it through configuration and retain the local dashboard, fixture fallback, and previously validated learning loop.
 
 ## Explicitly deferred scope
 
 - Natural-language custom challenge prompting
 - Arbitrary repository upload or arbitrary Python execution
-- Accounts, cross-device synchronization, cohorts, and instructor dashboards
+- Cohorts, assignments, instructor dashboards, organization administration, and mandatory accounts
 - Languages other than Python
 - Learner-supplied shell commands, dependencies, file IDs, or container IDs
 - Competitive scoring, leaderboards, and unverifiable certification claims
@@ -63,4 +66,4 @@ First publish the offline checkpoint and wait for four green required checks. Wi
 - **Potential impact:** a reusable practice loop can turn passive tutorials into deliberate debugging exercises.
 - **Quality of idea:** the deliberate, validated failure is the differentiator; adding broad project ingestion before submission would weaken reliability and safety.
 
-Direction remains aligned with the approved PRD amendment. No further material product expansion is recommended before submission.
+Direction is aligned with the approved July 19 personalized-learning PRD amendment. No additional material product expansion is recommended before submission.
