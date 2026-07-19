@@ -29,7 +29,7 @@ The current Phase 01.1 offline candidate run produced (exact-SHA evidence, inclu
 | Playwright default suite | 13 passed (Firebase-mode tests correctly env-gated) |
 | Playwright Firebase emulator suite (`test:e2e:firebase`) | 16 scenarios passed |
 | npm audit at moderate threshold | Pass; zero vulnerabilities |
-| Source/history security scan | Pass; 483 working-tree files and 58 reachable commits, no matched value printed |
+| Source/history security scan | Pass; full working tree plus all reachable history inspected with no matched value printed (exact per-run counts are recorded in the SHA-bound phase review reports) |
 | Fallback + production smoke | Pass on the frozen candidate; cloud-off headers byte-identical to the pre-Phase-01.1 baseline |
 
 The earlier Phase 2 run below is preserved as historical evidence:
