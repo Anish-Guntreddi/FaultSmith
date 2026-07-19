@@ -29,6 +29,7 @@ const generationBody = {
 describe("challenge route security boundary", () => {
   beforeEach(() => {
     process.env.OPENAI_API_KEY = "";
+    process.env.NEXT_PUBLIC_FAULTSMITH_CLOUD_SYNC = "";
   });
 
   it("returns a safe fallback DTO without hidden solution fields", async () => {
@@ -161,8 +162,46 @@ describe("challenge route security boundary", () => {
     expect(response.status).toBe(200);
     expect(body.testResult.status).toBe("failed");
     expect(body.assessment.completionStatus).toBe("not_verified");
+    expect(body.cloudSync).toBe("local_only");
     expect(JSON.stringify(body)).not.toContain("inclusive >= comparison");
     expect(JSON.stringify(body)).not.toContain("hidden reference solution");
+  });
+
+  it("keeps the assessment authoritative when a token arrives while cloud sync is unavailable", async () => {
+    const challengeResponse = await generate(
+      jsonRequest("/api/challenges/generate", { ...generationBody, preferLive: false }, "198.51.100.18"),
+    );
+    const challenge = await challengeResponse.json();
+    const editableFiles = challenge.files
+      .filter((file: { editable: boolean }) => file.editable)
+      .map(({ path, content }: { path: string; content: string }) => ({ path, content }));
+
+    const request = new Request("http://localhost/api/challenges/assess", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-forwarded-for": "198.51.100.19",
+        authorization: "Bearer tok-x",
+      },
+      body: JSON.stringify({
+        challengeId: challenge.challengeId,
+        files: editableFiles,
+        executionMode: "prevalidated_fixture",
+        hypothesis: "The threshold comparison may exclude the documented edge value.",
+        hypothesisHistory: ["The threshold comparison may exclude the documented edge value."],
+        explanation: "The failing test names the exact boundary the policy should include.",
+        hintsUsed: 0,
+        testRuns: 1,
+        elapsedSeconds: 30,
+      }),
+    });
+    const response = await assess(request);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.assessment.completionStatus).toBe("not_verified");
+    expect(body.testResult.status).toBe("failed");
+    expect(body.cloudSync).toBe("cloud_unavailable");
   });
 
   it("rate limits expensive requests with a safe 429 response", async () => {

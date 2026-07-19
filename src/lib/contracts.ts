@@ -63,6 +63,19 @@ export const assessmentResultSchema = z
   .strict();
 export type AssessmentResult = z.infer<typeof assessmentResultSchema>;
 
+/**
+ * Bounded, descriptive cloud synchronization outcome attached to assessment
+ * responses. It is informational only: it can never change completion or
+ * test authority, which remain owned by the deterministic assessment.
+ */
+export const cloudSyncStatusSchema = z.enum([
+  "cloud_saved",
+  "local_only",
+  "unauthorized",
+  "cloud_unavailable",
+]);
+export type CloudSyncStatus = z.infer<typeof cloudSyncStatusSchema>;
+
 export const assessmentResponseSchema = z
   .object({
     assessment: assessmentResultSchema,
@@ -74,6 +87,7 @@ export const assessmentResponseSchema = z
     changedFiles: z.array(fileSnapshotSchema.shape.path).max(4),
     elapsedSeconds: z.number().int().min(0).max(86_400),
     hypothesisRevisions: z.number().int().min(1).max(30),
+    cloudSync: cloudSyncStatusSchema.optional(),
   })
   .strict();
 export type AssessmentResponse = z.infer<typeof assessmentResponseSchema>;
@@ -165,19 +179,6 @@ export const assessRequestSchema = executeRequestSchema
     },
   );
 export type AssessRequest = z.infer<typeof assessRequestSchema>;
-
-/**
- * Bounded, descriptive cloud synchronization outcome attached to assessment
- * responses. It is informational only: it can never change completion or
- * test authority, which remain owned by the deterministic assessment.
- */
-export const cloudSyncStatusSchema = z.enum([
-  "cloud_saved",
-  "local_only",
-  "unauthorized",
-  "cloud_unavailable",
-]);
-export type CloudSyncStatus = z.infer<typeof cloudSyncStatusSchema>;
 
 export const safeErrorSchema = z
   .object({
