@@ -1,9 +1,9 @@
 # FaultSmith Deployment and Rollback Runbook
 
 **Status:** prepared, not deployed  
-**Target shape:** a Node.js Next.js 16 server; Vercel is the recommended compatible host, but is not a product requirement.
+**Target shape:** a Node.js 22+ Next.js 16 server (`.nvmrc` pins Node 24; Firebase Admin 14 requires Node 22+). Netlify is the selected host target for the Phase 01.1 plan; Vercel remains a compatible alternative. Neither is a product requirement.
 
-This runbook starts only after the reviewed local live proof passes. It does not authorize a deployment. The operator must approve the target, account, region, public URL, and any paid credential exposure before a host is changed.
+This runbook starts only after the reviewed local live proof passes. It does not authorize a deployment. The operator must approve the target, account, region, public URL, and any paid credential exposure before a host is changed. No Netlify deployment, preview, or real Firebase project exists yet; nothing below claims otherwise.
 
 ## 1. Freeze the candidate
 
@@ -59,6 +59,37 @@ Also verify in a clean browser and from a separate network:
 - the URL and repository remain freely accessible for the complete judging period.
 
 The evidence manifest may contain only schema version, reviewed SHA, origin, UTC timestamp, expected mode, public source/mode labels, stage pass/fail facts, counts, and SHA-256 output digests. Store raw debugging data outside Git and delete it after the issue is resolved.
+
+## 5a. Optional cloud sync — Firebase operator prerequisites (human gate)
+
+Cloud sync is configuration-gated and entirely optional; every step here is performed privately by the operator, never by an agent. The application at the reviewed SHA needs **no code change** to enable or disable it.
+
+**Firebase project setup (Spark plan only — no billing upgrade, Cloud Functions, Storage, Hosting, BigQuery, or AI Logic):**
+
+1. Create a Firebase project on the free Spark plan.
+2. Enable **Email/Password** and **Google** sign-in providers in Firebase Authentication; keep one-account-per-email.
+3. Enable the required **password policy** and **email enumeration protection**.
+4. Restrict **authorized domains** and verification/reset **action URLs** to the reviewed localhost and Netlify origins only.
+5. Create **Cloud Firestore** and deploy the repository's deny-all rules: `firebase deploy --only firestore:rules` (browsers must never read or write learning data directly; the server's Admin SDK is the only writer).
+6. Create a service account key for the server. Keep it out of source, Git history, logs, screenshots, and evidence.
+
+**Environment configuration (client values are public project metadata; server values are secrets):**
+
+| Variable | Scope | Meaning |
+| --- | --- | --- |
+| `NEXT_PUBLIC_FAULTSMITH_CLOUD_SYNC` | build/client | `true` enables cloud sync; unset/anything else keeps the app local-only |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID` | build/client | public Firebase web configuration (identification, not authorization) |
+| `FIREBASE_PROJECT_ID` | server-only | project the server verifies tokens against |
+| `FIREBASE_SERVICE_ACCOUNT` | server-only secret | the service-account JSON as one environment value; validated structurally in memory and never logged |
+| `NEXT_PUBLIC_FAULTSMITH_PROVIDER_LINKING` | build/client | leave unset; UID-preserving provider linking ships only after real-provider proof |
+
+Partial configuration fails safe: the client stays `local_only` and the server reports cloud unavailability without crashing build or startup. CSP and COOP widen automatically — and only — when cloud sync is configured, by the exact empirically proven Firebase/Google origins.
+
+**Free-tier boundary:** Firebase Spark's currently documented quotas are adequate for submission-scale testing, but usage must remain bounded and monitored — one Firestore document per learner, 50 attempt summaries maximum, no unbounded fan-out. Do not describe the free tier as unlimited.
+
+**Netlify specifics:** align the runtime to Node 22+ (Node 24 recommended), configure the two server-only Firebase values as protected environment secrets, add the four `NEXT_PUBLIC_*` values plus the cloud flag to the build environment, and apply edge/shared rate controls to the progress and auth surfaces before public exposure (the in-memory limiter is per-instance defense in depth).
+
+**Cloud-off rollback (tested release behavior, not a documentation claim):** unset `NEXT_PUBLIC_FAULTSMITH_CLOUD_SYNC` and remove the server Firebase values, then rebuild/redeploy the same reviewed SHA. The automated default e2e suite and production smoke prove this configuration serves the local personalized dashboard with baseline security headers byte-identical to the pre-cloud release, no sign-in surface, and zero Firebase network contact. If real Firebase identity, isolation, CSP, preview, or full gates miss the release cutoff, ship exactly this configuration.
 
 ## 6. Roll back safely
 

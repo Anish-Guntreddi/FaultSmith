@@ -1,8 +1,8 @@
 # FaultSmith Testing and Quality Guide
 
-**Last full local checkpoint:** July 18, 2026  
-**Environment:** macOS arm64, Node.js 24.9.0, npm 11.6.0, Next.js 16.2.10, Playwright 1.61.1, Chromium  
-**External policy:** normal tests make no live OpenAI calls
+**Last full local checkpoint:** July 19, 2026 (Phase 01.1 offline/emulator release candidate)  
+**Environment:** macOS arm64, Node.js 24.9.0, npm 11.6.0, Next.js 16.2.10, Playwright 1.61.1, Chromium, Temurin JDK 24 for Firebase emulators  
+**External policy:** normal tests make no live OpenAI calls and never contact real Firebase
 
 ## Full quality gate
 
@@ -14,7 +14,25 @@ npm run quality
 npm audit --audit-level=moderate
 ```
 
-The final local run produced:
+`npm run quality` now includes `npm run test:firebase` (Firestore-rules and cloud-persistence integration against local emulators), and `npm run test:e2e:firebase` runs the browser account/sync suite against the same emulators. Both require a Java 21+ JDK and pin the fake `demo-faultsmith` project with a fake API key, so they can never contact real Firebase.
+
+The current Phase 01.1 offline candidate run produced (exact-SHA evidence, including the frozen runtime SHA and the three independent final reviews, is recorded in `.planning/phases/01.1-personalized-learner-accounts-cloud-progress-and-metrics-dashboard/`):
+
+| Gate | Result |
+| --- | --- |
+| ESLint | Pass; zero errors/warnings |
+| TypeScript `tsc --noEmit` | Pass |
+| Vitest | 20 files, 272 tests passed |
+| Firebase emulator vitest (`test:firebase`) | 2 files, 23 tests passed (deny-all rules across five identity states; same-user/cross-user, idempotency, retention, one-time import, deletion) |
+| Next.js production build | Pass |
+| Client bundle leakage check | Pass; 21 static artifacts inspected |
+| Playwright default suite | 13 passed (Firebase-mode tests correctly env-gated) |
+| Playwright Firebase emulator suite (`test:e2e:firebase`) | 16 scenarios passed |
+| npm audit at moderate threshold | Pass; zero vulnerabilities |
+| Source/history security scan | Pass; 483 working-tree files and 58 reachable commits, no matched value printed |
+| Fallback + production smoke | Pass on the frozen candidate; cloud-off headers byte-identical to the pre-Phase-01.1 baseline |
+
+The earlier Phase 2 run below is preserved as historical evidence:
 
 | Gate | Result |
 | --- | --- |
@@ -203,20 +221,29 @@ With user-provided authorization and a server-only key:
 
 If any live step fails, keep the fallback green, record the exact provider response safely, repair against current official documentation, add a mock regression, and rerun all downstream gates.
 
-## Planned Phase 01.1 account and cloud gates — not yet implemented
+## Phase 01.1 account and cloud gates — implemented (emulator-proven)
 
-The approved personalized-learning phase must add credential-free Firebase Auth/Firestore emulator coverage before any real project is configured. Required cases are:
+All required credential-free coverage now exists and passes; run it with:
 
-- public guest access with Firebase absent, partial, degraded, and disabled;
-- email/password creation, Firebase password-policy guidance, verification-pending local continuity, verified login, resend cooldown, generic password reset, and sign-out;
-- proof that password values never enter FaultSmith server requests, localStorage, event logs, evidence, source fixtures, or client/server logs;
-- email-enumeration-resistant account states and bounded verification/reset abuse behavior;
-- Google success, cancellation, popup block, provider collision, and UID-preserving linking or a safe unsupported fallback;
-- unverified token denial, wrong-project/expired/oversized token denial, same-UID success, two-UID isolation, direct-client Firestore denial, idempotency, retention, and deletion;
-- Playwright/axe/keyboard/password-manager/responsive coverage at 1440 × 900 and 390 × 844;
-- cloud-on-emulator and cloud-off full quality, fallback, production, bundle, source, audit, and primary-demo gates on one SHA.
+```bash
+npm run test:firebase       # rules + cloud persistence integration (emulators)
+npm run test:e2e:firebase   # 16-scenario browser account/sync suite (emulators)
+```
 
-Real Firebase evidence remains a separate human checkpoint. It must prove both verified email/password and Google account paths, email-action URLs, provider-collision behavior, clean-session sync, cross-user isolation, safe logs, bounded usage, and configuration-off rollback without recording any email, UID, password, token, project value, or document content.
+On this workstation the default JVM is too old for firebase-tools; select a modern JDK first, e.g. `export JAVA_HOME=$(/usr/libexec/java_home -v 24)`.
+
+Implemented and passing evidence:
+
+- public guest access with Firebase absent, partial, degraded, and disabled — default e2e proves the cloud-off build offers no sign-in surface, renders the local dashboard, and makes zero requests to any Firebase/Google origin;
+- email/password creation with Firebase password-policy checks and confirm-mismatch handling, verification-pending local continuity, verified login, resend cooldown, generic password reset, and sign-out;
+- a persisted-state leak scenario proves no password, token, email, UID, or provider material enters FaultSmith localStorage; the source scanner's `password-boundary` rule (now directly unit-tested) blocks password material from server/persistence code paths;
+- email-enumeration-resistant account states: unknown-user, wrong-password, and already-registered outcomes share one generic message, and reset always reports generic success;
+- Google popup success, cancellation, and popup-block degradation; provider collisions produce safe existing-method guidance; UID-preserving linking stays behind the default-off `NEXT_PUBLIC_FAULTSMITH_PROVIDER_LINKING` capability flag until real-provider proof exists, and a link attempt that would change the UID signs out and reports `link_unavailable`;
+- unverified-token denial, wrong-project/expired/oversized/malformed token denial, same-UID success, two-UID isolation, direct-client Firestore denial for every identity state, SHA-256 idempotency with replay collapse, 50-attempt retention, one-time bounded import (409 replay), and explicit deletion plus recent-auth-gated account deletion;
+- Playwright/axe/keyboard/password-manager/responsive coverage at 1440 × 900 and 390 × 844 in both the default and Firebase-mode suites, including an announced "Continue as guest" confirmation;
+- cloud-on-emulator and cloud-off complete gates (quality, fallback, production, bundle, source, audit, primary demo) green on one frozen candidate SHA, recorded with the independent review reports in `.planning/phases/01.1-personalized-learner-accounts-cloud-progress-and-metrics-dashboard/`.
+
+Real Firebase evidence remains a separate human checkpoint. It must prove both verified email/password and Google account paths, email-action URLs, provider-collision behavior, clean-session sync, cross-user isolation, safe logs, bounded usage, and configuration-off rollback without recording any email, UID, password, token, project value, or document content. Emulator proof above is never presented as real-provider proof.
 
 ## External submission validation still required
 

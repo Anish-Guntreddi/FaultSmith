@@ -20,6 +20,21 @@ FaultSmith is an Education-track OpenAI Build Week project. The primary demonstr
 
 A failing suite can never receive verified status, regardless of the explanation or model response.
 
+## My Progress and optional accounts
+
+The **My Progress** dashboard derives bounded practice evidence — lesson completion by phase, verified score dimensions, independent-solve rate, test-run process evidence, strongest practiced skill, reinforcement priority, recent attempts, and a deterministic next-step recommendation with a plain-language reason — entirely from validated local state. It works with no account, no Firebase configuration, and no network. Metrics are practice evidence, not grades or certification, and test-run counts never lower a score.
+
+Three access paths exist when cloud sync is configured: **Continue as guest** (the default; never gated), **Create account / Log in** with email and password, and **Continue with Google**. Accounts are optional and appear only inside My Progress — no login wall exists anywhere. Key boundaries:
+
+- Firebase Authentication owns passwords, password policy, email verification, password reset, and provider identity. Password material never reaches the FaultSmith server, localStorage, logs, or evidence, and account-existence responses stay generic.
+- New email/password accounts must verify their email before cloud sync starts; learning continues locally in the meantime.
+- The server verifies every Firebase ID token, derives identity only from the verified UID, and mediates all Cloud Firestore writes. Direct browser Firestore access is denied by deployed deny-all rules.
+- Cloud storage holds only a strict bounded learning profile (nine lesson completions maximum, 50 attempt summaries maximum) — never source code, learner prose, hints, hidden answers, tokens, or credentials. Local history can be imported into an account exactly once, labeled as an import; learners can explicitly delete their cloud data and then their account.
+- Signing out returns to guest/device data without deleting cloud data. Any auth or cloud failure visibly degrades to "Saved on this device" and never blocks a challenge or report.
+- With cloud configuration absent (the default), the build is byte-identical to the local-only baseline: no Firebase code loads, no Firebase origin appears in the CSP, and zero Firebase network requests occur.
+
+Real Firebase project configuration is a private operator step described in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md); the credential-free emulator suites in [docs/TESTING.md](docs/TESTING.md) prove the same flows without any real project.
+
 ## Runtime architecture
 
 - **Browser:** a Next.js client workspace with browser-local anonymous attempt and curriculum progress. Guided progress contains only bounded lesson IDs and evidence metrics; attempt storage contains only public challenge fields, learner code, journal revisions, revealed hints, and the report. A separate capped event log contains no learner prose.
@@ -32,10 +47,11 @@ Learner Python is never executed by the Next.js host. Hidden root causes and ref
 
 ## Requirements
 
-- Node.js 20.9 or newer
+- Node.js 22 or newer (`.nvmrc` pins 24; Firebase Admin 14 requires Node 22+)
 - npm
 - A current Chromium browser. Chrome and Edge are supported for the submission build; Playwright Chromium is the tested browser. Firefox and Safari are best-effort for the MVP.
 - Optional: an OpenAI API key for controlled live verification
+- Optional (emulator test suites only): a Java 21+ JDK for the Firebase Auth/Firestore emulators
 
 ## Run locally
 
@@ -46,6 +62,8 @@ npm run dev
 ```
 
 Set `OPENAI_API_KEY` in `.env.local` to enable the live GPT-5.6 and Code Interpreter path. Leave it blank to exercise the real fallback. Never use a `NEXT_PUBLIC_` prefix for this credential.
+
+Cloud sync stays off by default: with `NEXT_PUBLIC_FAULTSMITH_CLOUD_SYNC` unset the app is fully local-only. The Firebase client values (`NEXT_PUBLIC_FIREBASE_*`) are public project metadata, while `FIREBASE_PROJECT_ID`/`FIREBASE_SERVICE_ACCOUNT` are server-only; see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) before configuring any real project.
 
 Open [http://localhost:3000](http://localhost:3000). No account is required.
 
@@ -61,11 +79,13 @@ npx playwright install chromium
 npm run lint
 npm run typecheck
 npm test
+npm run test:firebase
 npm run build
+npm run security:bundle
 npm run test:e2e
 ```
 
-`npm run quality` runs the complete sequence. The normal automated suite mocks or avoids external OpenAI calls; a live API smoke test is intentionally separate so it cannot spend credits unexpectedly.
+`npm run quality` runs the complete sequence, and `npm run security:source` scans the working tree plus reachable history. `npm run test:firebase` and `npm run test:e2e:firebase` run the Firestore-rules, cloud-persistence, and browser account/sync suites against local Firebase emulators under the fake `demo-faultsmith` project — they need a Java 21+ JDK and never contact real Firebase. The normal automated suite mocks or avoids external OpenAI calls; a live API smoke test is intentionally separate so it cannot spend credits unexpectedly.
 
 With a production server already running, release operators can use:
 
@@ -87,7 +107,8 @@ See [docs/TESTING.md](docs/TESTING.md) for the QA matrix and manual procedures, 
 - Test results are authoritative; assessment cannot promote failing code.
 - Output is length-limited and sanitized for ANSI control sequences, key-shaped strings, and local absolute paths.
 - Rate and execution-time limits reduce abuse and runaway-cost exposure.
-- Security headers include CSP, HSTS, frame denial, MIME sniffing protection, and restrictive browser permissions.
+- Security headers include CSP, HSTS, frame denial, MIME sniffing protection, and restrictive browser permissions. When cloud sync is configured the CSP widens only by the exact Firebase/Google origins the approved sign-in flow empirically requires — never a wildcard; cloud-off production headers are byte-identical to the baseline.
+- Cloud identity is server-verified: bounded Authorization parsing, Firebase Admin token verification, verified-email enforcement, UID-only path authority, strict exact-key DTOs, same-origin containment on token-accepting routes, and deny-all direct-client Firestore rules.
 - `.env.local` and generated artifacts are ignored. `.env.example` contains no credential.
 
 Residual risks and verification evidence are documented in [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
@@ -101,6 +122,7 @@ No secondary Claude Code review was performed. That absence is recorded rather t
 ## Documentation
 
 - [Product requirements](docs/PRD.md)
+- [Personalized learning, accounts, and cloud progress PRD](docs/PERSONALIZED_LEARNING_PRD.md)
 - [Guided learning MVP](docs/GUIDED_LEARNING_MVP.md)
 - [Sample project catalog](docs/SAMPLE_PROJECTS.md)
 - [Persistent execution goal](docs/EXECUTION_GOAL.md)

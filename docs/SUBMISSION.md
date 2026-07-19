@@ -31,6 +31,8 @@ Most programming education shows the happy path, while increasingly capable AI c
 - Reruns the exact submitted snapshot and blocks verified status whenever tests fail.
 - In live mode, uses GPT-5.6 for three bounded rubric scores; server-owned templates provide learner-facing feedback.
 - Recovers to nine real prevalidated fixtures when a key or live service is unavailable.
+- Shows a guest-first My Progress dashboard: phase completion, verified score dimensions, independent-solve rate, descriptive test-run evidence, strongest practiced skill, reinforcement priority, and an explained deterministic next step — derived entirely from validated local state with no account, model call, or network.
+- Optionally (configuration-gated and emulator-proven; real Firebase configuration is a separate private operator step) lets a learner create a verified email/password account or continue with Google to sync the same bounded metrics across devices, with server-verified identity, one-time labeled local import, and explicit cloud-data/account deletion. Guest mode remains the default and no login wall exists anywhere.
 
 ## How it was built
 
@@ -84,11 +86,11 @@ The [official hackathon rules](https://openai.devpost.com/rules) require working
 
 ## Disclosure
 
-The application has a production-ready local fallback, automated mocked coverage, a public source repository with GitHub Actions CI, and credential-safe release tooling. On the July 18 Phase 2 offline runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1`, 126 unit/integration tests, seven browser/accessibility workflows, the production build, source/bundle security scans, zero-vulnerability audit, and the complete fallback/production smoke passed. The live OpenAI smoke test was not run because `OPENAI_API_KEY` was not present, and deployment had not been authorized. The remaining placeholder fields must be updated with objective evidence before final submission.
+The application has a production-ready local fallback, automated mocked coverage, a public source repository with GitHub Actions CI, and credential-safe release tooling. On the July 19 Phase 01.1 offline candidate, 272 unit/integration tests, 23 Firebase emulator-integration tests, 13 default plus 16 emulator-mode browser/accessibility workflows, the production build, source/bundle security scans, zero-vulnerability audit, and the complete fallback/production smoke passed, with three independent product/QA/security reviews and no accepted blocker/high finding (exact-SHA ledger in the repository's `.planning` phase records). The account/cloud-sync path is proven against local Firebase emulators only: no real Firebase project exists yet, the live OpenAI smoke has not run because `OPENAI_API_KEY` was not present, and no deployment has been authorized. If real cloud gates miss the deadline, the same build ships with cloud sync disabled and the full local personalized dashboard intact. The remaining placeholder fields must be updated with objective evidence before final submission.
 
 ### Dependencies and assistance
 
-- Runtime: Next.js, React, OpenAI JavaScript SDK, Zod, Tailwind CSS, and `server-only`.
+- Runtime: Next.js, React, OpenAI JavaScript SDK, Zod, Tailwind CSS, `server-only`, and the Firebase Web/Admin SDKs for optional configuration-gated identity and cloud progress.
 - Development verification: TypeScript, ESLint, Vitest, Playwright, and axe-core.
 - Transitive dependency licenses were reviewed; see `docs/THREAT_MODEL.md`.
 - Codex is the primary builder. Independent Codex development agents performed the documented product, QA/accessibility, and security reviews; no Claude Code review was used.

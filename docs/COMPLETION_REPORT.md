@@ -1,7 +1,7 @@
 # FaultSmith Completion Report
 
-**Checkpoint:** July 18, 2026  
-**Release state:** Phase 2 offline runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1` passed strict fallback/production smoke and the full local gate after independent adversarial recheck; exact offline evidence head `953821e782531f59dcf5d21a3b76e7dc76dd1c38` passed all four required GitHub jobs; live credential proof, deployment, and human submission actions remain explicitly pending
+**Checkpoint:** July 19, 2026  
+**Release state:** the Phase 01.1 offline/emulator candidate passed the complete local gate set (272 unit, 23 emulator-integration, 13 default + 16 Firebase-mode browser tests, build, bundle/source scans, zero-vulnerability audit, fallback/production smoke) with three independent reviews and no accepted blocker/high; the exact frozen runtime SHA and final approvals are recorded in `.planning/phases/01.1-personalized-learner-accounts-cloud-progress-and-metrics-dashboard/`. The prior Phase 2 offline runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1` and evidence head `953821e782531f59dcf5d21a3b76e7dc76dd1c38` (all four required GitHub jobs green) are preserved as history. Real Firebase proof, live credential proof, deployment, and human submission actions remain explicitly pending
 **Primary evidence:** `docs/TESTING.md`, `docs/BUILD_LOG.md`, `docs/THREAT_MODEL.md`
 
 ## Executive result
@@ -82,12 +82,33 @@ The goal is not represented as globally finished because live OpenAI verificatio
 
 The approved July 18 amendment is implemented locally. The default entry point is a three-phase, nine-lesson evidence-first roadmap backed by the existing prevalidated fixtures. Guided starts make no OpenAI call, progress records only after a verified assessment, strict local parsing excludes learner prose/source/unknown lesson IDs, and deterministic recommendations reserve API usage for the direct advanced catalog. Open-ended natural-language prompting remains explicitly deferred. Objective evidence is in `docs/GUIDED_LEARNING_MVP.md`, `src/lib/learning-paths.test.ts`, `src/server/fixtures.test.ts`, and the guided Playwright workflows.
 
+## Personalized learning scope amendment (Phase 01.1)
+
+The approved July 19 amendment is implemented and frozen as a credential-free offline candidate:
+
+| Requirement | Status | Evidence |
+| --- | --- | --- |
+| PERS-01 guest My Progress dashboard | Verified locally | metric selector unit tests; default e2e dashboard/refresh/failing-attempt coverage; works with Firebase absent |
+| PERS-02 transparent deterministic recommendation | Verified locally | explained reasons rendered; test-run counts never enter scores; "not a certification" copy asserted |
+| AUTH-01 three access paths, no login wall | Verified on emulator | guest default everywhere; email/password + Google through the lazy adapter; sign-out returns to device data |
+| AUTH-02 server-side token verification | Verified on emulator | bounded Authorization parsing, wrong-project/expired/oversized denial, unauthenticated challenge routes unchanged |
+| AUTH-03 Firebase owns passwords; enumeration resistance | Verified on emulator | password-boundary scanner (unit-tested), persisted-state leak scenario, generic account-existence states, cooldowns |
+| AUTH-04 no silent collision merge; gated linking | Verified on emulator | UID-change link signs out (`link_unavailable`); capability flag default-off pending real-provider proof |
+| CLOUD-01 idempotent server-mediated persistence | Verified on emulator | SHA-256 idempotency replay collapse; verified-only completion; failing evidence never completes |
+| CLOUD-02 monotonic merge, caps, visible fallback | Verified locally/emulator | outcome-identity dedupe, 50-attempt cap, degradation states with retry |
+| PRIV-01 data minimization + deletion | Verified locally/emulator | strict bounded contracts; no prose/tokens/credentials anywhere; explicit cloud-data and account deletion |
+| SEC-03 isolation/containment | Verified locally/emulator | cross-user denial, deny-all rules, UID-only paths, exact-origin CSP, same-origin token routes; multi-instance controls deployment-gated |
+| QA-03 full gate set on one reviewed SHA | Verified locally | complete gate table in `docs/TESTING.md`; SHA-bound reviews in the phase records |
+
+**Pending human gates (claimed nowhere as done):** real Firebase Spark project configuration and real-provider proof, Netlify preview/production checks, live OpenAI smoke, five-tester UAT, video, and the `/feedback` Session ID. If real cloud gates miss the deadline, the tested configuration-off rollback ships the local personalized dashboard on the same reviewed SHA.
+
 ## Required user-authorized next actions
 
-1. After the offline evidence head is pushed and its four required checks pass, privately configure a server-only `OPENAI_API_KEY` for the controlled live smoke; do not paste it into chat.
-2. After the live proof and private credential cleanup, approve the target deployment and host-specific edge/shared abuse controls.
-3. Coordinate five external testers.
-4. Record and publish the demo after the live/deployment smoke.
-5. Capture the primary `/feedback` Session ID.
+1. Privately create and configure the Firebase Spark project per `docs/DEPLOYMENT.md` §5a for real email/password and Google sync proof on the frozen candidate; do not paste any value into chat.
+2. After the offline evidence head is pushed and its four required checks pass, privately configure a server-only `OPENAI_API_KEY` for the controlled live smoke; do not paste it into chat.
+3. After the live proof and private credential cleanup, approve the target deployment and host-specific edge/shared abuse controls.
+4. Coordinate five external testers.
+5. Record and publish the demo after the live/deployment smoke.
+6. Capture the primary `/feedback` Session ID.
 
 Repository publication was explicitly authorized and completed. No other destructive or external action was taken without authority. The validated fixture fallback remains intact and green.

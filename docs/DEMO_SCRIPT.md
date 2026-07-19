@@ -51,13 +51,17 @@ Enter: `The mutation excluded exactly 500 even though the requirement is inclusi
 
 Click **Submit patch + reasoning**.
 
-### 2:15–2:35 — Evidence, progress, and close
+### 2:15–2:35 — Evidence, progress, dashboard, and close
 
 “The final report separates deterministic repair evidence from reasoning feedback. In this guided run the rubric is deterministic. In a verified live run, GPT-5.6 may supply only bounded scores while the feedback text and verification decision remain server-owned.”
 
-Show verified status, score, changed-line count, executed tests, assessment feedback, **Guided roadmap updated**, and the deterministic next lesson.
+Show verified status, score, changed-line count, executed tests, assessment feedback, **Guided roadmap updated**, and the deterministic next lesson. Then click **My Progress** for roughly three seconds: phase progress, verified score dimensions, and the explained next recommendation — all derived locally with no account and no model call.
 
 Close: “FaultSmith: AI that breaks your code on purpose so you learn how to fix it.”
+
+### Optional secondary evidence — account sync (only if pre-verified)
+
+Sign-in is deliberately **not** part of the primary narrative; the under-three-minute fixture story must never depend on network identity. Only if cloud sync has already passed its separate real-Firebase proof, a secondary clip may show the optional account panel inside My Progress (“Guest practice is the default…”), a verified sign-in, and the storage chip flipping to **Synced to account**. If anything hesitates, cut the clip — guest mode is the product's promise, and the dashboard demonstrates personalization without any account.
 
 ## Recording fallback
 
@@ -67,7 +71,8 @@ If a controlled live smoke has passed and a direct-catalog live run is recorded,
 
 ## Claims to avoid
 
-- Do not call the report a certification.
+- Do not call the report a certification, and do not present My Progress metrics as grades or mastery claims.
 - Do not say arbitrary repositories or arbitrary Python are supported.
 - Do not imply the fallback executed in Code Interpreter.
 - Do not claim a public deployment, tester result, or live API result until independently verified.
+- Do not show or claim account sync unless the real-Firebase checkpoint has passed; emulator proof is not real-provider proof.
