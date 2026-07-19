@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: awaiting_external_input
-stopped_at: Phase 1 complete; Phase 2 requires an authorized server-only OPENAI_API_KEY
-last_updated: "2026-07-18T19:37:28.000Z"
-last_activity: July 18, 2026 — Phase 1 passed local, independent, manual, remote CI, and branch-protection gates.
+stopped_at: Phase 2 Plan 05 complete; Plan 06 awaits private server-only OPENAI_API_KEY configuration
+last_updated: "2026-07-19T03:16:00.000Z"
+last_activity: July 18, 2026 — Offline checkpoint 953821e passed local production smoke and all four required GitHub checks.
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 12
+  completed_plans: 11
   percent: 25
 ---
 
@@ -26,9 +26,9 @@ See: `.planning/PROJECT.md` (updated July 18, 2026)
 ## Current Position
 
 Phase: 2 of 4 (Credential-Controlled Live OpenAI Proof)
-Plan: not planned while credential-gated
-Status: Awaiting explicit authorization and a valid server-only `OPENAI_API_KEY`
-Last activity: July 18, 2026 — Candidate `fee2087` approved; evidence head `71f2379` passed four GitHub checks; strict branch protection synchronized.
+Plan: 5 of 6 complete; Plan 06 is the human credential/live-proof checkpoint
+Status: Awaiting private configuration of a valid funded server-only `OPENAI_API_KEY`
+Last activity: July 18, 2026 — Offline checkpoint `953821e` passed 126 unit/integration tests, seven browser workflows, strict fallback/production smoke, source/bundle/audit, independent adversarial recheck, and four required GitHub checks in run 29671442532.
 
 Progress: [███░░░░░░░] 25%
 
@@ -56,6 +56,11 @@ Progress: [███░░░░░░░] 25%
 | Phase 01 P04 | 15 min | independent security/adversarial review | 2 files |
 | Phase 01 P05 | 34 min | 13 findings disposition, repairs, regressions, rechecks | 24 files |
 | Phase 01 P06 | 13 min | canonical evidence, manual production review, remote CI/protection | 13 files + GitHub state |
+| Phase 02 P01 | 25 min | strict route lifecycle and evidence core | 2 files |
+| Phase 02 P02 | 20 min | submission/UAT readiness validator and protocol | 4 files |
+| Phase 02 P03 | 8 min | explicit fallback/live operator CLI | 2 files |
+| Phase 02 P04 | 10 min | production smoke and deployment/rollback runbook | 3 files |
+| Phase 02 P05 | 31 min | integration, adversarial self-heal, full local/remote gates | 14 files + GitHub state |
 
 ## Accumulated Context
 
@@ -74,13 +79,13 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 2 requires explicit authorization and a valid server-only `OPENAI_API_KEY` for live proof.
+- Phase 2 Plan 06 requires the user to privately configure a valid funded server-only `OPENAI_API_KEY`, confirm only the live health boolean, and later privately remove it before final source scanning.
 - Phase 3 requires explicit deployment approval and access to the selected host configuration.
 - Phase 4 requires five external testers, video publication, and the primary Codex `/feedback` Session ID.
 - The submission deadline is July 21, 2026 at 5:00 PM Pacific; release proof takes priority over feature breadth.
 
 ## Session Continuity
 
-Last session: 2026-07-18T19:37:28.000Z
-Stopped at: Phase 1 complete; Phase 2 requires an authorized server-only `OPENAI_API_KEY`
+Last session: 2026-07-19T03:16:00.000Z
+Stopped at: Phase 2 offline checkpoint complete and remotely green; awaiting private credential configuration for Plan 06
 Resume file: None

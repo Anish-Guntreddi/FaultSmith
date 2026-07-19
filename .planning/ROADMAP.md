@@ -40,7 +40,7 @@ This milestone converts the current guided-learning release candidate into one s
   3. Live hints and assessment satisfy their strict schemas, do not reveal a completed repair, and cannot verify non-passing deterministic evidence.
   4. Missing key, malformed provider output, timeout, expiration, and provider failure still recover to a visibly labeled real fixture challenge, with sanitized evidence bound to the tested SHA.
 **External dependency gate:** Requires the user to explicitly configure/authorize use of a valid server-only `OPENAI_API_KEY`. If absent, only this phase's live proof remains blocked; the fallback and all offline gates stay usable.
-**Plans:** TBD during phase planning
+**Plans:** 6 plans across 4 waves; 5 complete, Plan 06 credential-gated
 
 ### Phase 3: Approved Public Deployment and Production Verification
 
@@ -85,7 +85,7 @@ This milestone converts the current guided-learning release candidate into one s
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Release Integration and Independent Quality Gates | 6/6 | Complete | 2026-07-18 |
-| 2. Credential-Controlled Live OpenAI Proof | 0/TBD | Not started — credential gate | - |
+| 2. Credential-Controlled Live OpenAI Proof | 5/6 | Offline checkpoint complete — credential gate | - |
 | 3. Approved Public Deployment and Production Verification | 0/TBD | Not started — approval gate | - |
 | 4. External UAT, Video, and Final Submission | 0/TBD | Not started — external evidence | - |
 

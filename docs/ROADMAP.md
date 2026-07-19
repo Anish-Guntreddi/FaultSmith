@@ -3,7 +3,7 @@
 **Last direction review:** July 18, 2026  
 **Locked track:** Education  
 **Locked primary demo:** Expense Approval boundary condition  
-**Current state:** Phase 2 offline preparation complete on runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1`: strict fallback/live/production smoke, sanitized evidence, UAT/readiness validation, and deployment/rollback procedures are implemented; 126 unit/integration tests and seven browser workflows pass. Live credential proof, offline-checkpoint remote CI publication, deployment approval, and remaining human submission actions are still pending.
+**Current state:** Phase 2 offline preparation complete on runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1` and evidence head `953821e782531f59dcf5d21a3b76e7dc76dd1c38`: strict fallback/live/production smoke, sanitized evidence, UAT/readiness validation, and deployment/rollback procedures are implemented; 126 unit/integration tests, seven browser workflows, and four required GitHub jobs pass. Live credential proof, deployment approval, and remaining human submission actions are still pending.
 
 ## Completed milestones
 
@@ -23,12 +23,11 @@
 
 ## Remaining PRD gaps requiring external action
 
-1. Publish the reviewed offline checkpoint and require the four GitHub quality/security checks to pass.
-2. Privately configure a funded `OPENAI_API_KEY` and run the single controlled local GPT-5.6 and Code Interpreter smoke command; clean up the credential before repository scanning.
-3. Obtain deployment approval, configure edge/shared abuse controls, deploy, and verify the public URL without authentication.
-4. Run the study with at least five external testers and record comprehension results.
-5. Record and publish the under-three-minute demonstration.
-6. Capture the primary Codex `/feedback` Session ID and place it in the submission.
+1. Privately configure a funded `OPENAI_API_KEY` and run the single controlled local GPT-5.6 and Code Interpreter smoke command; clean up the credential before repository scanning.
+2. Obtain deployment approval, configure edge/shared abuse controls, deploy, and verify the public URL without authentication.
+3. Run the study with at least five external testers and record comprehension results.
+4. Record and publish the under-three-minute demonstration.
+5. Capture the primary Codex `/feedback` Session ID and place it in the submission.
 
 These are intentionally not marked complete by local fallback evidence.
 

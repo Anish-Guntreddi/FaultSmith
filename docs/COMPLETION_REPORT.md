@@ -1,7 +1,7 @@
 # FaultSmith Completion Report
 
 **Checkpoint:** July 18, 2026  
-**Release state:** Phase 2 offline runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1` passed strict fallback/production smoke and the full local gate after independent adversarial recheck; publication of the final offline evidence head, live credential proof, deployment, and human submission actions remain explicitly pending
+**Release state:** Phase 2 offline runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1` passed strict fallback/production smoke and the full local gate after independent adversarial recheck; exact offline evidence head `953821e782531f59dcf5d21a3b76e7dc76dd1c38` passed all four required GitHub jobs; live credential proof, deployment, and human submission actions remain explicitly pending
 **Primary evidence:** `docs/TESTING.md`, `docs/BUILD_LOG.md`, `docs/THREAT_MODEL.md`
 
 ## Executive result

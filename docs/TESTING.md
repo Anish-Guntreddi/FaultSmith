@@ -30,6 +30,7 @@ The final local run produced:
 | Production root/health/full fallback API smoke | Pass on runtime SHA `5fcae2713e44`; HTTP 200 HTML shell, reviewed headers, API `no-store`, explicit missing-key Code Interpreter recovery, intended fail → repaired pass → verified assessment, failing snapshot → `not_verified` |
 | Release-readiness tooling | 63 focused tests pass across strict lifecycle/evidence, explicit-live CLI, production surface, and submission/UAT validation |
 | GitHub Actions Phase 1 evidence | Pass; evidence head `71f2379` completed all four required checks in [run 29658002877](https://github.com/Anish-Guntreddi/FaultSmith/actions/runs/29658002877) |
+| GitHub Actions Phase 2 offline checkpoint | Pass; exact head `953821e` completed Static analysis, Unit and integration, Build and security, and Browser and accessibility in [run 29671442532](https://github.com/Anish-Guntreddi/FaultSmith/actions/runs/29671442532) |
 | GitHub Actions baseline | Pass; public `main` run [29650774197](https://github.com/Anish-Guntreddi/FaultSmith/actions/runs/29650774197) completed successfully |
 
 The earlier final-gate lint failure in the new 404 page and the client-bundle hidden-schema finding were repaired and all downstream gates were rerun. See `docs/BUILD_LOG.md`.
