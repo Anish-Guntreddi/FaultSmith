@@ -134,3 +134,62 @@ export function mergeLearnerProfiles(localValue: unknown, remoteValue: unknown):
     attempts: parseAttemptHistory([...local.attempts, ...remote.attempts]),
   };
 }
+
+/**
+ * The bounded outcome identity of an attempt, excluding client-assigned
+ * identifiers, wall-clock timestamps, and provenance. This mirrors the
+ * server's idempotency material: two records with the same outcome identity
+ * describe the same attempt even when one was recorded locally with a random
+ * identifier and the other server-side with a derived identifier.
+ */
+export function attemptOutcomeIdentity(attempt: AttemptSummary): string {
+  return [
+    attempt.lessonId ?? "catalog",
+    attempt.projectId,
+    attempt.skill,
+    attempt.difficulty,
+    attempt.challengeSource,
+    attempt.status,
+    attempt.rootCauseScore,
+    attempt.reasoningScore,
+    attempt.patchDisciplineScore,
+    attempt.conceptUnderstandingScore,
+    attempt.hintsUsed,
+    attempt.testRuns,
+    attempt.changedLines,
+    attempt.durationBucket,
+  ].join("|");
+}
+
+function preferCloudEquivalent(next: AttemptSummary, current: AttemptSummary): boolean {
+  if (next.provenance !== current.provenance) return next.provenance === "server_verified";
+  if (next.completedAt !== current.completedAt) return next.completedAt > current.completedAt;
+  return false;
+}
+
+/**
+ * Merge the local device profile with an authenticated cloud snapshot for
+ * display. Beyond the standard monotonic merge, attempts whose bounded
+ * outcome identity is identical collapse into one record with the
+ * server-verified copy preferred — so an attempt persisted both locally
+ * (random identifier) and server-side (derived identifier) never appears
+ * twice, and local records can never masquerade as server-verified evidence.
+ */
+export function mergeCloudLearnerProfiles(localValue: unknown, cloudValue: unknown): LearnerProfile {
+  const merged = mergeLearnerProfiles(localValue, cloudValue);
+
+  const byOutcome = new Map<string, AttemptSummary>();
+  for (const candidate of merged.attempts) {
+    const key = attemptOutcomeIdentity(candidate);
+    const current = byOutcome.get(key);
+    if (!current || preferCloudEquivalent(candidate, current)) {
+      byOutcome.set(key, candidate);
+    }
+  }
+
+  return {
+    version: PROGRESS_PROFILE_VERSION,
+    completions: merged.completions,
+    attempts: parseAttemptHistory([...byOutcome.values()]),
+  };
+}

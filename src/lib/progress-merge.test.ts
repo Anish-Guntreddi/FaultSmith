@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  attemptOutcomeIdentity,
   buildLearnerProfile,
+  mergeCloudLearnerProfiles,
   mergeLearnerProfiles,
   migrateLearningProgressV1,
   parseLearnerProfile,
@@ -201,5 +203,93 @@ describe("mergeLearnerProfiles", () => {
   it("survives garbage input on either side", () => {
     expect(mergeLearnerProfiles(local, "tampered")).toEqual(local);
     expect(mergeLearnerProfiles(null, remote)).toEqual(remote);
+  });
+});
+
+
+describe("mergeCloudLearnerProfiles", () => {
+  const localProfile = {
+    version: 2,
+    completions: [
+      { stepId: "evidence-boundaries", completedAt: 10, overallScore: 88, hintsUsed: 1, testRuns: 2 },
+    ],
+    attempts: [attempt({ attemptId: "local-random-uuid-0001", completedAt: 1_000, provenance: "server_verified" })],
+  };
+
+  it("collapses the same bounded outcome recorded locally and server-side into one attempt", () => {
+    const cloudProfile = {
+      version: 2,
+      completions: [
+        { stepId: "evidence-boundaries", completedAt: 10, overallScore: 88, hintsUsed: 1, testRuns: 2 },
+      ],
+      attempts: [attempt({ attemptId: "sha256-derived-server-id", completedAt: 1_500, provenance: "server_verified" })],
+    };
+
+    const merged = mergeCloudLearnerProfiles(localProfile, cloudProfile);
+    expect(merged.attempts).toHaveLength(1);
+    expect(merged.attempts[0].attemptId).toBe("sha256-derived-server-id");
+    expect(merged.completions).toHaveLength(1);
+  });
+
+  it("prefers server_verified provenance over local_import for equivalent outcomes", () => {
+    const cloudProfile = {
+      version: 2,
+      completions: [],
+      attempts: [attempt({ attemptId: "cloud-import-copy", completedAt: 5_000, provenance: "local_import" })],
+    };
+
+    const merged = mergeCloudLearnerProfiles(localProfile, cloudProfile);
+    expect(merged.attempts).toHaveLength(1);
+    expect(merged.attempts[0].provenance).toBe("server_verified");
+  });
+
+  it("keeps genuinely different attempts and never fabricates provenance", () => {
+    const cloudProfile = {
+      version: 2,
+      completions: [
+        { stepId: "evidence-booleans", completedAt: 20, overallScore: 92, hintsUsed: 0, testRuns: 1 },
+      ],
+      attempts: [
+        attempt({ attemptId: "cloud-different-outcome", completedAt: 2_000, hintsUsed: 2, provenance: "local_import" }),
+      ],
+    };
+
+    const merged = mergeCloudLearnerProfiles(localProfile, cloudProfile);
+    expect(merged.attempts).toHaveLength(2);
+    expect(merged.completions.map((completion) => completion.stepId).sort()).toEqual([
+      "evidence-booleans",
+      "evidence-boundaries",
+    ]);
+    const imported = merged.attempts.find((item) => item.attemptId === "cloud-different-outcome");
+    expect(imported?.provenance).toBe("local_import");
+  });
+
+  it("is monotonic: newer verified progress survives an older cloud record", () => {
+    const newerLocal = {
+      version: 2,
+      completions: [
+        { stepId: "evidence-boundaries", completedAt: 99, overallScore: 95, hintsUsed: 0, testRuns: 1 },
+      ],
+      attempts: [],
+    };
+    const olderCloud = {
+      version: 2,
+      completions: [
+        { stepId: "evidence-boundaries", completedAt: 10, overallScore: 70, hintsUsed: 3, testRuns: 9 },
+      ],
+      attempts: [],
+    };
+
+    const merged = mergeCloudLearnerProfiles(newerLocal, olderCloud);
+    expect(merged.completions).toHaveLength(1);
+    expect(merged.completions[0].completedAt).toBe(99);
+    expect(merged.completions[0].overallScore).toBe(95);
+  });
+
+  it("outcome identity excludes identifiers, timestamps, and provenance", () => {
+    const a = attempt({ attemptId: "id-aaa-000001", completedAt: 1, provenance: "server_verified" });
+    const b = attempt({ attemptId: "id-bbb-000002", completedAt: 2, provenance: "local_import" });
+    expect(attemptOutcomeIdentity(a)).toBe(attemptOutcomeIdentity(b));
+    expect(attemptOutcomeIdentity(attempt({ hintsUsed: 3 }))).not.toBe(attemptOutcomeIdentity(a));
   });
 });

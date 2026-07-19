@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   collapseAuthError,
   createFirebaseAuthAdapter,
+  resolveAuthEmulatorHost,
   resolveCloudConfigStatus,
   type CloudAuthGateway,
   type CloudGatewayUser,
@@ -47,6 +48,8 @@ function createFakeGateway(overrides: Partial<CloudAuthGateway> = {}): CloudAuth
     linkCurrentUserWithGoogle: vi.fn(async () =>
       gatewayUser({ providerIds: ["password", "google.com"] }),
     ),
+    reloadCurrentUser: vi.fn(async () => gatewayUser({ emailVerified: true })),
+    deleteCurrentUser: vi.fn(async () => {}),
     signOut: vi.fn(async () => {}),
     getIdToken: vi.fn(async () => "fresh-example-id-token"),
     ...overrides,
@@ -428,5 +431,87 @@ describe("credential material never persists or leaks", () => {
     expect(collapseAuthError(new Error("raw failure"))).toBe("unavailable");
     expect(collapseAuthError(undefined)).toBe("unavailable");
     expect(collapseAuthError({ code: "auth/too-many-requests" })).toBe("cooldown");
+  });
+});
+
+
+describe("verification refresh", () => {
+  it("publishes the reloaded verification state", async () => {
+    const { adapter, gateway } = createHarness();
+
+    await adapter.createEmailAccount("learner@example.test", examplePassphrase);
+    expect(adapter.getSnapshot().emailVerified).toBe(false);
+
+    expect(await adapter.refreshVerificationStatus()).toEqual({ ok: true });
+    expect(gateway.reloadCurrentUser).toHaveBeenCalledTimes(1);
+    expect(adapter.getSnapshot().emailVerified).toBe(true);
+  });
+
+  it("never initializes Firebase just to refresh verification", async () => {
+    const { adapter, loadGateway } = createHarness();
+
+    expect(await adapter.refreshVerificationStatus()).toEqual({
+      ok: false,
+      error: "not_signed_in",
+    });
+    expect(loadGateway).not.toHaveBeenCalled();
+  });
+});
+
+describe("account deletion", () => {
+  it("deletes the account only for an active session and clears the snapshot", async () => {
+    const { adapter, gateway } = createHarness();
+
+    expect(await adapter.deleteCloudAccount()).toEqual({ ok: false, error: "not_signed_in" });
+    expect(gateway.deleteCurrentUser).not.toHaveBeenCalled();
+
+    await adapter.signInWithEmail("learner@example.test", examplePassphrase);
+    expect(await adapter.deleteCloudAccount()).toEqual({ ok: true });
+    expect(gateway.deleteCurrentUser).toHaveBeenCalledTimes(1);
+    expect(adapter.getSnapshot().status).toBe("signed_out");
+  });
+
+  it("surfaces the recent-authentication requirement distinctly", async () => {
+    const gateway = createFakeGateway({
+      deleteCurrentUser: vi.fn(async () => {
+        throw { code: "auth/requires-recent-login" };
+      }),
+    });
+    const { adapter } = createHarness({ gateway });
+
+    await adapter.signInWithEmail("learner@example.test", examplePassphrase);
+    expect(await adapter.deleteCloudAccount()).toEqual({
+      ok: false,
+      error: "recent_login_required",
+    });
+    expect(collapseAuthError({ code: "auth/requires-recent-login" })).toBe(
+      "recent_login_required",
+    );
+  });
+});
+
+describe("provider-linking capability gate", () => {
+  it("reports unsupported unless the test-gated flag is exactly true", () => {
+    const unsupported = createHarness();
+    expect(unsupported.adapter.isProviderLinkingSupported()).toBe(false);
+
+    const supported = createHarness({ env: { ...readyEnv, providerLinkingFlag: "true" } });
+    expect(supported.adapter.isProviderLinkingSupported()).toBe(true);
+
+    const variant = createHarness({ env: { ...readyEnv, providerLinkingFlag: "yes" } });
+    expect(variant.adapter.isProviderLinkingSupported()).toBe(false);
+  });
+});
+
+describe("auth emulator host validation", () => {
+  it("accepts only loopback host:port values", () => {
+    expect(resolveAuthEmulatorHost("127.0.0.1:9099")).toBe("127.0.0.1:9099");
+    expect(resolveAuthEmulatorHost("localhost:9099")).toBe("localhost:9099");
+    expect(resolveAuthEmulatorHost("")).toBeNull();
+    expect(resolveAuthEmulatorHost(undefined)).toBeNull();
+    expect(resolveAuthEmulatorHost("evil.example.com:9099")).toBeNull();
+    expect(resolveAuthEmulatorHost("127.0.0.1")).toBeNull();
+    expect(resolveAuthEmulatorHost("https://127.0.0.1:9099")).toBeNull();
+    expect(resolveAuthEmulatorHost("127.0.0.1:9099/extra")).toBeNull();
   });
 });

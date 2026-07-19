@@ -29,6 +29,7 @@ export type CloudAuthErrorState =
   | "provider_collision"
   | "cooldown"
   | "link_unavailable"
+  | "recent_login_required"
   | "unavailable";
 
 export type CloudAuthResult = { ok: true } | { ok: false; error: CloudAuthErrorState };
@@ -46,10 +47,19 @@ export interface PublicFirebaseWebConfig {
   authDomain: string;
   projectId: string;
   appId: string;
+  /**
+   * Non-production only: when set, the browser gateway redirects every auth
+   * request to the local Authentication emulator instead of real Firebase.
+   * The value is validated to a loopback host so it can never widen to a
+   * real origin.
+   */
+  authEmulatorHost?: string;
 }
 
 export interface PublicFirebaseEnv extends PublicFirebaseWebConfig {
   cloudSyncFlag: string;
+  /** Test-gated provider-linking capability flag; unset means unsupported. */
+  providerLinkingFlag?: string;
 }
 
 export interface CloudGatewayUser {
@@ -73,6 +83,8 @@ export interface CloudAuthGateway {
   sendPasswordResetEmail(email: string): Promise<void>;
   signInWithGooglePopup(): Promise<CloudGatewayUser>;
   linkCurrentUserWithGoogle(): Promise<CloudGatewayUser>;
+  reloadCurrentUser(): Promise<CloudGatewayUser>;
+  deleteCurrentUser(): Promise<void>;
   signOut(): Promise<void>;
   getIdToken(forceRefresh: boolean): Promise<string>;
 }
@@ -95,10 +107,23 @@ export interface FirebaseAuthAdapter {
   signInWithEmail(email: string, password: string): Promise<CloudAuthResult>;
   checkPasswordAgainstPolicy(password: string): Promise<PasswordPolicyResult>;
   resendVerificationEmail(): Promise<CloudAuthResult>;
+  refreshVerificationStatus(): Promise<CloudAuthResult>;
   sendPasswordReset(email: string): Promise<CloudAuthResult>;
   signInWithGoogle(): Promise<CloudAuthResult>;
+  /**
+   * UID-preserving provider linking is test-gated: it is offered only when
+   * emulator and real-provider proof are green. When false, collision
+   * handling must fall back to safe existing-provider guidance.
+   */
+  isProviderLinkingSupported(): boolean;
   linkGoogleToCurrentAccount(): Promise<CloudAuthResult>;
   signOutOfCloud(): Promise<CloudAuthResult>;
+  /**
+   * Deletes the Firebase account itself. Requires recent authentication
+   * (surfaced as `recent_login_required`) and must only be offered after
+   * cloud learning data has been deleted.
+   */
+  deleteCloudAccount(): Promise<CloudAuthResult>;
   getFreshIdToken(): Promise<CloudTokenResult>;
 }
 
@@ -136,7 +161,21 @@ export function readPublicFirebaseEnv(): PublicFirebaseEnv {
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "",
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ?? "",
     cloudSyncFlag: process.env.NEXT_PUBLIC_FAULTSMITH_CLOUD_SYNC ?? "",
+    authEmulatorHost: process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST ?? "",
+    providerLinkingFlag: process.env.NEXT_PUBLIC_FAULTSMITH_PROVIDER_LINKING ?? "",
   };
+}
+
+/**
+ * The auth emulator host must be a loopback origin. Anything else is treated
+ * as absent so a non-production knob can never redirect auth traffic to an
+ * arbitrary host.
+ */
+const LOOPBACK_EMULATOR_HOST_PATTERN = /^(?:127\.0\.0\.1|localhost):\d{2,5}$/;
+
+export function resolveAuthEmulatorHost(value: string | undefined): string | null {
+  const trimmed = (value ?? "").trim();
+  return LOOPBACK_EMULATOR_HOST_PATTERN.test(trimmed) ? trimmed : null;
 }
 
 export function resolveCloudConfigStatus(env: PublicFirebaseEnv = readPublicFirebaseEnv()): CloudConfigStatus {
@@ -183,6 +222,8 @@ export function collapseAuthError(error: unknown): CloudAuthErrorState {
     case "auth/account-exists-with-different-credential":
     case "auth/credential-already-in-use":
       return "provider_collision";
+    case "auth/requires-recent-login":
+      return "recent_login_required";
     case "auth/too-many-requests":
       return "cooldown";
     default:
@@ -206,6 +247,12 @@ async function loadBrowserGateway(config: PublicFirebaseWebConfig): Promise<Clou
           appId: config.appId,
         });
   const auth = authModule.getAuth(app);
+
+  const emulatorHost = resolveAuthEmulatorHost(config.authEmulatorHost);
+  if (emulatorHost) {
+    // Non-production only: every auth request targets the local emulator.
+    authModule.connectAuthEmulator(auth, `http://${emulatorHost}`, { disableWarnings: true });
+  }
 
   const toGatewayUser = (user: User): CloudGatewayUser => ({
     uid: user.uid,
@@ -245,6 +292,14 @@ async function loadBrowserGateway(config: PublicFirebaseWebConfig): Promise<Clou
       toGatewayUser(
         (await authModule.linkWithPopup(requireUser(), new authModule.GoogleAuthProvider())).user,
       ),
+    reloadCurrentUser: async () => {
+      const user = requireUser();
+      await user.reload();
+      return toGatewayUser(requireUser());
+    },
+    deleteCurrentUser: async () => {
+      await authModule.deleteUser(requireUser());
+    },
     signOut: async () => {
       await authModule.signOut(auth);
     },
@@ -302,6 +357,7 @@ export function createFirebaseAuthAdapter(
         authDomain: env.authDomain,
         projectId: env.projectId,
         appId: env.appId,
+        authEmulatorHost: env.authEmulatorHost,
       }).then((gateway) => {
         gateway.subscribe((user) => publish(toSnapshot(user)));
         return gateway;
@@ -385,6 +441,18 @@ export function createFirebaseAuthAdapter(
       }
     },
 
+    refreshVerificationStatus: async () => {
+      if (!gatewayPromise) return { ok: false, error: "not_signed_in" };
+      const handle = await ensureGateway();
+      if (!handle.ok) return { ok: false, error: handle.error };
+      try {
+        publish(toSnapshot(await handle.gateway.reloadCurrentUser()));
+        return { ok: true };
+      } catch (error) {
+        return { ok: false, error: collapseAuthError(error) };
+      }
+    },
+
     sendPasswordReset: async (email) => {
       const handle = await ensureGateway();
       if (!handle.ok) return { ok: false, error: handle.error };
@@ -411,6 +479,9 @@ export function createFirebaseAuthAdapter(
         return { ok: false, error: collapseAuthError(error) };
       }
     },
+
+    isProviderLinkingSupported: () =>
+      (readEnv().providerLinkingFlag ?? "").trim().toLowerCase() === "true",
 
     linkGoogleToCurrentAccount: async () => {
       const handle = await ensureGateway();
@@ -449,6 +520,20 @@ export function createFirebaseAuthAdapter(
       if (!handle.ok) return { ok: false, error: handle.error };
       try {
         await handle.gateway.signOut();
+        publish(SIGNED_OUT_SNAPSHOT);
+        return { ok: true };
+      } catch (error) {
+        return { ok: false, error: collapseAuthError(error) };
+      }
+    },
+
+    deleteCloudAccount: async () => {
+      if (!gatewayPromise) return { ok: false, error: "not_signed_in" };
+      const handle = await ensureGateway();
+      if (!handle.ok) return { ok: false, error: handle.error };
+      if (snapshot.status !== "signed_in") return { ok: false, error: "not_signed_in" };
+      try {
+        await handle.gateway.deleteCurrentUser();
         publish(SIGNED_OUT_SNAPSHOT);
         return { ok: true };
       } catch (error) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { ProgressSyncPanel, type CloudProgressSync } from "@/components/progress-sync";
 import { getLearningStep, type LearningStep } from "@/lib/learning-paths";
 import {
   durationBucketLabels,
@@ -21,6 +22,7 @@ import {
 type ProgressDashboardProps = {
   profile: LearnerProfile;
   onStartStep: (step: LearningStep) => void;
+  sync: CloudProgressSync;
 };
 
 function EvidenceBar({ value, tone = "amber" }: { value: number; tone?: "amber" | "emerald" }) {
@@ -43,7 +45,7 @@ function attemptTitle(attempt: AttemptSummary) {
   return `Skill practice: ${attempt.skill}`;
 }
 
-export function ProgressDashboard({ profile, onStartStep }: ProgressDashboardProps) {
+export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashboardProps) {
   const completedCount = profile.completions.length;
   const phaseProgress = getPhaseProgress(profile);
   const averages = getVerifiedScoreAverages(profile);
@@ -73,14 +75,30 @@ export function ProgressDashboard({ profile, onStartStep }: ProgressDashboardPro
           <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Personal practice evidence</div>
           <h2 id="my-progress-heading" className="mt-1 text-2xl font-medium text-white">My Progress</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-            Practice evidence — not a certification. Every number below comes from verified lab evidence stored only in this browser.
+            {sync.phase === "synced"
+              ? "Practice evidence — not a certification. Every number below comes from verified lab evidence on this device and in your account."
+              : "Practice evidence — not a certification. Every number below comes from verified lab evidence stored only in this browser."}
           </p>
         </div>
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/8 bg-white/[0.03] px-3 py-1.5 text-xs text-zinc-400">
-          <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
-          On this device
+        <span
+          role="status"
+          className="inline-flex w-fit items-center gap-2 rounded-full border border-white/8 bg-white/[0.03] px-3 py-1.5 text-xs text-zinc-400"
+        >
+          <span
+            aria-hidden="true"
+            className={`inline-block h-1.5 w-1.5 rounded-full ${
+              sync.phase === "synced"
+                ? "bg-emerald-400"
+                : sync.phase === "degraded"
+                  ? "bg-red-400"
+                  : "bg-amber-400"
+            }`}
+          />
+          {sync.storageLabel}
         </span>
       </div>
+
+      <ProgressSyncPanel sync={sync} />
 
       {isEmpty && (
         <div className="mb-5 rounded-2xl border border-amber-400/15 bg-amber-400/[0.04] p-5">

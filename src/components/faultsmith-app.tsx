@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { GuidedRoadmap } from "@/components/guided-roadmap";
 import { ProgressDashboard } from "@/components/progress-dashboard";
+import { useCloudProgressSync, type CloudProgressSync } from "@/components/progress-sync";
 import { projects } from "@/lib/catalog";
 import {
   appendAnonymousAttemptEvent,
@@ -38,7 +39,6 @@ import {
   deriveAttemptSummary,
   parseAttemptHistory,
   type AttemptSummary,
-  type LearnerProfile,
 } from "@/lib/progress-contracts";
 import { buildLearnerProfile, recordAttemptSummary } from "@/lib/progress-merge";
 
@@ -110,10 +110,10 @@ function AppHeader({ stage, verified }: { stage: Stage; verified: boolean }) {
   );
 }
 
-async function postJson(path: string, body: unknown) {
+async function postJson(path: string, body: unknown, extraHeaders?: Record<string, string>) {
   const response = await fetch(path, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...extraHeaders },
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(35_000),
   });
@@ -205,6 +205,11 @@ export function FaultSmithApp() {
     () => buildLearnerProfile(learningProgress, attemptHistory),
     [learningProgress, attemptHistory],
   );
+
+  // Optional account synchronization. Guest/local progress remains the
+  // default reliability path; this hook only adds cloud state on top and can
+  // never block or alter the deterministic learning loop.
+  const cloudSync = useCloudProgressSync(learnerProfile);
 
   useEffect(() => {
     const progressTimer = window.setTimeout(() => {
@@ -529,17 +534,25 @@ export function FaultSmithApp() {
         challengeId: challenge.challengeId,
         source: challenge.source,
       });
-      const data = await postJson("/api/challenges/assess", {
-        challengeId: challenge.challengeId,
-        files,
-        executionMode: challenge.source === "generated" ? "code_interpreter" : "prevalidated_fixture",
-        hypothesis,
-        hypothesisHistory: submittedHypotheses,
-        explanation,
-        hintsUsed: revealedHints.length,
-        testRuns: submittedRuns,
-        elapsedSeconds: Math.min(86_400, Math.max(0, Math.round((Date.now() - startedAt) / 1_000))),
-      });
+      // A fresh ID token is requested only at protected request time and only
+      // attached to this same-origin call; it is never stored. Token failure
+      // degrades to an anonymous submission and never blocks the assessment.
+      const authHeader = await cloudSync.getAssessAuthHeader();
+      const data = await postJson(
+        "/api/challenges/assess",
+        {
+          challengeId: challenge.challengeId,
+          files,
+          executionMode: challenge.source === "generated" ? "code_interpreter" : "prevalidated_fixture",
+          hypothesis,
+          hypothesisHistory: submittedHypotheses,
+          explanation,
+          hintsUsed: revealedHints.length,
+          testRuns: submittedRuns,
+          elapsedSeconds: Math.min(86_400, Math.max(0, Math.round((Date.now() - startedAt) / 1_000))),
+        },
+        authHeader,
+      );
       const parsed = assessmentResponseSchema.safeParse(data);
       if (!parsed.success) throw new Error("The server returned an invalid assessment contract.");
       setAssessment(parsed.data);
@@ -594,6 +607,9 @@ export function FaultSmithApp() {
           // Guided progress is optional local state and never blocks an authoritative report.
         }
       }
+      // Local report and progress are already recorded above; the bounded
+      // cloudSync fact only updates the sync surface afterwards.
+      cloudSync.afterAssessment(parsed.data.cloudSync);
       setStage("report");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "The submission failed safely.");
@@ -653,7 +669,7 @@ export function FaultSmithApp() {
           learningMode={learningMode}
           setLearningMode={setLearningMode}
           learningProgress={learningProgress}
-          learnerProfile={learnerProfile}
+          cloudSync={cloudSync}
           selectedLearningStepId={selectedLearningStepId}
           setSelectedLearningStepId={setSelectedLearningStepId}
           onStartGuidedStep={startGuidedStep}
@@ -725,7 +741,7 @@ type ConfigureProps = {
   learningMode: LearningMode;
   setLearningMode: (mode: LearningMode) => void;
   learningProgress: LearningProgress;
-  learnerProfile: LearnerProfile;
+  cloudSync: CloudProgressSync;
   selectedLearningStepId: LearningStepId;
   setSelectedLearningStepId: (stepId: LearningStepId) => void;
   onStartGuidedStep: (step: LearningStep) => void;
@@ -770,7 +786,11 @@ function ConfigureView(props: ConfigureProps) {
           </div>
         ) : props.learningMode === "progress" ? (
           <div className="mt-10">
-            <ProgressDashboard profile={props.learnerProfile} onStartStep={props.onStartGuidedStep} />
+            <ProgressDashboard
+              profile={props.cloudSync.displayProfile}
+              onStartStep={props.onStartGuidedStep}
+              sync={props.cloudSync}
+            />
           </div>
         ) : (
         <div className="mt-12 grid gap-7 xl:grid-cols-[1fr_390px]">
