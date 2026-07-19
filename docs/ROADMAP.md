@@ -3,7 +3,7 @@
 **Last direction review:** July 19, 2026
 **Locked track:** Education  
 **Locked primary demo:** Expense Approval boundary condition  
-**Current state:** Phase 01.1 credential-free implementation is complete and frozen as an offline/emulator release candidate. The guest-first My Progress dashboard, optional verified email/password and Google accounts, server-verified identity, server-mediated Firestore progress with idempotency/retention/one-time import/deletion, cloud-configured-only exact-origin CSP widening, and the tested configuration-off rollback all pass the complete local/emulator gate set (272 unit, 23 emulator-integration, 13 default browser, 16 Firebase-mode browser tests, build, bundle/source scans, zero-vulnerability audit, fallback and production smoke) on one reviewed SHA with three independent product/QA/security reviews and zero accepted blocker/high findings. No real Firebase project, Netlify deployment, or external service mutation has occurred. Live OpenAI proof, real Firebase proof, deployment approval, and remaining human submission actions are still pending.
+**Current state:** Phase 01.1 implementation and the Forensic Workbench design pass are complete locally. The guest-first My Progress dashboard, optional verified email/password and Google accounts, server-verified identity, server-mediated Firestore progress with idempotency/retention/one-time import/deletion, cloud-configured-only exact-origin CSP widening, and configuration-off rollback pass the complete local/emulator gate set (272 unit, 23 emulator-integration, 13 default browser, 16 Firebase-mode browser tests, production build, bundle scan, and zero-vulnerability audit). A private Firebase Spark project is now configured and its sanitized automated real-project smoke passed 22/22 stages; Google popup/cancel/collision, real inbox links, clean-browser UI restoration, and the private credential-removal/cloud-off checkpoint remain pending human proof. Netlify deployment, live OpenAI proof, external UAT, recording, and final submission actions are still pending.
 
 ## Completed milestones
 
@@ -21,11 +21,13 @@
 | Public development baseline | `Anish-Guntreddi/FaultSmith` on GitHub with tracked `main`, CI, Dependabot, CODEOWNERS, issue forms, pull-request template, security policy, and contribution workflow |
 | Offline release readiness | Default-free seven-stage lifecycle smoke, explicit paid live gate, production HTML/header/cache smoke, strict safe evidence writer, honest submission/UAT validator, five-person protocol, and approval-gated deployment/rollback runbook; 63 focused tests and independent adversarial recheck green |
 | Phase 01.1 accounts and cloud progress (offline candidate) | Guest-first My Progress dashboard with deterministic explained metrics; optional verified email/password + Google accounts via a lazy browser Firebase adapter; server-only identity DAL (bounded token parsing, verified-email enforcement, UID-only paths); transactional Firestore repository with SHA-256 idempotency, 50-attempt retention, one-time labeled import, explicit deletion; deny-all direct-client rules; exact-origin cloud CSP widening; tested cloud-off rollback; 23 emulator-integration and 16 emulator-browser scenarios; three independent reviews with all accepted findings repaired |
+| Real Firebase automated proof | Sanitized 22/22 real-project stages covering password/email identity, verified/unverified boundaries, cloud persistence, idempotency/import/restore/isolation, deployed direct-client denial, bounded usage, degraded local fallback, deletion/cleanup, and secret-free logs; human Google/inbox/browser and cloud-off checkpoints remain open |
+| Forensic Workbench design system | Locked visual principles/tokens in `docs/DESIGN_SYSTEM.md`; unified roadmap, skill practice, progress/account sync, workspace, validation, and both report states; Observe → Hypothesize → Repair → Verify rhythm; desktop/mobile visual review plus keyboard/axe/overflow gates green; no new dependency or remote asset |
 
 ## Remaining PRD gaps requiring external action
 
 1. ~~Complete Phase 01.1 credential-free contracts, metrics/dashboard, Firebase adapters, emulator tests, regression gates, and independent QA/security review.~~ **Done** — frozen offline candidate with three independent approvals; see `docs/TESTING.md` and the phase review reports.
-2. The user creates a Firebase Spark project, enables email/password and Google Authentication plus Firestore, configures password/enumeration protections and approved domains/action URLs, and privately configures its reviewed client/server values for real sync proof.
+2. ~~Create/configure the Firebase Spark project and complete automated real-project verification.~~ **Automated portion done (22/22).** Still required: real Google popup/cancel/collision, emailed verification/reset links, clean-browser signed-in UI restoration at both target viewports, and the private configuration-off cleanup/rollback gate.
 3. Privately configure a funded `OPENAI_API_KEY` and run the single controlled local GPT-5.6 and Code Interpreter smoke command on the post-Phase-01.1 candidate; clean up the credential before repository scanning.
 4. Obtain Netlify deployment approval, configure shared/edge abuse controls, deploy a preview, and verify both guest and signed-in workflows before production promotion.
 5. Run the study with at least five external testers and record comprehension results.
@@ -48,7 +50,7 @@ These are intentionally not marked complete by local fallback evidence.
 
 ## Recommended next milestone
 
-The credential-free Phase 01.1 candidate is frozen and independently reviewed. Next: with the user's private Firebase configuration, prove verified email/password and Google sync on that exact candidate; then run the separately credentialed OpenAI smoke on the same runtime candidate. After explicit Netlify approval, configure platform controls, deploy a preview, run production smoke, and complete five-person UAT. If cloud sync misses its gate, disable it through configuration and retain the local dashboard, fixture fallback, and previously validated learning loop.
+The local implementation, automated Firebase proof, and Forensic Workbench design are ready. Next: complete the remaining human real-Firebase browser checks, privately omit/remove the credential file long enough to prove the canonical cloud-off/source-scan rollback, then run the separately credentialed OpenAI smoke. After explicit Netlify approval, configure platform controls, deploy a preview, run production smoke, and complete five-person UAT. If any cloud checkpoint fails, disable sync through configuration and retain the local dashboard, fixture fallback, and validated learning loop.
 
 ## Explicitly deferred scope
 
@@ -63,7 +65,7 @@ The credential-free Phase 01.1 candidate is frozen and independently reviewed. N
 ## Judging-criteria direction review
 
 - **Technological implementation:** strongest when the validated GPT contract, sandbox boundary, deterministic override rule, and recovery states are demonstrated together.
-- **Design:** strongest when the learner moves from evidence to hypothesis to minimal repair without premature answer leakage.
+- **Design:** the locked Forensic Workbench now makes the evidence → hypothesis → minimal repair → exact verification loop visible in every major state without premature answer leakage or novelty-terminal effects.
 - **Potential impact:** a reusable practice loop can turn passive tutorials into deliberate debugging exercises.
 - **Quality of idea:** the deliberate, validated failure is the differentiator; adding broad project ingestion before submission would weaken reliability and safety.
 

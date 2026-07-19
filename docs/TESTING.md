@@ -1,6 +1,6 @@
 # FaultSmith Testing and Quality Guide
 
-**Last full local checkpoint:** July 19, 2026 (Phase 01.1 offline/emulator release candidate)  
+**Last full local checkpoint:** July 19, 2026 (Forensic Workbench design + connected-service regression pass)
 **Environment:** macOS arm64, Node.js 24.9.0, npm 11.6.0, Next.js 16.2.10, Playwright 1.61.1, Chromium, Temurin JDK 24 for Firebase emulators  
 **External policy:** normal tests make no live OpenAI calls and never contact real Firebase
 
@@ -31,6 +31,26 @@ The current Phase 01.1 offline candidate run produced (exact-SHA evidence, inclu
 | npm audit at moderate threshold | Pass; zero vulnerabilities |
 | Source/history security scan | Pass; full working tree plus all reachable history inspected with no matched value printed (exact per-run counts are recorded in the SHA-bound phase review reports) |
 | Fallback + production smoke | Pass on the frozen candidate; cloud-off headers byte-identical to the pre-Phase-01.1 baseline |
+
+## Forensic Workbench checkpoint
+
+The design pass was verified after the private Firebase operator environment had been connected:
+
+| Gate | Result |
+| --- | --- |
+| ESLint / TypeScript | Pass; zero errors or warnings |
+| Vitest | 20 files, 272/272 passed |
+| Firebase emulator integration | 2 files, 23/23 passed using Temurin 24 |
+| Production build | Pass on Next.js 16.2.10 |
+| Client bundle leakage | Pass; 21 artifacts inspected |
+| Standard browser + accessibility | 13 passed; cloud-off env is explicitly injected by `playwright.config.ts` so ignored real local values cannot make this deterministic rollback suite cloud-on |
+| Firebase emulator browser suite | 16/16 passed, including email/password, Google emulator popup, persistence, privacy, keyboard, axe, password-manager, and 1440×900 / 390×844 overflow coverage |
+| Dependency audit | Zero vulnerabilities at moderate threshold |
+| Visual state review | Roadmap, skill practice, progress/account sync, failing workspace, patched workspace, not-verified report, and verified report reviewed at desktop and mobile; one clipped mobile mode tab reproduced and repaired |
+
+The direct `npm run security:source` command intentionally failed closed because a real credential-bearing ignored `.env.local` is currently present for the human Firebase checkpoint; it printed only rule/path/line identifiers and no matched value. Without reading, editing, moving, or deleting that operator file, the same current source tree was copied to an isolated scan root excluding only `.env.local`; 568 source files and all 65 reachable commits passed. The canonical direct working-tree gate must be rerun after the user privately omits/removes live credentials during the cloud-off rollback checkpoint.
+
+The standard Playwright config now forces cloud-off variables in its child server. Real/emulator cloud proof continues to use the dedicated Firebase config, preventing a developer's local environment from silently changing which product mode a test claims to cover.
 
 The earlier Phase 2 run below is preserved as historical evidence:
 
@@ -190,6 +210,7 @@ The earlier guided-MVP appearance pass used the controlled browser and was repea
 - Reduced motion: `prefers-reduced-motion` collapses the pulsing animation and disables smooth scrolling.
 - Refresh/reset: code, hypothesis, explanation, hints, and completed report restore after refresh; reset restores the validated mutated snapshot; choosing a new system clears the saved attempt.
 - Final production browser: the verified report rendered at 1440 × 900 and 390 × 844 with one `h1`, one `main`, identity/progress preserved, explicit prevalidated disclosure, and no horizontal overflow (`1430 ≤ 1440`; `380 ≤ 390`).
+- Forensic Workbench review: graphite/amber/cyan hierarchy, system-sans instructional copy, monospace instrumentation, selected/raised panels, the four-step investigation rail, roadmap phase sequencing, progress/account state distinction, and verified/not-verified evidence authority were checked in the controlled browser. No remote font, animation framework, image asset, or new CSP origin was introduced.
 
 ## Security review commands
 

@@ -636,13 +636,13 @@ export function useCloudProgressSync(
 type PanelMode = "summary" | "create" | "login" | "reset";
 
 const inputClass =
-  "w-full rounded-xl border border-white/10 bg-[#0b0e11] px-3.5 py-2.5 text-sm text-zinc-200 outline-none placeholder:text-zinc-700 focus:ring-2 focus:ring-amber-400/40";
+  "evidence-well w-full rounded-xl px-3.5 py-2.5 text-sm text-zinc-200 outline-none placeholder:text-zinc-700";
 const primaryButtonClass =
-  "rounded-xl bg-amber-400 px-4 py-2.5 text-xs font-semibold text-[#1a1105] transition hover:bg-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-40";
+  "primary-action rounded-xl px-4 py-2.5 text-xs font-semibold focus-visible:outline-none disabled:opacity-40";
 const secondaryButtonClass =
-  "rounded-xl border border-white/10 px-4 py-2.5 text-xs text-zinc-300 transition hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:opacity-40";
+  "secondary-action rounded-xl px-4 py-2.5 text-xs focus-visible:outline-none disabled:opacity-40";
 const quietButtonClass =
-  "rounded-lg px-2 py-1 text-[11px] text-zinc-500 underline underline-offset-2 transition hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300";
+  "rounded-lg px-2 py-1 text-[11px] text-zinc-500 underline underline-offset-4 transition hover:text-zinc-200 focus-visible:outline-none";
 
 function PasswordField({
   id,
@@ -682,7 +682,7 @@ function PasswordField({
           aria-pressed={show}
           aria-label={show ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
           onClick={onToggleShow}
-          className="shrink-0 rounded-xl border border-white/10 px-3 text-[11px] text-zinc-400 transition hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+          className="secondary-action shrink-0 rounded-xl px-3 text-[11px] focus-visible:outline-none"
         >
           {show ? "Hide" : "Show"}
         </button>
@@ -722,9 +722,9 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
     return (
       <section
         aria-labelledby="progress-sync-heading"
-        className="mb-4 rounded-2xl border border-white/9 bg-[#101318]/90 p-4"
+        className="lab-panel mb-4 rounded-2xl p-4"
       >
-        <h3 id="progress-sync-heading" className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">
+        <h3 id="progress-sync-heading" className="instrument-label">
           Progress storage
         </h3>
         <p className="mt-2 text-xs leading-5 text-zinc-500">
@@ -750,13 +750,13 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
   return (
     <section
       aria-labelledby="progress-sync-heading"
-      className="mb-4 rounded-2xl border border-white/9 bg-[#101318]/90 p-4"
+      className="lab-panel mb-4 rounded-2xl p-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id="progress-sync-heading" className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">
+        <h3 id="progress-sync-heading" className="instrument-label">
           Optional account sync
         </h3>
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[10px] text-zinc-400">
+        <span className="status-pill px-2.5 py-1">
           <span
             aria-hidden="true"
             className={`inline-block h-1.5 w-1.5 rounded-full ${
@@ -767,7 +767,7 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
                   : "bg-amber-400"
             }`}
           />
-          {sync.storageLabel}
+          Account sync · {sync.storageLabel}
         </span>
       </div>
 
