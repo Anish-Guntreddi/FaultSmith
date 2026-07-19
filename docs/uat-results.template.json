@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "studyStatus": "pending",
+  "testers": [
+    {
+      "testerId": "T01",
+      "completed": false,
+      "purposeUnderstood": null,
+      "durationSeconds": null,
+      "findings": {
+        "blocker": { "observed": 0, "resolved": 0, "retested": 0 },
+        "high": { "observed": 0, "resolved": 0, "retested": 0 }
+      }
+    },
+    {
+      "testerId": "T02",
+      "completed": false,
+      "purposeUnderstood": null,
+      "durationSeconds": null,
+      "findings": {
+        "blocker": { "observed": 0, "resolved": 0, "retested": 0 },
+        "high": { "observed": 0, "resolved": 0, "retested": 0 }
+      }
+    },
+    {
+      "testerId": "T03",
+      "completed": false,
+      "purposeUnderstood": null,
+      "durationSeconds": null,
+      "findings": {
+        "blocker": { "observed": 0, "resolved": 0, "retested": 0 },
+        "high": { "observed": 0, "resolved": 0, "retested": 0 }
+      }
+    },
+    {
+      "testerId": "T04",
+      "completed": false,
+      "purposeUnderstood": null,
+      "durationSeconds": null,
+      "findings": {
+        "blocker": { "observed": 0, "resolved": 0, "retested": 0 },
+        "high": { "observed": 0, "resolved": 0, "retested": 0 }
+      }
+    },
+    {
+      "testerId": "T05",
+      "completed": false,
+      "purposeUnderstood": null,
+      "durationSeconds": null,
+      "findings": {
+        "blocker": { "observed": 0, "resolved": 0, "retested": 0 },
+        "high": { "observed": 0, "resolved": 0, "retested": 0 }
+      }
+    }
+  ]
+}
