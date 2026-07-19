@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01.1-04-PLAN.md
-last_updated: "2026-07-19T09:11:20.556Z"
-last_activity: July 19, 2026 — Plan 01.1-04 delivered the guest-first optional account/sync surface (email/password + Google, verification-gated, enumeration-resistant, one-time bounded import, explicit cloud-data/account deletion), cloud-configured-only exact-origin CSP/COOP hardening, and a 15-scenario demo-emulator browser suite proving identity/network/CSP/Firebase failures never disrupt guest learning.
+stopped_at: Completed 01.1-05-PLAN.md
+last_updated: "2026-07-19T18:48:06.654Z"
+last_activity: July 19, 2026 — Plan 01.1-05 froze the triple-approved offline runtime SHA ae39503 after independent reviews, four low-finding repairs with regressions, canonical documentation updates, and full local/emulator + GitHub-check gates on that exact SHA.
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 15
-  percent: 78
+  completed_plans: 16
+  percent: 89
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: `.planning/PROJECT.md` (updated July 18, 2026)
 ## Current Position
 
 Phase: 01.1 of 5 (Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard)
-Plan: 4 of 6 complete (Waves 1-3 done); Plan 05 (hardening/review) is next
-Status: Executing; credential-free implementation and emulator verification precede real Firebase configuration
-Last activity: July 19, 2026 — Plan 01.1-04 delivered the guest-first optional account/sync surface (email/password + Google, verification-gated, enumeration-resistant, one-time bounded import, explicit cloud-data/account deletion), cloud-configured-only exact-origin CSP/COOP hardening, and a 15-scenario demo-emulator browser suite proving identity/network/CSP/Firebase failures never disrupt guest learning.
+Plan: 5 of 6 complete; Plan 06 (human credential checkpoint: real Firebase configuration and proof) is next
+Status: Executing; the credential-free offline candidate ae39503 is frozen, fully gated, and triple-approved — real Firebase configuration is now the legitimate dependency
+Last activity: July 19, 2026 — Plan 01.1-05 froze the triple-approved offline runtime SHA ae39503 after independent reviews, four low-finding repairs with regressions, canonical documentation updates, and full local/emulator + GitHub-check gates on that exact SHA.
 
-Progress: [████████░░] 78%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
@@ -46,8 +46,8 @@ Progress: [████████░░] 78%
 | Phase 1 | 6 | 94 min | 16 min |
 
 **Recent Trend:**
-- Last 5 plans: 11 min, 13 min, 15 min, 34 min, 13 min
-- Trend: Phase 1 complete; external credential gate is the next legitimate dependency
+- Last 5 plans: 26 min, 25 min, 40 min, 48 min (01.1 P02–P05)
+- Trend: Phase 01.1 credential-free scope complete and frozen; the private Firebase credential checkpoint (Plan 06) is the next legitimate dependency
 
 *Updated after each plan completion*
 | Phase 01 P01 | 8 min | 4 tasks | 5 files |
@@ -65,6 +65,7 @@ Progress: [████████░░] 78%
 | Phase 01.1 P02 | 26 min | 2 tasks | 18 files |
 | Phase 01.1 P03 | 25 min | 2 tasks | 13 files |
 | Phase 01.1 P04 | 40 min | 2 tasks | 13 files |
+| Phase 01.1 P05 | 48 min | 3 tasks | 22 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,9 @@ Decisions are logged in `.planning/PROJECT.md`. Recent decisions affecting curre
 - [Phase 01.1]: Attempt dedupe uses a bounded outcome identity mirroring the server SHA-256 idempotency material, collapsing local and server copies of one attempt with server_verified preferred — Prevents duplicated attempts and false provenance in cloud merges
 - [Phase 01.1]: CSP widens only in cloud-configured builds by exact empirically proven origins (identitytoolkit/securetoken connect-src, validated auth-domain frame-src, apis.google.com script-src); COOP relaxes to same-origin-allow-popups only then — The popup flow fails closed without the gapi loader origin and the opener relationship; cloud-off production headers stay byte-identical to baseline
 - [Phase 01.1]: Provider linking stays behind the NEXT_PUBLIC_FAULTSMITH_PROVIDER_LINKING capability flag (default unsupported) until Plan 06 real-provider proof; collisions receive safe existing-method guidance — Linking may ship only after emulator and real-provider proof are green
+- [Phase 01.1]: Same-origin containment applies to every token-accepting route via one shared server-only assertSameOrigin guard — The assess route can trigger authenticated cloud writes; duplicated security logic drifts
+- [Phase 01.1]: Canonical docs never embed run-volatile evidence numbers; exact scan counts live only in SHA-bound review reports — Embedded counts drifted between runs and failed final doc-accuracy review
+- [Phase 01.1]: Reviewed offline runtime SHA is ae39503; the review-report metadata commit a507af8 is evidence-only and no later runtime candidate may publish without repeating all three reviews and full gates — Binds deployment/runtime evidence to one independently approved candidate
 
 ### Roadmap Evolution
 
@@ -114,6 +118,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-19T09:11:08.608Z
-Stopped at: Completed 01.1-04-PLAN.md
+Last session: 2026-07-19T18:48:06.652Z
+Stopped at: Completed 01.1-05-PLAN.md
 Resume file: None
