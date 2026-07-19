@@ -9,8 +9,9 @@
 1. Start from the project selection screen and reset any saved attempt.
 2. Confirm Expense Approval, Inventory Service, and Notification Preferences all show `ready`.
 3. Use a production build or stable preview URL.
-4. If demonstrating live mode, complete the live smoke checklist first. Never expose the key or terminal.
-5. Keep the browser at 100% zoom and 1440 × 900.
+4. Run `npm run smoke:production -- --base-url <public HTTPS URL>` against the exact reviewed deployment. If demonstrating live mode, run the explicit live smoke first. Never expose the key, terminal, evidence file, or provider identifiers.
+5. Run `npm run readiness:strict` only after the real UAT record, public video URL, public demo URL, and feedback ID are filled. A preparation-mode pass is not final submission evidence.
+6. Confirm the public application, repository, and video open without authentication, then keep the browser at 100% zoom and 1440 × 900.
 
 ## Timed narrative
 

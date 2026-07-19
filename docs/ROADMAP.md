@@ -3,7 +3,7 @@
 **Last direction review:** July 18, 2026  
 **Locked track:** Education  
 **Locked primary demo:** Expense Approval boundary condition  
-**Current state:** Phase 1 complete: candidate `fee208737b9814eb72b2f7582d0aad4d1a7fab9e` independently approved, evidence head `71f2379d9285b5f7dad8bd7f7946d0952c50ef9f` green in four required GitHub gates, and protected `main` synchronized; live credential smoke, deployment, and remaining submission actions pending
+**Current state:** Phase 2 offline preparation complete on runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1`: strict fallback/live/production smoke, sanitized evidence, UAT/readiness validation, and deployment/rollback procedures are implemented; 126 unit/integration tests and seven browser workflows pass. Live credential proof, offline-checkpoint remote CI publication, deployment approval, and remaining human submission actions are still pending.
 
 ## Completed milestones
 
@@ -19,30 +19,33 @@
 | Quality hardening | Independent product/QA/security reviews, duplicate-action single-flight, streamed request cap, keyboard/axe/mobile checks, all-fixture bundle and source/history scans, secure headers, bounded local telemetry/rate buckets, zero-audit dependency state |
 | Submission package | README, build log, testing guide, threat model, demo script, Devpost draft, license, and completion report |
 | Public development baseline | `Anish-Guntreddi/FaultSmith` on GitHub with tracked `main`, CI, Dependabot, CODEOWNERS, issue forms, pull-request template, security policy, and contribution workflow |
+| Offline release readiness | Default-free seven-stage lifecycle smoke, explicit paid live gate, production HTML/header/cache smoke, strict safe evidence writer, honest submission/UAT validator, five-person protocol, and approval-gated deployment/rollback runbook; 63 focused tests and independent adversarial recheck green |
 
 ## Remaining PRD gaps requiring external action
 
-1. Run the controlled live GPT-5.6 and Code Interpreter smoke test with a valid `OPENAI_API_KEY`.
-2. Obtain deployment approval, deploy, and verify the public URL without authentication.
-3. Run the study with at least five external testers and record comprehension results.
-4. Record and publish the under-three-minute demonstration.
-5. Capture the primary Codex `/feedback` Session ID and place it in the submission.
+1. Publish the reviewed offline checkpoint and require the four GitHub quality/security checks to pass.
+2. Privately configure a funded `OPENAI_API_KEY` and run the single controlled local GPT-5.6 and Code Interpreter smoke command; clean up the credential before repository scanning.
+3. Obtain deployment approval, configure edge/shared abuse controls, deploy, and verify the public URL without authentication.
+4. Run the study with at least five external testers and record comprehension results.
+5. Record and publish the under-three-minute demonstration.
+6. Capture the primary Codex `/feedback` Session ID and place it in the submission.
 
 These are intentionally not marked complete by local fallback evidence.
 
 ## Current risks
 
 - **Highest technical risk:** live provider response or container behavior can drift from mocked/typed expectations. Mitigation: strict parse/validation, timeout, one retry, safe recovery, and a separate live smoke procedure.
-- **Highest demo risk:** network or credential failure during recording. Mitigation: the primary lab is prevalidated and automatically recovers to fixture mode with visible labeling.
+- **Highest demo risk:** network or credential failure during recording. Mitigation: the primary lab is prevalidated and automatically recovers to fixture mode with visible labeling; the explicit live proof is performed before recording rather than improvised on camera.
 - **Highest security risk:** the in-memory rate limiter is per process and not globally coordinated across a multi-instance deployment. Mitigation: conservative route limits now; add provider/edge rate limiting before any public exposure of a paid server credential.
 - **Highest judging opportunity:** accurately show the zero-token guided curriculum, then—only after credentialed proof—show GPT emitting the exact approved live contract, Code Interpreter producing execution evidence, and deterministic policy controlling release.
 - **API-credit constraint:** live generation can require original and mutated executions, plus assessment. The fixture path allows unlimited rehearsal without spend.
 - **Curriculum boundary:** guided metadata must never contain hidden answers or become an alternate execution authority. Mitigation: lesson data references only public project-skill IDs; fixtures and assessments remain server-owned.
 - **Time constraint:** prioritize the public deployment, five-tester study, and concise recording over new product breadth.
+- **Competition access requirement:** the [official rules](https://openai.devpost.com/rules) require working project access through a website, functioning demo, or test build plus a public repository/video. For this browser application, a stable unauthenticated HTTPS deployment is the safest compliance path even though the rules do not name Vercel specifically.
 
 ## Recommended next milestone
 
-With user authorization and a server-only API key, first run the controlled local live smoke and resolve any provider-contract failure without weakening fallback. Then obtain separate deployment approval, configure edge controls, publish the reviewed head, run production smoke, and complete the five-person usability pass. If the live service is unstable near recording time, record the labeled fixture path while accurately describing the live architecture and separate live evidence.
+First publish the offline checkpoint and wait for four green required checks. With user authorization and a server-only API key, run the one-command controlled local live smoke and resolve any provider-contract failure without weakening fallback. Then remove the key locally, obtain separate deployment approval, configure edge controls, publish the exact reviewed head, run production smoke, and complete the five-person usability pass. If the live service is unstable near recording time, record the labeled fixture path while accurately describing the separate live evidence.
 
 ## Explicitly deferred scope
 

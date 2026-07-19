@@ -80,9 +80,11 @@ After the Build Week MVP, FaultSmith could add instructor-authored fixture packs
 - **Five-tester result:** `[ADD AFTER EXTERNAL STUDY]`
 - **License:** MIT
 
+The [official hackathon rules](https://openai.devpost.com/rules) require working project access through a website, functioning demo, or test build, plus a public repository and public video. They do not specifically require Vercel. Because FaultSmith is a browser application, the submission plan uses a stable unauthenticated HTTPS deployment as the safest judging-access path; that deployment has not yet been authorized or claimed.
+
 ## Disclosure
 
-The application has a production-ready local fallback, automated mocked coverage, and a public source repository with GitHub Actions CI. At the July 18 release-candidate checkpoint, the live OpenAI smoke test was not run because `OPENAI_API_KEY` was not present, and deployment had not been authorized. The remaining placeholder fields must be updated with objective evidence before final submission.
+The application has a production-ready local fallback, automated mocked coverage, a public source repository with GitHub Actions CI, and credential-safe release tooling. On the July 18 Phase 2 offline runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1`, 126 unit/integration tests, seven browser/accessibility workflows, the production build, source/bundle security scans, zero-vulnerability audit, and the complete fallback/production smoke passed. The live OpenAI smoke test was not run because `OPENAI_API_KEY` was not present, and deployment had not been authorized. The remaining placeholder fields must be updated with objective evidence before final submission.
 
 ### Dependencies and assistance
 

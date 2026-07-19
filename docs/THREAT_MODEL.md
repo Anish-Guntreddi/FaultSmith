@@ -32,6 +32,7 @@
 | Server → Code Interpreter | Learner Python is hostile | Ephemeral OpenAI sandbox | fixed server command/bundle, timeout, output sanitation; no host subprocess |
 | Test result → model assessment | Learner prose and provider scores are probabilistic | Deterministic verification policy | hidden fixture answers are omitted from model input; provider returns only three scores; prose, completion, minimality, and execution fields are server-owned |
 | Browser storage → restored UI | Local storage can be tampered with | Runtime validation/reexecution | public-only state; final submission reruns exact files server-side |
+| Operator smoke → release evidence | Public route payloads, provider output, filesystem paths, and target URLs are untrusted | Strict evidence schema and contained writer | exact route schemas/mode assertions; HTTPS except loopback; redirect rejection; hashes instead of output; exclusive no-follow/symlink-safe writes under ignored `test-results/` |
 
 ## Entry points
 
@@ -70,6 +71,7 @@
 | Low; mitigated | Anonymous observability accidentally captures learner prose | local event log | strict event schema allows only names, timestamps, bounded IDs/source/outcomes; cap 100 | event-schema unit tests and primary E2E prove no hypothesis/explanation keys | local browser owner can inspect or clear their own event log |
 | Medium; mitigated | Verbose irrelevant prose receives a misleadingly high fallback reasoning score | deterministic assessment | challenge-specific server-only causal signal groups and causal-language evidence replace length-based scoring; source is visibly labeled deterministic fallback | passing-repair/irrelevant-prose regression compares grounded and ungrounded scores | heuristic fallback scores are provisional learning feedback, not certification; GPT rubric still requires live credentials |
 | Low; partially mitigated | XSS/clickjacking/data exfiltration | app/config | React escaping, strict JSON, CSP, frame denial, no-referrer, restrictive permissions, same-origin policies | production header smoke and axe/browser checks | CSP retains `unsafe-inline`; Phase 3 must re-evaluate nonce/hash hardening and document the accepted residual if the selected host cannot support it safely |
+| Medium if absent; mitigated locally | Release tooling leaks provider/learner content or promotes contradictory evidence | operator scripts/evidence | exact response key/type/bound validation; approved-hint equality; fail/pass/signature/completion relationship checks; digests only; credentials rejected from URL/CLI; exclusive evidence writes | 63 focused release-tool tests including hidden/unknown fields, raw HTTP failures, redirect, timeout, tampered evidence, traversal/symlink/overwrite, counterfeit shell, CSP/HSTS/cache drift, and safe output | actual provider conformance remains credential-gated; sanitized evidence must still receive human review |
 
 ## Secret and sensitive-file review
 
@@ -77,6 +79,7 @@
 - No live `OPENAI_API_KEY` was present during the July 18 review.
 - The non-disclosing scanner covers common credential/auth/private-key families, public-secret environment names, tracked/working text including the lockfile and large files, working-tree symlinks, and reachable Git history.
 - The candidate-era main checkout passed across 109 working-tree files and 26 reachable commits; an independent detached recheck of candidate `fee208737b9814eb72b2f7582d0aad4d1a7fab9e` passed across 110 files and the same 26 commits. No private key or committed credential was found.
+- The Phase 2 offline working-tree scan passed across 139 files and 38 reachable commits after adding the release/UAT tooling; findings remained identifier-only and no credential was present.
 - `tsconfig.tsbuildinfo`, `.next`, test results, and screenshots are generated artifacts and ignored or excluded from scans/distribution.
 - The workspace is a Git repository connected to the public `Anish-Guntreddi/FaultSmith` origin; reachable-history scanning is an automated required gate.
 
@@ -93,4 +96,4 @@ See `docs/TESTING.md` for executable commands. Security-specific gates include s
 
 ## Review conclusion
 
-The independent security review found one high live-assessment disclosure path and three medium issues; the high was repaired by excluding hidden fixture knowledge from model input, accepting only score output, and keeping all prose/authority server-owned. No accepted blocker/high remains open. Distributed rate limiting must be added before a paid credential is exposed publicly; nonce/hash CSP feasibility must be re-evaluated and documented during deployment. Neither residual is represented as already solved.
+The Phase 1 independent security review found one high live-assessment disclosure path and three medium issues; the high was repaired by excluding hidden fixture knowledge from model input, accepting only score output, and keeping all prose/authority server-owned. The Phase 2 plan/security audit then found six execution-contract gaps, and the production-tool adversarial review reproduced six additional issues including two high-priority timeout/shell false-results. All were repaired and independently rechecked on `5fcae27`; 63 focused tests pass and no new issue was validated. No accepted local blocker/high remains open. Distributed rate limiting must be added before a paid credential is exposed publicly; nonce/hash CSP feasibility must be re-evaluated and documented during deployment. Neither residual is represented as already solved.

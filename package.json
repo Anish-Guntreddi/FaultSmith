@@ -25,6 +25,11 @@
     "test:e2e:headed": "playwright test --headed",
     "security:source": "node scripts/check-source-security.mjs",
     "security:bundle": "node scripts/check-client-bundle.mjs",
+    "smoke:fallback": "node scripts/live-smoke.mjs",
+    "smoke:live": "node scripts/live-smoke.mjs --live",
+    "smoke:production": "node scripts/production-smoke.mjs",
+    "readiness:prepare": "node scripts/submission-readiness.mjs --prepare",
+    "readiness:strict": "node scripts/submission-readiness.mjs --strict",
     "quality": "npm run lint && npm run typecheck && npm test && npm run build && npm run security:bundle && npm run test:e2e"
   },
   "dependencies": {

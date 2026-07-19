@@ -20,20 +20,37 @@ The final local run produced:
 | --- | --- |
 | ESLint | Pass; zero errors/warnings |
 | TypeScript `tsc --noEmit` | Pass |
-| Vitest | 9 files, 63 tests passed |
+| Vitest | 13 files, 126 tests passed |
 | Next.js production build | Pass; seven routes generated, five dynamic API routes |
 | Client bundle leakage check | Pass; 17 static artifacts inspected |
 | Playwright | 7 tests passed in 6.6 seconds; primary workflow 3.5 seconds |
 | npm audit at moderate threshold | Pass; zero vulnerabilities |
-| Source/history security scan | Pass; candidate-era main checkout inspected 109 files/26 commits and the detached security recheck inspected 110 files/the same 26 commits, without printing matched values |
-| Production startup | Pass; ready on `127.0.0.1:3118` in 93 ms |
-| Production root/health/full fallback API smoke | HTTP 200; fallback labeled; intended fail → repaired pass → verified assessment |
+| Source/history security scan | Pass; current Phase 2 working tree inspected 139 files/38 reachable commits without printing matched values; prior frozen-candidate counts remain in the build log |
+| Production startup | Pass; ready on `127.0.0.1:3122` in 74 ms |
+| Production root/health/full fallback API smoke | Pass on runtime SHA `5fcae2713e44`; HTTP 200 HTML shell, reviewed headers, API `no-store`, explicit missing-key Code Interpreter recovery, intended fail → repaired pass → verified assessment, failing snapshot → `not_verified` |
+| Release-readiness tooling | 63 focused tests pass across strict lifecycle/evidence, explicit-live CLI, production surface, and submission/UAT validation |
 | GitHub Actions Phase 1 evidence | Pass; evidence head `71f2379` completed all four required checks in [run 29658002877](https://github.com/Anish-Guntreddi/FaultSmith/actions/runs/29658002877) |
 | GitHub Actions baseline | Pass; public `main` run [29650774197](https://github.com/Anish-Guntreddi/FaultSmith/actions/runs/29650774197) completed successfully |
 
 The earlier final-gate lint failure in the new 404 page and the client-bundle hidden-schema finding were repaired and all downstream gates were rerun. See `docs/BUILD_LOG.md`.
 
 Equivalent gates are independently visible on pushes and pull requests as `Static analysis`, `Unit and integration`, `Build and security`, and `Browser and accessibility` in `.github/workflows/ci.yml`, using Node.js 24 and Playwright Chromium. Dependabot separately monitors npm and GitHub Actions dependencies.
+
+## Release-readiness commands
+
+Start an already-built server without a key, then run:
+
+```bash
+npm run smoke:fallback -- --base-url http://127.0.0.1:3122 --evidence test-results/offline-lifecycle.json
+npm run smoke:production -- --base-url http://127.0.0.1:3122 --evidence test-results/offline-production.json
+npm run readiness:prepare
+```
+
+Fallback and production smoke validate seven public lifecycle stages and the production HTML/header/cache surface. The evidence writer is opt-in, exclusive/non-overwriting, symlink-safe, and limited to ignored `test-results/`. Evidence contains no code, hint text, learner prose, raw output, credential, provider/container ID, or hidden answer.
+
+`npm run smoke:live -- --base-url http://127.0.0.1:3122 --evidence test-results/live.json` is the only provided paid proof. It refuses to POST unless the explicit live flag is present and health reports `liveOpenAIConfigured: true`; no key argument is accepted. `npm run quality` and GitHub CI never invoke it.
+
+`npm run readiness:prepare` exits zero only when remaining findings are recognized external placeholders/pending observations. Malformed or privacy-unsafe results remain fatal. `npm run readiness:strict` remains intentionally non-zero until the public demo/video, feedback ID, and actual five-person result are complete.
 
 ## Automated suite map
 
@@ -72,6 +89,9 @@ npm test
 | Progressive hint separation | challenge payload omits future hints; separate route/schema accepts only the approved non-solution step and safely recovers from unsafe live output |
 | Hypothesis evolution | assessment requires a bounded revision trail ending in the submitted hypothesis and returns the revision/time evidence |
 | Complete deterministic assessment evidence | exact changed file names and aggregate changed-line count are derived server-side; an overbroad live repair stays `not_verified` even when mocked Code Interpreter tests pass |
+| Release smoke strictness | exact response key/type/bound validation, URL/redirect safety, explicit missing-key recovery, source/mode drift, failing-patch authority, exact approved hint, output digests, tamper-resistant evidence relationships, and exclusive/symlink-safe writes |
+| Production surface | fake-server coverage for HTML identity, auth/status drift, reviewed CSP/HSTS/frame/MIME/referrer/permissions/opener/resource policies, powered-by absence, contradictory cache policy, timeout budgeting, and contained evidence |
+| Submission/UAT honesty | pending vs strict behavior, exact anonymous tester set, 5-person/4-of-5 thresholds, blocker/high resolution/retest, privacy-field rejection, malformed inputs, links, disclosures, and placeholders |
 | Fixture evidence transparency | workspace and report use mode-aware labels and explicitly disclose server-owned snapshot comparison rather than claiming fresh Python execution |
 | Anonymous event privacy | strict local event log caps 100 entries and excludes learner hypotheses/explanations |
 | Rate-key abuse | malformed forwarded addresses share one bucket and valid-address rotation hits the independent per-process scope budget; cross-instance edge limiting remains a deployment gate |
@@ -115,18 +135,17 @@ The script parses the server fixture registry without importing or executing it,
 
 ```bash
 npm run build
-npm run start -- --hostname 127.0.0.1 --port 3118
+npm run start -- --hostname 127.0.0.1 --port 3122
 ```
 
 From a second terminal:
 
 ```bash
-curl -i http://127.0.0.1:3118/
-curl -i http://127.0.0.1:3118/api/health
-curl -i -X POST http://127.0.0.1:3118/api/challenges/generate -H 'content-type: application/json' --data '{"projectId":"expense-approval","targetSkill":"Boundary conditions","difficulty":"intermediate","preferLive":true}'
+npm run smoke:fallback -- --base-url http://127.0.0.1:3122
+npm run smoke:production -- --base-url http://127.0.0.1:3122
 ```
 
-Final evidence:
+Latest Phase 2 offline evidence on runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1`:
 
 - Root: HTTP 200 with production CSP, HSTS, frame denial, nosniff, restrictive permissions/referrer/opener/resource headers, and no `X-Powered-By`.
 - Health: `{"status":"ok","liveOpenAIConfigured":false,"fixtureFallback":"ready"}`.
@@ -138,6 +157,7 @@ Final evidence:
 - Comment and syntax-error decoys containing the approved repair text remained failed.
 - Assessment of the repaired snapshot: completion `verified`, deterministic fallback source, and prevalidated execution mode. The summary explicitly identifies snapshot matching rather than claiming host execution.
 - All nine approved project-skill combinations returned HTTP 200 prevalidated failing labs, each without future hint text in its payload.
+- Production smoke additionally required a real `text/html` FaultSmith shell, rejected redirect/auth masking, enforced the reviewed CSP/HSTS/cache policy, and reserved 35 seconds for the route lifecycle so it does not undercut the documented 20-second provider/30-second route ordering.
 
 ## Manual UX and accessibility review
 
@@ -163,22 +183,22 @@ npm run security:bundle
 
 The source gate scans working-tree and reachable-history text, lock/auth forms, large tracked files, symlinks, public secret environment names, and non-test application host-process APIs. Findings disclose only rule, path, line, and commit metadata. Deliberate sanitizer values are runtime-built or exactly allowlisted; a green scan reports no matched value. No application host-process execution call exists.
 
-## Controlled live OpenAI smoke test — credential blocked
+## Controlled live OpenAI smoke test — credential checkpoint
 
 This check is intentionally separate. It was **not run** at the July 18 checkpoint because `OPENAI_API_KEY` was missing.
 
 With user-provided authorization and a server-only key:
 
 1. Set the key in `.env.local`; confirm it is ignored and never print it.
-2. Start a production build and confirm `/api/health` reports `liveOpenAIConfigured: true`.
-3. Forge Expense Approval with live mode enabled.
+2. Start the reviewed production build and confirm only that `/api/health` reports `liveOpenAIConfigured: true`.
+3. Run `npm run smoke:live -- --base-url http://127.0.0.1:3122 --evidence test-results/live.json`.
 4. Confirm the response source is `generated` and contains only the public schema.
 5. Confirm original-pass and mutated-fail/signature evidence before the workspace opens.
 6. Run the mutated suite and a repaired suite; confirm execution mode is `code_interpreter`.
 7. Submit a correct explanation; confirm assessment source is `gpt-5.6`.
 8. Submit failing code with excellent prose; confirm it remains `not_verified`.
 9. Inspect server/client logs for provider internals, key fragments, container identifiers, hidden answers, and stack traces.
-10. Remove the local credential after testing.
+10. Stop the server and remove the local credential privately before source/history scanning. Do not ask an agent to inspect, print, edit, or delete it.
 
 If any live step fails, keep the fallback green, record the exact provider response safely, repair against current official documentation, add a mock regression, and rerun all downstream gates.
 

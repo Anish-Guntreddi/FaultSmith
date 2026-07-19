@@ -67,6 +67,16 @@ npm run test:e2e
 
 `npm run quality` runs the complete sequence. The normal automated suite mocks or avoids external OpenAI calls; a live API smoke test is intentionally separate so it cannot spend credits unexpectedly.
 
+With a production server already running, release operators can use:
+
+```bash
+npm run smoke:fallback
+npm run smoke:production
+npm run readiness:prepare
+```
+
+`npm run smoke:live` is the only provided command that opts into the paid provider proof. It first requires the server health route to report live configuration and never accepts an API key argument. OpenAI API usage is billed separately from a ChatGPT subscription, so configure the server-only key privately only when the reviewed offline checkpoint is green. Optional sanitized evidence must be written under the ignored `test-results/` directory.
+
 See [docs/TESTING.md](docs/TESTING.md) for the QA matrix and manual procedures, and [docs/COMPLETION_REPORT.md](docs/COMPLETION_REPORT.md) for Definition of Finished evidence.
 
 ## Security model
@@ -98,6 +108,8 @@ No secondary Claude Code review was performed. That absence is recorded rather t
 - [Roadmap and direction review](docs/ROADMAP.md)
 - [Threat model](docs/THREAT_MODEL.md)
 - [Testing guide and QA matrix](docs/TESTING.md)
+- [Deployment and rollback runbook](docs/DEPLOYMENT.md)
+- [Five-tester UAT protocol](docs/UAT_PROTOCOL.md)
 - [Demo script](docs/DEMO_SCRIPT.md)
 - [Devpost submission draft](docs/SUBMISSION.md)
 - [Completion report](docs/COMPLETION_REPORT.md)

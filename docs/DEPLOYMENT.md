@@ -45,7 +45,7 @@ No deployment command should be run from this repository until the user has appr
 Run the production smoke against the HTTPS URL and retain only the sanitized evidence manifest:
 
 ```bash
-npm run smoke:production -- --base-url https://YOUR-APP.example --live
+npm run smoke:production -- --base-url https://YOUR-APP.example --live --evidence test-results/production-live.json
 ```
 
 Also verify in a clean browser and from a separate network:

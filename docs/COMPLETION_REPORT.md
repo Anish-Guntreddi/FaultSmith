@@ -1,12 +1,12 @@
 # FaultSmith Completion Report
 
 **Checkpoint:** July 18, 2026  
-**Release state:** independently reviewed Phase 1 candidate `fee208737b9814eb72b2f7582d0aad4d1a7fab9e` green locally; evidence head `71f2379d9285b5f7dad8bd7f7946d0952c50ef9f` passed four required GitHub gates; live credential/deployment/submission actions explicitly pending
+**Release state:** Phase 2 offline runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1` passed strict fallback/production smoke and the full local gate after independent adversarial recheck; publication of the final offline evidence head, live credential proof, deployment, and human submission actions remain explicitly pending
 **Primary evidence:** `docs/TESTING.md`, `docs/BUILD_LOG.md`, `docs/THREAT_MODEL.md`
 
 ## Executive result
 
-Every safe, local, in-scope implementation and quality gate is complete. The primary fallback workflow, all three projects, security boundary, deterministic verification, accessibility, build, automated tests, production startup, and documentation have objective evidence. Three independent SHA-bound reviews found two high-severity issues; both were repaired with regressions before this checkpoint. No accepted local blocker/high remains open.
+Every safe, local, in-scope implementation and quality gate is complete through the credential checkpoint. The primary fallback workflow, all three projects, security boundary, deterministic verification, accessibility, build, automated tests, production startup, strict release tooling, UAT/submission validator, and deployment/rollback procedure have objective evidence. Phase 1 reviews repaired two high-severity product/security issues; Phase 2 plan and adversarial reviews found and closed twelve additional proof/tooling gaps. No accepted local blocker/high remains open.
 
 The goal is not represented as globally finished because live OpenAI verification, deployment/public app availability, the external tester study, public video, and `/feedback` Session ID require a credential, deployment approval, or external coordination. The public source repository is complete at `Anish-Guntreddi/FaultSmith`.
 
@@ -24,16 +24,16 @@ The goal is not represented as globally finished because live OpenAI verificatio
 | 8 | Missing-key/live failures recover to fixture | Verified locally | missing-key, malformed-plan, timeout, expiration tests and visible E2E recovery |
 | 9 | Inventory and Notification functioning fixtures | Verified | three lifecycle-tested scenarios per project, all nine route combinations, and selection-to-workspace E2E for both secondary projects |
 | 10 | Security review/threat model without blocker/high | Verified locally | independent product/QA/security reports, complete finding disposition, both highs repaired, zero audit vulnerabilities, adversarial tests, source/history and all-fixture bundle scans |
-| 11 | QA matrix complete | Verified | `docs/TESTING.md` maps every required quality item to automated/manual evidence |
-| 12 | Lint, types, tests, build, server smoke pass | Verified locally and on evidence publication head | 63 unit/integration tests across nine files, seven E2E, seven-route build, 17-artifact/63-marker bundle check, candidate-era main-checkout source scan across 109 files/26 commits, independent detached recheck across 110 files/26 commits, zero audit vulnerabilities, and four green required checks in GitHub run 29658002877 |
+| 11 | QA matrix complete | Verified | `docs/TESTING.md` maps product, 63 focused release-tool, production surface, UAT honesty, security, browser, and manual evidence |
+| 12 | Lint, types, tests, build, server smoke pass | Verified locally; current remote proof pending publication | 126 unit/integration tests across 13 files, seven E2E, seven-route build, 17-artifact/63-marker bundle check, current source scan across 139 files/38 commits, strict fallback/production smoke on `5fcae27`, zero audit vulnerabilities; prior Phase 1 evidence head has four green required checks |
 | 13 | Primary workflow manually tested at recording resolution | Verified locally | exact-candidate controlled production browser run completed the guided repair/report at 1440 × 900, then rechecked the persisted report at 390 × 844; no overflow or runtime warnings/errors |
 | 14 | Keyboard, labels, focus, contrast, reduced motion | Verified | keyboard E2E, zero axe violations, visible focus classes, contrast repair, reduced-motion CSS |
-| 15 | Complete submission documentation | Verified as drafts/evidence | README, testing, build log, roadmap, threat model, demo script, Devpost draft, execution goal, completion report, env example, license |
+| 15 | Complete submission documentation | Verified as drafts/evidence | README, testing, build log, roadmap, threat model, demo script, Devpost draft, execution goal, completion report, deployment/rollback runbook, five-tester protocol/template, env example, license, and readiness validator |
 | 16 | No secrets/artifacts/misleading or fake features | Verified locally and on evidence publication head | scans clean except deliberate fake redaction test; client bundle clean; generated artifacts ignored; public branch contains no credential; live claims clearly qualified; final metadata-head proof is recorded externally on PR #13 to avoid self-reference |
-| 17 | Deployment-ready | Verified locally; deployment pending | production build/start/headers/health pass, env/setup documented; public deployment needs approval |
+| 17 | Deployment-ready | Verified locally; deployment pending | production build/start plus strict HTML/header/cache/fallback smoke pass; Vercel-compatible target controls, server-only env, rollback, public checks, and availability are documented; deployment and edge/shared paid-use limiting need approval/host access |
 | 18 | Video-intended features consistent | Verified in fallback mode | primary flow passed repeatedly in manual browser and Playwright; live mode awaits smoke |
 | 19 | Majority built in primary Codex thread documented | Verified; Session ID pending | README, BUILD_LOG, and SUBMISSION distinguish the primary Codex build thread, independent Codex development reviews, and absence of Claude Code review; `/feedback` ID not yet supplied |
-| 20 | Final report objective and transparent | Verified | this report separates verified, credential-blocked, and approval/external items |
+| 20 | Final report objective and transparent | Verified at offline checkpoint | this report separates verified, credential-blocked, approval-gated, and external items; strict submission mode remains red rather than fabricating missing evidence |
 
 ## PRD Definition of Done
 
@@ -49,7 +49,7 @@ The goal is not represented as globally finished because live OpenAI verificatio
 | 8 | Failing patch never verified | Verified | unit, route, and E2E regression |
 | 9 | Report separates evidence and assessment | Verified | report UI and E2E assertions |
 | 10 | Real live-failure fallback | Verified for missing/malformed/timeout paths | nine real fixtures; actual provider outage recovery awaits live credential |
-| 11 | Critical rules automated | Verified | 63 unit/integration tests, seven E2E workflows, source/history scan, and all-fixture bundle check |
+| 11 | Critical rules automated | Verified | 126 unit/integration tests including 63 focused release-tool checks, seven E2E workflows, source/history scan, and all-fixture bundle check |
 | 12 | README/build log document Codex/GPT/review | Verified | accurate provenance: primary Codex build, independent Codex development reviews, and no Claude Code review |
 | 13 | Public demo/repository available through judging | Repository verified; demo pending deployment | source is public at `https://github.com/Anish-Guntreddi/FaultSmith`; deploy the app and monitor both through judging |
 | 14 | Public clear video under three minutes | Pending recording/publication | 2:35 script ready; automated primary workflow completes in 3.5 seconds |
@@ -84,8 +84,8 @@ The approved July 18 amendment is implemented locally. The default entry point i
 
 ## Required user-authorized next actions
 
-1. Provide or configure a server-only `OPENAI_API_KEY` for the controlled live smoke.
-2. Approve the target deployment.
+1. After the offline evidence head is pushed and its four required checks pass, privately configure a server-only `OPENAI_API_KEY` for the controlled live smoke; do not paste it into chat.
+2. After the live proof and private credential cleanup, approve the target deployment and host-specific edge/shared abuse controls.
 3. Coordinate five external testers.
 4. Record and publish the demo after the live/deployment smoke.
 5. Capture the primary `/feedback` Session ID.
