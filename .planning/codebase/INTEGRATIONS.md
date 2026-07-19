@@ -78,15 +78,20 @@
 
 ## Environment Variables
 
-- `OPENAI_API_KEY`
+- `OPENAI_API_KEY` (server-only)
+- `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT` (server-only), `FIREBASE_AUTH_EMULATOR_HOST`, `FIRESTORE_EMULATOR_HOST`
+- `NEXT_PUBLIC_FAULTSMITH_CLOUD_SYNC`, `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`, `NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST` (non-production), `NEXT_PUBLIC_FAULTSMITH_PROVIDER_LINKING` (capability gate, default off)
 - `NODE_ENV`
 - `CI`
 
-`OPENAI_API_KEY` is the only application-specific variable and must remain server-only; `NODE_ENV` affects the CSP in `next.config.ts`, while `CI` adjusts Playwright behavior in `playwright.config.ts`. No `NEXT_PUBLIC_*` variable is used by the current application.
+`OPENAI_API_KEY` and the Firebase server values must remain server-only. `NODE_ENV` plus the cloud-sync/auth-domain values affect the CSP and COOP in `next.config.ts` (Firebase origins join only when cloud sync is configured); `CI` adjusts Playwright behavior. The `NEXT_PUBLIC_FIREBASE_*` values are public project metadata consumed by the lazy browser auth adapter in `src/client/firebase-auth.ts`.
+
+## Optional Firebase Integration (configuration-gated)
+
+- Firebase Authentication (email/password + Google popup) via the lazy browser adapter `src/client/firebase-auth.ts`; the server verifies ID tokens through the Admin gateway `src/server/firebase-admin.ts` and mediates all Firestore access (`learningProfiles/{uid}`), with direct browser Firestore access rules-denied.
+- With every Firebase variable absent the application is provably local-only (no sign-in surface, no Firebase/Google network contact); emulator-only test harnesses are `npm run test:firebase` and `npm run test:e2e:firebase`.
 
 ## Absent Integrations and Planning Implications
-
-- There is no authentication or authorization provider; the current experience requires no account and grants no external credential.
 - There is no remote analytics or telemetry backend; anonymous attempt events never leave the browser.
 - There is no payment, email, calendar, messaging, storage, CDN, monitoring, error-reporting, or feature-flag SDK.
 - There is no arbitrary repository import: the project/skill catalog in `src/lib/catalog.ts` maps only to curated fixtures in `src/server/fixtures.ts`.

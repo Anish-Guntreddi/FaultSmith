@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01.1-03-PLAN.md
-last_updated: "2026-07-19T08:27:03.162Z"
-last_activity: "July 19, 2026 — Plan 01.1-03 delivered the authenticated server persistence boundary: lazy Admin/identity DAL (verified-token-only UID), fixed-path Firestore repository with SHA-256 idempotent server_verified persistence and 50-attempt retention, same-origin no-store /api/progress routes, and an assessment sync hook whose bounded cloudSync fact never alters the deterministic report."
+stopped_at: Completed 01.1-04-PLAN.md
+last_updated: "2026-07-19T09:11:20.556Z"
+last_activity: July 19, 2026 — Plan 01.1-04 delivered the guest-first optional account/sync surface (email/password + Google, verification-gated, enumeration-resistant, one-time bounded import, explicit cloud-data/account deletion), cloud-configured-only exact-origin CSP/COOP hardening, and a 15-scenario demo-emulator browser suite proving identity/network/CSP/Firebase failures never disrupt guest learning.
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 14
+  completed_plans: 15
   percent: 78
 ---
 
@@ -26,9 +26,9 @@ See: `.planning/PROJECT.md` (updated July 18, 2026)
 ## Current Position
 
 Phase: 01.1 of 5 (Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard)
-Plan: 3 of 6 complete (Wave 1 done; Wave 2 started); Plan 04 (sync UI) is next
+Plan: 4 of 6 complete (Waves 1-3 done); Plan 05 (hardening/review) is next
 Status: Executing; credential-free implementation and emulator verification precede real Firebase configuration
-Last activity: July 19, 2026 — Plan 01.1-03 delivered the authenticated server persistence boundary: lazy Admin/identity DAL (verified-token-only UID), fixed-path Firestore repository with SHA-256 idempotent server_verified persistence and 50-attempt retention, same-origin no-store /api/progress routes, and an assessment sync hook whose bounded cloudSync fact never alters the deterministic report.
+Last activity: July 19, 2026 — Plan 01.1-04 delivered the guest-first optional account/sync surface (email/password + Google, verification-gated, enumeration-resistant, one-time bounded import, explicit cloud-data/account deletion), cloud-configured-only exact-origin CSP/COOP hardening, and a 15-scenario demo-emulator browser suite proving identity/network/CSP/Firebase failures never disrupt guest learning.
 
 Progress: [████████░░] 78%
 
@@ -64,6 +64,7 @@ Progress: [████████░░] 78%
 | Phase 01.1 P01 | 19 min | 2 tasks | 11 files |
 | Phase 01.1 P02 | 26 min | 2 tasks | 18 files |
 | Phase 01.1 P03 | 25 min | 2 tasks | 13 files |
+| Phase 01.1 P04 | 40 min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,10 @@ Decisions are logged in `.planning/PROJECT.md`. Recent decisions affecting curre
 - [Phase 01.1]: Persisted attempt summaries record challengeSource prevalidated and take lesson difficulty from the unique challenge-to-lesson registry mapping — The server never accepts source, lesson, or difficulty authority from a progress-write client
 - [Phase 01.1]: cloudSync is an optional bounded enum on the shared assessment response; it is descriptive only and can never change completion or test authority — Legacy saved responses still parse strictly while cloud-aware clients get the sync fact
 - [Phase 01.1]: Cloud profile lives in one transactional learningProfiles/{uid} document with a localImportedAt marker enforcing the bounded one-time import (409 on replay) — Makes replay collapse, retention, isolation, and deletion trivially verifiable
+- [Phase 01.1]: Cloud-merged progress renders from React state only; device localStorage keeps device-only progress plus one identity-free opt-in boolean, so sign-out structurally returns to guest data — No Firebase user/token/identity material may enter FaultSmith persistence and shared machines must stay clean
+- [Phase 01.1]: Attempt dedupe uses a bounded outcome identity mirroring the server SHA-256 idempotency material, collapsing local and server copies of one attempt with server_verified preferred — Prevents duplicated attempts and false provenance in cloud merges
+- [Phase 01.1]: CSP widens only in cloud-configured builds by exact empirically proven origins (identitytoolkit/securetoken connect-src, validated auth-domain frame-src, apis.google.com script-src); COOP relaxes to same-origin-allow-popups only then — The popup flow fails closed without the gapi loader origin and the opener relationship; cloud-off production headers stay byte-identical to baseline
+- [Phase 01.1]: Provider linking stays behind the NEXT_PUBLIC_FAULTSMITH_PROVIDER_LINKING capability flag (default unsupported) until Plan 06 real-provider proof; collisions receive safe existing-method guidance — Linking may ship only after emulator and real-provider proof are green
 
 ### Roadmap Evolution
 
@@ -109,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-19T08:26:54.715Z
-Stopped at: Completed 01.1-03-PLAN.md
+Last session: 2026-07-19T09:11:08.608Z
+Stopped at: Completed 01.1-04-PLAN.md
 Resume file: None

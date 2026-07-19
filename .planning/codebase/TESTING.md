@@ -6,6 +6,7 @@
 - Vitest excludes `tests/e2e/**`, keeping browser workflows separate from Node suites. Test files are colocated with implementation as `*.test.ts` under `src/lib/`, `src/server/`, and `src/app/api/challenges/`.
 - End-to-end tests use Playwright 1.61 with `@axe-core/playwright`; configuration lives in `playwright.config.ts` and browser scenarios live in `tests/e2e/faultsmith.spec.ts`.
 - Playwright starts `npm run dev` on `127.0.0.1:3101`, waits for `src/app/api/health/route.ts`, runs tests fully in parallel, retains traces on failure, and captures screenshots only on failure.
+- A second Playwright configuration, `playwright.firebase.config.ts`, drives the browser bundle against the `demo-faultsmith` Auth/Firestore emulators on `127.0.0.1:3103` (single worker, env-gated via `FAULTSMITH_FIREBASE_E2E`); its scenarios live in `tests/e2e/cloud-progress.spec.ts` and are skipped by the default run.
 - CI uses one quality job in `.github/workflows/ci.yml` on pushes and pull requests to `main`, with read-only repository permissions, concurrency cancellation, Node 24, and Chromium installation.
 - The repository has no code-coverage provider, coverage report, minimum line/branch threshold, or mutation-testing configuration.
 
@@ -13,6 +14,7 @@
 
 - `npm test` runs the Vitest suite once through `vitest run`.
 - `npm run test:e2e` runs Playwright headlessly; `npm run test:e2e:headed` supports interactive debugging.
+- `npm run test:e2e:firebase` wraps the Firebase Playwright configuration in `firebase emulators:exec --project demo-faultsmith` so browser auth/sync scenarios can never contact real Firebase.
 - `npm run lint` uses the Next.js core-web-vitals and TypeScript ESLint presets from `eslint.config.mjs`.
 - `npm run typecheck` runs `tsc --noEmit` against strict TypeScript settings in `tsconfig.json`.
 - `npm run security:bundle` runs `scripts/check-client-bundle.mjs` after a build and fails on forbidden hidden-answer or credential markers in `.next/static`.
