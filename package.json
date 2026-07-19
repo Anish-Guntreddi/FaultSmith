@@ -31,7 +31,7 @@
     "smoke:production": "node scripts/production-smoke.mjs",
     "readiness:prepare": "node scripts/submission-readiness.mjs --prepare",
     "readiness:strict": "node scripts/submission-readiness.mjs --strict",
-    "quality": "npm run lint && npm run typecheck && npm test && npm run build && npm run security:bundle && npm run test:e2e"
+    "quality": "npm run lint && npm run typecheck && npm test && npm run test:firebase && npm run build && npm run security:bundle && npm run test:e2e"
   },
   "dependencies": {
     "firebase": "^12.16.0",

@@ -4,10 +4,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import {
+  expectedPublicFirebaseConfigNames,
   findRuleMatches,
   formatFinding,
   hostExecutionRules,
   inspectText,
+  passwordBoundaryRules,
   scanWorkingTree,
   secretRules,
 } from "./check-source-security.mjs";
@@ -104,5 +106,85 @@ describe("source security rules", () => {
     const second = findRuleMatches(source, hostExecutionRules, "src/unsafe.ts");
     expect(second).toEqual(first);
     expect(first).toHaveLength(2);
+  });
+
+  it("detects Firebase service-account material without returning values", () => {
+    const serviceAccountJson = [
+      "{",
+      `"ty` + `pe": "service_` + `account",`,
+      `"private_` + `key_id": "` + "a1b2c3d4".repeat(2) + `",`,
+      `"client_email": "svc@demo-project.iam.` + `gserviceaccount.com"`,
+      "}",
+    ].join("\n");
+
+    const findings = findRuleMatches(serviceAccountJson, secretRules, "credentials.json");
+    const rules = findings.map((finding) => finding.rule);
+
+    expect(rules).toContain("gcp-service-account-json");
+    expect(rules).toContain("gcp-private-key-id");
+    expect(rules).toContain("gcp-service-account-email");
+    expect(JSON.stringify(findings)).not.toContain("a1b2c3d4");
+    expect(JSON.stringify(findings)).not.toContain("demo-project");
+  });
+
+  it("detects JWT-shaped bearer tokens without returning values", () => {
+    const token = "eyJ" + "a".repeat(20) + "." + "b".repeat(24) + "." + "c".repeat(16);
+    const findings = findRuleMatches(`Bearer ${token}`, secretRules, "server.log");
+
+    expect(findings.map((finding) => finding.rule)).toContain("jwt-bearer-token");
+    expect(JSON.stringify(findings)).not.toContain(token);
+  });
+
+  it("catches publicized server secrets and password-shaped assignments", () => {
+    const publicized = "NEXT_PUBLIC_" + "FIREBASE_SERVICE_ACCOUNT";
+    expect(
+      inspectText("src/config.ts", `const name = "${publicized}";`).map(({ rule }) => rule),
+    ).toContain("public-secret-environment");
+
+    const assignment = "SERVICE_" + "ACCOUNT=" + "forgedmaterial01";
+    expect(
+      findRuleMatches(assignment, secretRules, ".env.local").map(({ rule }) => rule),
+    ).toContain("secret-assignment");
+  });
+
+  it("treats documented public Firebase web config names as public metadata", () => {
+    expect(expectedPublicFirebaseConfigNames.has("NEXT_PUBLIC_FIREBASE_API_KEY")).toBe(true);
+
+    for (const name of expectedPublicFirebaseConfigNames) {
+      expect(inspectText("src/client/firebase-auth.ts", `process.env.${name} ?? ""`)).toEqual([]);
+      expect(inspectText(".env.example", `${name}=`)).toEqual([]);
+    }
+
+    const variant = "NEXT_PUBLIC_FIREBASE_API_KEY" + "_LEGACY";
+    expect(inspectText(".env.example", `${variant}=`).map(({ rule }) => rule)).toContain(
+      "public-secret-environment",
+    );
+  });
+
+  it("does not mistake TypeScript password type annotations for secret values", () => {
+    const signature = "createUser(email: string, password: string): Promise<void>;";
+    expect(findRuleMatches(signature, secretRules, "src/client/firebase-auth.ts")).toEqual([]);
+  });
+
+  it("flags password fields crossing server, persistence, or evidence boundaries", () => {
+    const leakyServer = [
+      "const password = pw();",
+      "persist({ payload: body.password });",
+      `record["password"] = true;`,
+    ].join("\n");
+
+    const serverFindings = inspectText("src/server/progress-service.ts", leakyServer);
+    expect(serverFindings.map(({ rule }) => rule)).toContain("password-boundary");
+
+    expect(
+      inspectText("src/lib/attempt-events.ts", "event.password = wipe();").map(
+        ({ rule }) => rule,
+      ),
+    ).toContain("password-boundary");
+
+    expect(inspectText("src/server/progress-service.test.ts", leakyServer)).toEqual([]);
+    expect(
+      inspectText("src/client/firebase-auth.ts", leakyServer).map(({ rule }) => rule),
+    ).not.toContain("password-boundary");
   });
 });

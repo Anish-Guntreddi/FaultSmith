@@ -33,13 +33,31 @@ export const secretRules = [
     pattern: /-----BEGIN [A-Z0-9 ]{0,40}PRIVATE KEY-----/g,
   },
   {
+    id: "gcp-service-account-json",
+    pattern: /"type"\s*:\s*"service_account"/g,
+  },
+  {
+    id: "gcp-service-account-email",
+    pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.iam\.gserviceaccount\.com\b/g,
+  },
+  {
+    id: "gcp-private-key-id",
+    pattern: /"private_key_id"\s*:\s*"[0-9a-fA-F]{8,}"/g,
+  },
+  {
+    id: "jwt-bearer-token",
+    pattern: /\beyJ[A-Za-z0-9_-]{14,}\.[A-Za-z0-9_-]{14,}\.[A-Za-z0-9_-]{10,}/g,
+  },
+  {
     id: "openai-env-assignment",
     pattern: /\bOPENAI_API_KEY\s*=\s*["']?[^"'\s#]{8,}/g,
   },
   {
     id: "secret-assignment",
+    // `(?!string\b)` keeps TypeScript annotations like `password: string):`
+    // from matching; a real secret value is never the bare type keyword.
     pattern:
-      /\b(?:API_KEY|ACCESS_TOKEN|AUTH_TOKEN|CLIENT_SECRET|PASSWORD|NPM_TOKEN)\s*[:=]\s*["']?[^"'\\,\s#]{8,}/gi,
+      /\b(?:API_KEY|ACCESS_TOKEN|AUTH_TOKEN|CLIENT_SECRET|PASSWORD|NPM_TOKEN|SERVICE_ACCOUNT|PRIVATE_KEY)\s*[:=]\s*["']?(?!string\b)[^"'\\,\s#]{8,}/gi,
   },
   {
     id: "registry-auth",
@@ -67,8 +85,28 @@ export const hostExecutionRules = [
 
 const publicSecretRule = {
   id: "public-secret-environment",
-  pattern: /\bNEXT_PUBLIC_[A-Z0-9_]*(?:OPENAI|API_KEY|SECRET|TOKEN)[A-Z0-9_]*/g,
+  pattern:
+    /\bNEXT_PUBLIC_[A-Z0-9_]*(?:OPENAI|API_KEY|SECRET|TOKEN|SERVICE_ACCOUNT|PRIVATE_KEY|CREDENTIAL)[A-Z0-9_]*/g,
 };
+
+// Documented public Firebase web configuration names. Firebase's browser API
+// key is public project metadata that Next.js inlines into the bundle by
+// design; it is never authorization material. Only these exact names are
+// treated as public — any variant (for example a service-account or
+// private-key name publicized with NEXT_PUBLIC_) still fails the scan.
+export const expectedPublicFirebaseConfigNames = new Set([
+  "NEXT_PUBLIC_FIREBASE_API_KEY",
+]);
+
+export const passwordBoundaryRules = [
+  {
+    // Password fields must never cross into server, persistence, or
+    // evidence code: Firebase owns password material and the only
+    // legitimate handler is the browser auth adapter in src/client/.
+    id: "password-boundary",
+    pattern: /\bpassword\b\s*[:=]|["']password["']|\.password\b/gi,
+  },
+];
 
 function normalizePath(path) {
   return path.split(sep).join("/");
@@ -90,6 +128,10 @@ function isDeliberateFixture(path, ruleId, value) {
   );
 }
 
+function isExpectedPublicConfigName(ruleId, value) {
+  return ruleId === "public-secret-environment" && expectedPublicFirebaseConfigNames.has(value);
+}
+
 export function findRuleMatches(text, rules, path = "fixture.txt") {
   const findings = [];
 
@@ -98,6 +140,7 @@ export function findRuleMatches(text, rules, path = "fixture.txt") {
     for (const match of text.matchAll(pattern)) {
       const value = match[0];
       if (isDeliberateFixture(path, rule.id, value)) continue;
+      if (isExpectedPublicConfigName(rule.id, value)) continue;
       findings.push({
         path,
         line: lineNumberAt(text, match.index ?? 0),
@@ -132,6 +175,18 @@ function shouldInspectHostExecution(path) {
   );
 }
 
+function shouldInspectPasswordBoundary(path) {
+  return (
+    (path.startsWith("src/server/") ||
+      path.startsWith("src/lib/") ||
+      path.startsWith("src/app/")) &&
+    !path.endsWith(".test.ts") &&
+    !path.endsWith(".test.tsx") &&
+    !path.endsWith(".spec.ts") &&
+    !path.endsWith(".spec.tsx")
+  );
+}
+
 export function inspectText(path, text) {
   const findings = findRuleMatches(text, secretRules, path);
 
@@ -141,6 +196,10 @@ export function inspectText(path, text) {
 
   if (shouldInspectHostExecution(path)) {
     findings.push(...findRuleMatches(text, hostExecutionRules, path));
+  }
+
+  if (shouldInspectPasswordBoundary(path)) {
+    findings.push(...findRuleMatches(text, passwordBoundaryRules, path));
   }
 
   return findings;
@@ -206,8 +265,12 @@ function candidateHistoryPaths(commit) {
     "glpat-[A-Za-z0-9_-]{20,}",
     "SG\\.[A-Za-z0-9_-]{16,}\\.[A-Za-z0-9_-]{16,}",
     "-----BEGIN [A-Z0-9 ]{0,40}PRIVATE KEY-----",
+    "\"type\"[[:space:]]*:[[:space:]]*\"service_account\"",
+    "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.iam\\.gserviceaccount\\.com",
+    "\"private_key_id\"[[:space:]]*:[[:space:]]*\"[0-9a-fA-F]{8,}\"",
+    "eyJ[A-Za-z0-9_-]{14,}\\.[A-Za-z0-9_-]{14,}\\.[A-Za-z0-9_-]{10,}",
     "OPENAI_API_KEY[[:space:]]*=[[:space:]]*[\"']?[^\"'[:space:]#]{8,}",
-    "(API_KEY|ACCESS_TOKEN|AUTH_TOKEN|CLIENT_SECRET|PASSWORD|NPM_TOKEN)[[:space:]]*[:=][[:space:]]*[\"']?[^\"'\\,[:space:]#]{8,}",
+    "(API_KEY|ACCESS_TOKEN|AUTH_TOKEN|CLIENT_SECRET|PASSWORD|NPM_TOKEN|SERVICE_ACCOUNT|PRIVATE_KEY)[[:space:]]*[:=][[:space:]]*[\"']?[^\"'\\,[:space:]#]{8,}",
     "_auth(Token)?[\"']?[[:space:]]*[:=][[:space:]]*[\"']?[^\"'\\,[:space:]]{8,}",
     "(Authorization|Proxy-Authorization)[[:space:]]*:[[:space:]]*(Bearer|Basic)[[:space:]]+[A-Za-z0-9._~+/-]{12,}",
     "https?://[^/[:space:]:@]{1,128}:[^/[:space:]@]{8,}@",

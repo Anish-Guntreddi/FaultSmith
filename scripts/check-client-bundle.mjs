@@ -7,7 +7,7 @@ const repositoryRoot = path.resolve(fileURLToPath(new URL("..", import.meta.url)
 const defaultClientDirectory = path.join(repositoryRoot, ".next/static");
 const defaultFixtureSource = path.join(repositoryRoot, "src/server/fixtures.ts");
 
-const staticForbiddenMarkers = [
+export const staticForbiddenMarkers = [
   { id: "internal-field:hidden-root", value: "hiddenRootCause" },
   { id: "internal-field:hidden-reference", value: "hiddenReferenceSolution" },
   { id: "internal-field:failure-signature", value: "expectedFailureSignature" },
@@ -15,6 +15,28 @@ const staticForbiddenMarkers = [
   { id: "internal-field:broken-snippet", value: "brokenSnippet" },
   { id: "internal-field:fixed-snippet", value: "fixedSnippet" },
   { id: "environment:openai-key", value: "OPENAI_API_KEY" },
+  // Firebase Admin SDK and service credentials are server-only; any trace in
+  // a client artifact means a privileged module crossed the boundary.
+  { id: "server-module:firebase-admin", value: "firebase-admin" },
+  { id: "environment:firebase-service-account", value: "FIREBASE_SERVICE_ACCOUNT" },
+  {
+    id: "environment:google-application-credentials",
+    value: "GOOGLE_APPLICATION_CREDENTIALS",
+  },
+  { id: "credential:service-account-type", value: ["service", "account"].join("_") },
+  { id: "credential:private-key-block", value: ["-----BEGIN PRIVATE", "KEY-----"].join(" ") },
+];
+
+// Expected public Firebase web configuration names. Next.js inlines their
+// values into browser bundles at build time by design; the names and values
+// are public project metadata, NOT authorization material. They must never
+// be added to the forbidden markers above.
+export const expectedPublicFirebaseConfigNames = [
+  "NEXT_PUBLIC_FAULTSMITH_CLOUD_SYNC",
+  "NEXT_PUBLIC_FIREBASE_API_KEY",
+  "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
+  "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
+  "NEXT_PUBLIC_FIREBASE_APP_ID",
 ];
 
 function propertyName(node) {

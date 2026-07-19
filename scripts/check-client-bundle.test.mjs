@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   deriveFixtureHiddenMarkers,
+  expectedPublicFirebaseConfigNames,
   inspectBundleContent,
+  staticForbiddenMarkers,
 } from "./check-client-bundle.mjs";
 
 describe("client bundle hidden-marker derivation", () => {
@@ -50,5 +52,46 @@ describe("client bundle hidden-marker derivation", () => {
       { file: ".next/static/chunk.js", rule: "fixture:sample-v1:root" },
     ]);
     expect(JSON.stringify(findings)).not.toContain(hiddenValue.value);
+  });
+});
+
+describe("client bundle Firebase credential boundaries", () => {
+  it("rejects Firebase Admin SDK and service credential markers", () => {
+    const cases = [
+      ["server-module:firebase-admin", "firebase-" + "admin"],
+      ["environment:firebase-service-account", "FIREBASE_SERVICE_" + "ACCOUNT"],
+      ["environment:google-application-credentials", "GOOGLE_APPLICATION_" + "CREDENTIALS"],
+      ["credential:service-account-type", ["service", "account"].join("_")],
+      ["credential:private-key-block", ["-----BEGIN PRIVATE", "KEY-----"].join(" ")],
+    ];
+
+    for (const [rule, content] of cases) {
+      const findings = inspectBundleContent(
+        ".next/static/chunks/app.js",
+        `prefix ${content} suffix`,
+        staticForbiddenMarkers,
+      );
+      expect(findings.map((finding) => finding.rule)).toContain(rule);
+    }
+  });
+
+  it("treats expected public Firebase web config names as public metadata", () => {
+    const inlinedPublicContent = expectedPublicFirebaseConfigNames.join(" ");
+
+    expect(
+      inspectBundleContent(
+        ".next/static/chunks/app.js",
+        inlinedPublicContent,
+        staticForbiddenMarkers,
+      ),
+    ).toEqual([]);
+  });
+
+  it("never lists a public config name as a forbidden marker", () => {
+    for (const name of expectedPublicFirebaseConfigNames) {
+      for (const marker of staticForbiddenMarkers) {
+        expect(name.includes(marker.value)).toBe(false);
+      }
+    }
   });
 });
