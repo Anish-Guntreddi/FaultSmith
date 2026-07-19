@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 import { getProject } from "@/lib/catalog";
 import {
   getLearningRecommendation,
@@ -47,7 +49,7 @@ export function GuidedRoadmap({
         </div>
         <div className="evidence-well min-w-56 rounded-xl px-4 py-3">
           <div className="flex items-center justify-between text-xs"><span className="text-zinc-400">Roadmap progress</span><span className="font-semibold text-emerald-300">{completeCount}/9 verified</span></div>
-          <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/6"><div className="h-full rounded-full bg-gradient-to-r from-cyan-300/70 to-emerald-400/80 transition-[width]" style={{ width: `${(completeCount / learningSteps.length) * 100}%` }} /></div>
+          <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/6"><div className="progress-fill h-full rounded-full bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" style={{ "--progress": completeCount / learningSteps.length } as CSSProperties} /></div>
         </div>
       </div>
 
@@ -71,7 +73,7 @@ export function GuidedRoadmap({
                       type="button"
                       aria-pressed={selectedLesson}
                       onClick={() => onSelectStep(step.id)}
-                      className={`min-h-32 rounded-xl border p-3 text-left transition duration-200 focus-visible:outline-none ${selectedLesson ? "border-amber-400/45 bg-[linear-gradient(145deg,rgba(242,184,75,0.09),rgba(255,255,255,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]" : "border-white/7 bg-black/15 hover:-translate-y-0.5 hover:border-cyan-200/20 hover:bg-white/[0.025]"}`}
+                      className={`min-h-32 rounded-xl border p-3 text-left transition duration-200 focus-visible:outline-none ${selectedLesson ? "border-amber-400/45 bg-[linear-gradient(145deg,rgba(242,184,75,0.09),rgba(255,255,255,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]" : "fine-hover-lift border-white/7 bg-black/15 hover:border-cyan-200/20 hover:bg-white/[0.025]"}`}
                     >
                       <div className="font-instrument flex items-center justify-between gap-2 text-[9px] uppercase tracking-[0.12em]">
                         <span className="text-zinc-500">Lesson {step.order}</span>

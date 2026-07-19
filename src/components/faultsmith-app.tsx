@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { DebuggingCaseFile } from "@/components/debugging-case-file";
 import { GuidedRoadmap } from "@/components/guided-roadmap";
 import { ProgressDashboard } from "@/components/progress-dashboard";
 import { useCloudProgressSync, type CloudProgressSync } from "@/components/progress-sync";
@@ -820,7 +821,7 @@ function ConfigureView(props: ConfigureProps) {
               {projects.map((project) => {
                 const active = props.projectId === project.id;
                 return (
-                  <button key={project.id} type="button" aria-pressed={active} onClick={() => props.setProjectId(project.id)} className={`group relative min-h-72 overflow-hidden rounded-2xl p-5 text-left transition duration-200 focus-visible:outline-none ${active ? "lab-panel-raised" : "lab-panel hover:-translate-y-0.5 hover:border-white/20"}`}>
+                  <button key={project.id} type="button" aria-pressed={active} onClick={() => props.setProjectId(project.id)} className={`group relative min-h-72 overflow-hidden rounded-2xl p-5 text-left transition duration-200 focus-visible:outline-none ${active ? "lab-panel-raised" : "lab-panel fine-hover-lift hover:border-white/20"}`}>
                     <div className="flex items-center justify-between"><span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300/80">{project.eyebrow}</span><span className="rounded-full border border-emerald-400/15 bg-emerald-400/[0.05] px-2 py-1 text-[10px] uppercase tracking-wider text-emerald-300">Ready</span></div>
                     <h3 className="mt-7 text-lg font-medium leading-6 text-zinc-100">{project.title}</h3>
                     <p className="mt-3 text-sm leading-6 text-zinc-500">{project.description}</p>
@@ -839,12 +840,13 @@ function ConfigureView(props: ConfigureProps) {
               <fieldset><legend className="mb-2 text-xs font-medium text-zinc-400">Validation mode</legend><div className="grid grid-cols-2 gap-2"><button type="button" aria-pressed={props.preferLive} onClick={() => props.setPreferLive(true)} className={`rounded-xl border px-3 py-3 text-left text-xs ${props.preferLive ? "border-amber-400/35 bg-amber-400/[0.07] text-amber-200" : "border-white/8 text-zinc-500"}`}><span className="block font-medium">Live + fallback</span><span className="mt-1 block text-[10px] opacity-70">GPT-5.6 when configured</span></button><button type="button" aria-pressed={!props.preferLive} onClick={() => props.setPreferLive(false)} className={`rounded-xl border px-3 py-3 text-left text-xs ${!props.preferLive ? "border-emerald-400/30 bg-emerald-400/[0.06] text-emerald-200" : "border-white/8 text-zinc-500"}`}><span className="block font-medium">Prevalidated</span><span className="mt-1 block text-[10px] opacity-70">Reliable demo fixture</span></button></div></fieldset>
               <div className="rounded-xl border border-white/7 bg-black/20 p-4"><div className="flex items-center justify-between text-xs"><span className="text-zinc-500">Release gate</span><span className="text-emerald-300">Original pass → Mutant fail</span></div><div className="mt-3 h-1 overflow-hidden rounded-full bg-white/5"><div className="h-full w-full bg-gradient-to-r from-amber-500/60 to-emerald-400/70" /></div></div>
               {props.error && <div role="alert" className="rounded-xl border border-red-400/15 bg-red-400/[0.05] p-3 text-xs leading-5 text-red-300">{props.error}<button type="button" disabled={!ready} onClick={props.onFallback} className="mt-2 block font-semibold underline disabled:opacity-40">Load the prevalidated challenge</button></div>}
-              <button type="button" disabled={!ready} onClick={props.onForge} className="primary-action forge-pulse flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold focus-visible:outline-none disabled:animate-none disabled:opacity-35">Forge debugging lab <span aria-hidden="true">→</span></button>
+              <button type="button" disabled={!ready} onClick={props.onForge} className="primary-action flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold focus-visible:outline-none disabled:opacity-35">Forge debugging lab <span aria-hidden="true">→</span></button>
               <p className="text-center text-[11px] leading-5 text-zinc-600">Live mode asks GPT-5.6 to emit the approved bounded contract. Executed evidence decides whether it ships.</p>
             </div>
           </aside>
         </div>
         )}
+        <DebuggingCaseFile />
       </div>
     </div>
   );
@@ -893,7 +895,7 @@ function WorkspaceView(props: WorkspaceProps) {
 
   return (
     <div className="grid-texture motion-rise mx-auto min-h-[calc(100vh-4.5rem)] max-w-[1680px] p-3 sm:p-5">
-      <div className="lab-panel mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3"><div className="flex flex-wrap items-center gap-3"><span className="font-instrument rounded-lg border border-red-400/20 bg-red-400/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-red-300">1 validated fault</span><div><h1 className="text-sm font-semibold text-zinc-100">{props.challenge.title}</h1><div className="font-instrument text-[10px] text-zinc-500">{props.challenge.targetSkill} · {difficultyLabel(props.challenge.difficulty)}</div></div><span className="status-pill px-2.5 py-1">{sourceLabel(props.challenge)}</span></div><div className="flex items-center gap-2"><button type="button" onClick={props.onReset} className="secondary-action rounded-lg px-3 py-2 text-xs">Reset lab</button><button type="button" disabled={props.requestState === "running"} onClick={props.onRunTests} className="rounded-lg bg-zinc-100 px-4 py-2 text-xs font-semibold text-zinc-950 transition hover:-translate-y-0.5 hover:bg-white disabled:opacity-50">{props.requestState === "running" ? "Running in isolation…" : "Run tests"}</button></div></div>
+      <div className="lab-panel mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3"><div className="flex flex-wrap items-center gap-3"><span className="font-instrument rounded-lg border border-red-400/20 bg-red-400/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-red-300">1 validated fault</span><div><h1 className="text-sm font-semibold text-zinc-100">{props.challenge.title}</h1><div className="font-instrument text-[10px] text-zinc-500">{props.challenge.targetSkill} · {difficultyLabel(props.challenge.difficulty)}</div></div><span className="status-pill px-2.5 py-1">{sourceLabel(props.challenge)}</span></div><div className="flex items-center gap-2"><button type="button" onClick={props.onReset} className="secondary-action rounded-lg px-3 py-2 text-xs">Reset lab</button><button type="button" disabled={props.requestState === "running"} onClick={props.onRunTests} className="fine-hover-lift rounded-lg bg-zinc-100 px-4 py-2 text-xs font-semibold text-zinc-950 transition hover:bg-white disabled:opacity-50">{props.requestState === "running" ? "Running in isolation…" : "Run tests"}</button></div></div>
       {(props.message || props.error) && <div role={props.error ? "alert" : "status"} className={`mb-3 rounded-xl border px-4 py-2.5 text-xs leading-5 ${props.error ? "border-red-400/15 bg-red-400/[0.05] text-red-300" : "border-amber-400/15 bg-amber-400/[0.04] text-amber-200"}`}>{props.error || props.message}</div>}
       <ol aria-label="Investigation workflow" className="workflow-rail mb-3 grid gap-px overflow-hidden rounded-xl sm:grid-cols-4">
         {investigationSteps.map((step, index) => (

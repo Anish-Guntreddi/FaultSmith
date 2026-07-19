@@ -122,7 +122,16 @@ Display headlines use tight tracking and strong weight. Instrument labels use up
 - Touch targets should be at least 40 px tall for primary controls.
 - Motion honors reduced-motion preferences.
 - No design asset may weaken the validated fixture fallback, add a required network request, expose a credential, or relax the existing CSP.
-- No animation/UI framework is required for this release; CSS and existing React state are sufficient.
+- Core learning, identity, validation, and report interactions remain CSS/React-only. GSAP is permitted only for the progressively enhanced Debugging Case File below the active learning controls; it is dynamically imported on desktop near the viewport and is never required for product functionality.
+
+## Debugging Case File motion boundary
+
+- The explanatory sequence demonstrates Observe → Hypothesize → Repair → Verify with a fictional retry-boundary example that does not match a curated fixture.
+- Desktop uses ordinary document scrolling, a CSS-sticky monitor, restrained CSS perspective, and interruptible GSAP/ScrollTrigger stage timelines. It does not pin, snap, smooth, normalize, or hijack scrolling.
+- GSAP and ScrollTrigger load only within 400 px of the section and only at 1024 px or wider when reduced motion is not requested.
+- Stage motion changes only transform and opacity. The monitor stays within `rotateX(1deg–2deg)` and `rotateY(-8deg–4deg)`; line stagger is 40 ms and the explanatory transition is 420 ms with a strong ease-out.
+- Mobile, reduced-motion, JavaScript-disabled, and dynamic-import-failure paths remain static semantic content. The practice controls appear before the narrative.
+- Idle Forge motion is removed; continuous pulse remains limited to active challenge validation. Progress fills animate with `scaleX`, not layout width.
 
 ## Acceptance views
 
@@ -137,3 +146,5 @@ The visual system is not complete until these states have objective evidence at 
 - Verified report
 - Not-verified report
 - Firebase disabled/degraded local fallback
+- Debugging Case File at Observe, Hypothesize, Repair, and Verify
+- Desktop-enhanced → mobile-static and desktop-enhanced → reduced-motion-static teardown

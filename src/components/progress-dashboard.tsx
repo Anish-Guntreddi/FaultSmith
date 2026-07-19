@@ -1,5 +1,7 @@
 "use client";
 
+import type { CSSProperties } from "react";
+
 import { ProgressSyncPanel, type CloudProgressSync } from "@/components/progress-sync";
 import { getLearningStep, type LearningStep } from "@/lib/learning-paths";
 import {
@@ -30,8 +32,8 @@ function EvidenceBar({ value, tone = "amber" }: { value: number; tone?: "amber" 
   return (
     <div aria-hidden="true" className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5">
       <div
-        className={`h-full rounded-full transition-[width] ${tone === "emerald" ? "bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" : "bg-gradient-to-r from-amber-300/80 to-amber-500/70"}`}
-        style={{ width: `${width}%` }}
+        className={`progress-fill h-full rounded-full ${tone === "emerald" ? "bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" : "bg-gradient-to-r from-amber-300/80 to-amber-500/70"}`}
+        style={{ "--progress": width / 100 } as CSSProperties}
       />
     </div>
   );
