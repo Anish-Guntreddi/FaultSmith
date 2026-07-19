@@ -1,7 +1,7 @@
 # FaultSmith Threat Model
 
-**Review date:** July 18, 2026  
-**Scope:** browser client, Next.js API routes, server-only challenge catalog, OpenAI Responses API and Code Interpreter boundary, browser-local persistence, and deployment configuration
+**Review date:** July 19, 2026
+**Scope:** browser client, Next.js API routes, server-only challenge catalog, OpenAI Responses API and Code Interpreter boundary, browser-local persistence, planned Firebase email/password + Google identity/cloud progress, and deployment configuration
 
 ## Security objectives
 
@@ -21,6 +21,9 @@
 - Guided lesson completion evidence and curriculum sequencing integrity
 - Service availability and submission/demo reliability
 - Provider container/session isolation
+- Firebase service credential and ID-token confidentiality
+- Account ownership, password/verification/reset integrity, and provider-to-UID continuity
+- Private UID-scoped cloud learning metrics and cross-user isolation
 
 ## Trust boundaries
 
@@ -32,6 +35,8 @@
 | Server → Code Interpreter | Learner Python is hostile | Ephemeral OpenAI sandbox | fixed server command/bundle, timeout, output sanitation; no host subprocess |
 | Test result → model assessment | Learner prose and provider scores are probabilistic | Deterministic verification policy | hidden fixture answers are omitted from model input; provider returns only three scores; prose, completion, minimality, and execution fields are server-owned |
 | Browser storage → restored UI | Local storage can be tampered with | Runtime validation/reexecution | public-only state; final submission reruns exact files server-side |
+| Firebase Auth client → Next.js progress routes (planned) | Browser identity state and Bearer token are attacker-controlled | Server-verified Firebase token and verified-email policy | bounded Authorization parsing, Admin verification, project/audience checks, verified UID-only DAL, no password server path |
+| Next.js server → Cloud Firestore (planned) | Route payloads cannot select identity or paths | Server-only bounded progress repository | verified UID wrapper, fixed paths, strict DTOs, idempotency/retention, default-deny browser rules |
 | Operator smoke → release evidence | Public route payloads, provider output, filesystem paths, and target URLs are untrusted | Strict evidence schema and contained writer | exact route schemas/mode assertions; HTTPS except loopback; redirect rejection; hashes instead of output; exclusive no-follow/symlink-safe writes under ignored `test-results/` |
 
 ## Entry points
@@ -44,6 +49,7 @@
 - Project/skill/difficulty controls
 - Source, hypothesis, and explanation text
 - Browser-local saved attempt
+- Planned Firebase account controls and authenticated progress routes
 - Provider responses and Code Interpreter logs
 
 ## Abuse cases and findings
@@ -63,6 +69,11 @@
 | Medium; partially mitigated | Distributed rate-limit bypass, spoofed-key memory growth, and API-credit exhaustion | API routes | 30 requests/minute/IP/scope, separate 300/scope process budget, 5,000-bucket cap, expired cleanup, overflow bucket | same-client, malformed-address, and valid-address-churn regressions | per-process state is not sufficient for horizontally scaled public traffic; Phase 3 requires edge/shared limiter |
 | Medium; mitigated | Passing live tests verify a broad/destructive repair | assessment | server derives changed files/lines and withholds verification above the fixture's minimal-change boundary | mocked passing Code Interpreter broad-rewrite regression | test adequacy and live execution still require credentialed smoke |
 | Medium; mitigated | Credential leaks via client env/error/log | config/gateway/routes | server-only env read, no `NEXT_PUBLIC_`, safe errors, output key redaction, `.env*` ignore | secret scan, redaction test, client source scan | deployment operator must configure server scope correctly |
+| High if absent; planned | Password leaks into FaultSmith server, storage, logs, or evidence | email/password account flow | Firebase browser SDK owns credential exchange; no password API/schema/state field; password-manager-safe form; scanner and persistence regressions | adapter/unit/browser/source/bundle tests required in Phase 01.1 | real browser/provider behavior remains credential-gated |
+| Medium if absent; planned | Signup/login/reset/verification reveals registered emails or floods inboxes | Firebase account actions | enumeration protection, generic states, Firebase password policy, cooldowns, bounded retries, host/platform rate controls | emulator/browser adversarial cases plus real-project smoke | Firebase/provider anti-abuse behavior and email delivery require real-project proof |
+| High if absent; planned | Unverified password identity reads or writes cloud progress | progress routes | server checks verified Firebase token and email-verification state; local guest path remains available | identity DAL/route/emulator tests for stale/unverified/verified tokens | token-claim refresh behavior requires real-project proof |
+| High if absent; planned | Google/password collision silently splits, merges, or overwrites learner progress | provider linking and UID-keyed profile | one-account-per-email configuration; explicit recent authentication; link must preserve UID; no automatic cross-UID copy; safe guidance if linking is unproven | emulator/browser collision tests and real-provider checkpoint | Firebase's current JavaScript linking documentation flags a known issue in some projects, so linking remains release-gated |
+| High if absent; planned | User A reads, writes, deletes, or infers user B's cloud metrics | progress API/Firestore | UID derived only from verified token; fixed server paths; strict DTOs; default-deny direct-client rules | two-user route/emulator tests, deletion and document-inference adversarial cases | Admin SDK bypasses rules, so DAL correctness and real-project proof remain mandatory |
 | Low; mitigated | Local storage tampering manufactures a report | client persistence | report is learning evidence, not certification; any submission reruns server-side snapshot | refresh/reset E2E and authoritative assess tests | a user can alter their own rendered browser; no external credential is granted |
 | Low; mitigated | Local progress tampering unlocks lessons, injects learner prose, or creates false mastery | guided curriculum persistence | strict versioned schema, approved lesson-ID enum, bounded metrics, per-entry parsing, duplicate replacement, verified-only writes | learning-path unit tests and guided success/failure E2E; stored progress is checked for absence of code/hypothesis/explanation | browser owner can alter their own local presentation; progress grants no credential or verification authority |
 | Medium if expanded; avoided | Open-ended beginner prompting increases token spend, prompt dependency, or attack surface | learning entry point | guided lessons use existing prevalidated fixtures and deterministic recommendations; no new prompt or endpoint added | guided E2E confirms prevalidated launch and registry-to-fixture unit test proves all nine mappings | live Practice by skill still spends credits when explicitly selected and configured |

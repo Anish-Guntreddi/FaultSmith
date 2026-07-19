@@ -2,7 +2,7 @@
 
 > **Approved July 18, 2026 scope amendment:** The submission build adds a guided learning roadmap over the existing nine validated fixtures while preserving the direct skill catalog. Guided lessons default to the zero-token prevalidated path, store bounded anonymous progress, and provide deterministic next-step recommendations. Open-ended custom prompting remains deferred. See `docs/GUIDED_LEARNING_MVP.md` for the locked requirements and acceptance criteria.
 >
-> **Approved July 19, 2026 scope amendment:** The submission candidate may add a configuration-gated personalized progress dashboard plus optional Firebase Authentication and Cloud Firestore synchronization while preserving unauthenticated guest use and browser-local fallback. `docs/PERSONALIZED_LEARNING_PRD.md` overrides the authentication, persistence, analytics, delivery, and locked-decision sections below where they conflict. Cloud synchronization is not allowed to block the validated local experience or the submission freeze.
+> **Approved July 19, 2026 scope amendment:** The submission candidate may add a configuration-gated personalized progress dashboard plus optional Firebase email/password accounts, Google sign-in, and Cloud Firestore synchronization while preserving unauthenticated guest use and browser-local fallback. `docs/PERSONALIZED_LEARNING_PRD.md` overrides the authentication, persistence, analytics, delivery, and locked-decision sections below where they conflict. Cloud synchronization is not allowed to block the validated local experience or the submission freeze.
 
 **Document status:** Locked for OpenAI Build Week MVP  
 **Version:** 1.0  

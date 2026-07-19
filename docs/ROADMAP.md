@@ -3,7 +3,7 @@
 **Last direction review:** July 19, 2026
 **Locked track:** Education  
 **Locked primary demo:** Expense Approval boundary condition  
-**Current state:** The last green offline runtime and evidence checkpoints remain preserved. The user approved an urgent pre-deployment Phase 01.1 for a guest-first personalized dashboard plus optional Firebase/Google cloud synchronization. Its PRD, official platform research, Nyquist validation strategy, and six executable plans across four implementation waves plus a human checkpoint passed structural and independent plan review. No Phase 01.1 application code or external service mutation has occurred yet. Live OpenAI proof, real Firebase proof, deployment approval, and remaining human submission actions are still pending.
+**Current state:** The last green offline runtime and evidence checkpoints remain preserved. The user approved an urgent pre-deployment Phase 01.1 for a guest-first personalized dashboard plus optional Firebase cloud synchronization through verified email/password accounts or Google sign-in. Its PRD, official platform research, Nyquist validation strategy, and six executable plans across four implementation waves plus a human checkpoint passed structural and independent plan review, including two self-heal revisions for checkpoint fallback, exact-SHA review, regression ownership, timeout proof, and credential separation. No Phase 01.1 application code or external service mutation has occurred yet. Live OpenAI proof, real Firebase proof, deployment approval, and remaining human submission actions are still pending.
 
 ## Completed milestones
 
@@ -24,7 +24,7 @@
 ## Remaining PRD gaps requiring external action
 
 1. Complete Phase 01.1 credential-free contracts, metrics/dashboard, Firebase adapters, emulator tests, regression gates, and independent QA/security review.
-2. The user creates a Firebase Spark project, enables Google Authentication and Firestore, and privately configures its reviewed client/server values for real sync proof.
+2. The user creates a Firebase Spark project, enables email/password and Google Authentication plus Firestore, configures password/enumeration protections and approved domains/action URLs, and privately configures its reviewed client/server values for real sync proof.
 3. Privately configure a funded `OPENAI_API_KEY` and run the single controlled local GPT-5.6 and Code Interpreter smoke command on the post-Phase-01.1 candidate; clean up the credential before repository scanning.
 4. Obtain Netlify deployment approval, configure shared/edge abuse controls, deploy a preview, and verify both guest and signed-in workflows before production promotion.
 5. Run the study with at least five external testers and record comprehension results.
@@ -38,7 +38,7 @@ These are intentionally not marked complete by local fallback evidence.
 - **Highest technical risk:** live provider response or container behavior can drift from mocked/typed expectations. Mitigation: strict parse/validation, timeout, one retry, safe recovery, and a separate live smoke procedure.
 - **Highest demo risk:** network or credential failure during recording. Mitigation: the primary lab is prevalidated and automatically recovers to fixture mode with visible labeling; the explicit live proof is performed before recording rather than improvised on camera.
 - **Highest security risk:** the in-memory rate limiter is per process and not globally coordinated across a multi-instance deployment. Mitigation: conservative route limits now; add provider/edge rate limiting before any public exposure of a paid server credential.
-- **Highest new privacy risk:** cloud persistence can accidentally widen learner-data collection or cross-user access. Mitigation: optional identity, server-derived UID, strict bounded DTOs, server-mediated writes, direct-client Firestore denial, no source/prose storage, deletion, emulator isolation tests, and independent adversarial review.
+- **Highest new privacy risk:** cloud persistence and multiple providers can accidentally widen learner-data collection, expose account existence, split progress, or permit cross-user access. Mitigation: guest default, Firebase-owned password/verification/reset, enumeration-resistant responses, explicit provider-collision handling, server-derived UID, strict bounded DTOs, server-mediated writes, direct-client Firestore denial, no source/prose/password storage, deletion, emulator isolation tests, and independent adversarial review.
 - **Highest judging opportunity:** accurately show the zero-token guided curriculum, then—only after credentialed proof—show GPT emitting the exact approved live contract, Code Interpreter producing execution evidence, and deterministic policy controlling release.
 - **API-credit constraint:** live generation can require original and mutated executions, plus assessment. The fixture path allows unlimited rehearsal without spend.
 - **Curriculum boundary:** guided metadata must never contain hidden answers or become an alternate execution authority. Mitigation: lesson data references only public project-skill IDs; fixtures and assessments remain server-owned.
@@ -47,7 +47,7 @@ These are intentionally not marked complete by local fallback evidence.
 
 ## Recommended next milestone
 
-Execute Phase 01.1 in credential-free waves first: domain contracts, deterministic metrics, local dashboard, Firebase boundaries, and emulator/adversarial tests. Freeze and independently review that candidate. With the user's private Firebase configuration, prove optional Google sync; then run the separately credentialed OpenAI smoke on the same runtime candidate. After explicit Netlify approval, configure platform controls, deploy a preview, run production smoke, and complete five-person UAT. If cloud sync misses its gate, disable it through configuration and retain the local dashboard, fixture fallback, and previously validated learning loop.
+Execute Phase 01.1 in credential-free waves first: domain contracts, deterministic metrics, local dashboard, Firebase boundaries, and emulator/adversarial tests for guest, email/password, and Google states. Freeze and independently review that candidate. With the user's private Firebase configuration, prove verified email/password and Google sync; then run the separately credentialed OpenAI smoke on the same runtime candidate. After explicit Netlify approval, configure platform controls, deploy a preview, run production smoke, and complete five-person UAT. If cloud sync misses its gate, disable it through configuration and retain the local dashboard, fixture fallback, and previously validated learning loop.
 
 ## Explicitly deferred scope
 

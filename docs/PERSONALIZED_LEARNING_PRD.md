@@ -10,10 +10,10 @@
 
 FaultSmith will add an optional personalized learner profile without turning sign-in, Firebase, or the network into a prerequisite for learning.
 
-The product will have two persistence modes:
+The product will have two persistence modes and three access paths:
 
 1. **Guest mode:** the existing browser-local attempt and roadmap progress remains the default and continues to work with no account, Firebase configuration, OpenAI credential, or network dependency beyond loading the application.
-2. **Synced mode:** a learner may sign in with Google through Firebase Authentication to synchronize bounded progress and attempt metrics across devices. FaultSmith's Next.js server verifies the Firebase ID token and performs all Cloud Firestore learning-data writes.
+2. **Synced mode:** a learner may create or sign in to an email/password account, or continue with Google, through Firebase Authentication to synchronize bounded progress and attempt metrics across devices. FaultSmith's Next.js server verifies the Firebase ID token and performs all Cloud Firestore learning-data writes. Email/password accounts must verify their email before cloud learning-data access is enabled; until then, the complete local guest path remains available.
 
 The application will add a **My Progress** dashboard that works in both modes. Personalization remains deterministic and explainable; it does not call a model, award a credential, rank learners, or make academic decisions.
 
@@ -34,7 +34,7 @@ Authentication and storage support personalization; they do not become the produ
 ### 3.1 Submission goals
 
 - Keep the final judging URL usable without creating an account.
-- Add an optional Google sign-in path for durable, cross-device progress.
+- Add optional email/password account creation and login plus Google sign-in for durable, cross-device progress.
 - Persist only bounded learning metadata after server-side identity verification.
 - Display useful personal metrics in guest and synced modes.
 - Preserve the existing verified-only lesson completion rule.
@@ -55,7 +55,7 @@ Authentication and storage support personalization; they do not become the produ
 ## 4. Non-goals
 
 - Mandatory registration or a login-protected judging URL.
-- Email/password, phone, school SSO, or instructor-managed accounts in this release.
+- Phone, school SSO, multi-factor authentication, or instructor-managed accounts in this release.
 - Cohorts, classrooms, assignments, teacher dashboards, or organization administration.
 - Leaderboards, competitive ranking, grading, certification, employment claims, or academic-integrity judgments.
 - Storing learner source code, hypotheses, explanations, raw test output, prompts, or provider responses in Firebase.
@@ -70,12 +70,21 @@ Authentication and storage support personalization; they do not become the produ
 1. The learner opens FaultSmith and sees the Guided Roadmap without authentication.
 2. The learner completes challenges using the current local persistence path.
 3. **My Progress** shows local completion and learning metrics.
-4. A non-blocking control explains that Google sign-in enables cross-device synchronization.
+4. A non-blocking control explains that creating an account, logging in, or continuing with Google enables cross-device synchronization.
 5. If the learner never signs in, every current core workflow remains available.
 
-### 5.2 Synced learner
+### 5.2 Email/password learner
 
-1. The learner chooses **Sync progress with Google**.
+1. The learner chooses **Create account** or **Log in** from My Progress; neither action blocks guest access.
+2. Firebase Authentication—not FaultSmith's server—receives and manages the email and password.
+3. New accounts receive an email-verification message. Until verification is complete, the learner can continue locally but cannot read, import, write, or delete cloud learning data.
+4. A verified learner's Firebase ID token is sent only to FaultSmith's same-origin API over HTTPS.
+5. **Forgot password** requests a Firebase password-reset email and always returns a bounded generic confirmation state.
+6. Signing out returns the browser to guest mode without deleting cloud data.
+
+### 5.3 Google learner
+
+1. The learner chooses **Continue with Google**.
 2. Firebase completes Google authentication through an accessible popup, with a redirect fallback only if verified on the selected browsers.
 3. The browser sends the Firebase ID token to FaultSmith's same-origin API over HTTPS.
 4. The server verifies the token and returns only that UID's bounded progress DTO.
@@ -83,7 +92,14 @@ Authentication and storage support personalization; they do not become the produ
 6. Future verified assessments update cloud progression. Failed assessments may update private attempt history but never completion.
 7. Signing out returns the browser to guest mode without deleting cloud data.
 
-### 5.3 Progress dashboard
+### 5.4 Provider continuity
+
+- Email/password and Google use the same UID-keyed profile schema and metrics implementation.
+- The Firebase project uses one-account-per-email behavior. A provider collision is handled explicitly: the learner is asked to authenticate with the existing method before any linking attempt.
+- Provider linking is allowed only from an already authenticated, recently reauthenticated account and must preserve the same Firebase UID. It is not required for the primary submission workflow and ships only if emulator and real-provider tests are green.
+- FaultSmith never silently merges or deletes two Firebase identities, guesses ownership from an email string, or copies progress between UIDs. If safe linking is unavailable, the UI gives deterministic existing-provider guidance and leaves both records unchanged.
+
+### 5.5 Progress dashboard
 
 The dashboard displays:
 
@@ -96,7 +112,7 @@ The dashboard displays:
 - strongest practiced skill and skill needing reinforcement;
 - recent bounded attempt history;
 - the deterministic next recommendation and the evidence behind it;
-- storage mode: **On this device** or **Synced with Google**.
+- storage mode: **On this device**, **Verification required**, **Synced to account**, or **Saved on this device—cloud unavailable**.
 
 Metrics must use plain language and state that they are practice evidence, not grades or certification.
 
@@ -118,7 +134,7 @@ Metrics must use plain language and state that they are practice evidence, not g
 ```text
 Browser
   ├─ Guest progress → validated localStorage
-  ├─ Firebase Auth → optional Google ID token
+  ├─ Firebase Auth → optional email/password or Google ID token
   └─ Same-origin Next.js API + optional Bearer token
           ├─ strict Zod request/response contracts
           ├─ Firebase Admin ID-token verification
@@ -131,7 +147,7 @@ Netlify
   └─ edge/shared rate and spend controls
 
 Firebase Spark project
-  ├─ Authentication: Google provider
+  ├─ Authentication: email/password + Google providers
   └─ Cloud Firestore: deny direct browser access; server-mediated records
 ```
 
@@ -208,7 +224,7 @@ type CloudAttemptSummary = {
 
 The profile contains at most nine completions. Attempt history contains at most 50 summaries per user. The server deletes the oldest excess records without using paid Firestore TTL, backup, clone, or PITR features.
 
-The data model intentionally excludes names and email addresses. Firebase Authentication may hold provider identity data under Firebase's own account record; FaultSmith does not duplicate it into Firestore.
+The data model intentionally excludes names, email addresses, password material, and provider identifiers. Firebase Authentication may hold identity data and password credentials under Firebase's own account record; FaultSmith does not duplicate them into Firestore, localStorage, logs, evidence, or its server persistence layer.
 
 ### 7.4 API surface
 
@@ -238,10 +254,15 @@ Every recommendation displays its reason. No opaque model-generated recommendati
 ## 9. Security and privacy requirements
 
 - The server verifies every Firebase ID token and derives the UID from the verified token; it never accepts a UID from the client body or URL.
+- Cloud routes reject unverified email/password identities; the learner remains in the local path until a refreshed token confirms email verification.
 - Firestore document paths are constructed only from verified server identity and allowlisted record types.
 - Direct browser Firestore access is denied by deployed Security Rules. Firebase Admin bypasses rules, so server repository tests and schemas remain mandatory.
 - The service account receives only the permissions required for Authentication verification and the FaultSmith Firestore data path where practicable.
-- Google sign-in authorized domains include only localhost and the reviewed Netlify domains.
+- Email/password and Google are the only enabled providers; Google authorized domains and email-action continue URLs include only localhost and the reviewed Netlify domains.
+- Firebase owns password storage, verification, reset, and provider credentials. FaultSmith's server never receives a password, and client errors never echo one.
+- A Firebase password policy is enforced and mirrored through `validatePassword` guidance; email-enumeration protection is enabled and the application does not depend on provider-specific account-existence errors.
+- Verification and reset requests use generic responses, bounded retries, cooldowns, and rate controls so the UI does not become an account-discovery or email-flooding oracle.
+- Provider collisions and linking require explicit authentication and preserve the verified Firebase UID; no email-string-based or automatic cross-UID merge is permitted.
 - Netlify and application-level rate limiting protects auth/progress routes; paid OpenAI routes retain their stricter shared/edge budget controls.
 - CSP changes allow only the exact Firebase/Google origins required by the tested auth flow. No wildcard origin is accepted.
 - Logs contain route outcome and bounded timing only—never ID tokens, UID values, email, display name, Firebase credential fragments, learner prose, source, or Firestore document contents.
@@ -298,7 +319,8 @@ Firebase identifies the Local Emulator Suite as the preferred environment for lo
 
 - Guest can complete the primary guided workflow without Firebase.
 - Cloud-configured app still permits **Continue as guest**.
-- Google sign-in success, cancellation, popup blocking, provider failure, and sign-out have clear states.
+- Email/password account creation, login, verification, resend cooldown, reset, invalid credentials, and sign-out have clear generic states.
+- Google sign-in success, cancellation, popup blocking, provider collision/failure, optional linking, and sign-out have clear states.
 - Dashboard is keyboard reachable, axe-clean, and usable at 1440 × 900 and 390 × 844.
 - Offline/degraded cloud state never loses the current report or progress.
 - A clean signed-in browser restores the cloud profile.
@@ -323,7 +345,8 @@ Firebase identifies the Local Emulator Suite as the preferred environment for lo
 ### Wave 2 — Firebase boundary
 
 - Add configuration-gated Firebase Auth client and server-only Firebase Admin modules.
-- Add Google sign-in/sign-out and same-origin ID-token transport.
+- Add email/password create/login/verify/reset, Google sign-in, sign-out, and same-origin ID-token transport.
+- Configure a required Firebase password policy, email-enumeration protection, approved email-action URLs, and explicit provider-collision behavior.
 - Add the Firestore repository, progress APIs, assessment persistence, idempotency, retention, and deletion.
 - Configure emulators and test cross-user isolation and failure recovery.
 
@@ -336,7 +359,7 @@ Firebase identifies the Local Emulator Suite as the preferred environment for lo
 
 ### Wave 4 — Credentialed preview and release decision
 
-- The user creates the Firebase Spark project, enables Google Authentication, creates Firestore, configures approved domains, and privately configures credentials.
+- The user creates the Firebase Spark project, enables email/password and Google Authentication, configures the password policy and email-enumeration protection, creates Firestore, configures approved domains/action URLs, and privately configures credentials.
 - Run one credentialed local Firebase smoke, then a Netlify Deploy Preview smoke after separate deployment approval.
 - Verify usage dashboards, no-billing state, rate rules, public guest access, account sync, local fallback, OpenAI live/fallback behavior, and recording layouts.
 - Freeze the candidate only if every gate is green.
@@ -362,28 +385,31 @@ Firebase identifies the Local Emulator Suite as the preferred environment for lo
 
 ### Mandatory fallback decision
 
-If Firebase credentials, Google auth, cross-user isolation, CSP, preview behavior, or full quality gates are not objectively green by the July 20 release cutoff, disable cloud mode and submit the local personalized dashboard on the last known-green baseline. Do not weaken authentication, Firestore authorization, privacy, fallback, or release gates to keep cloud sync enabled.
+If Firebase credentials, email/password auth, Google auth, cross-user isolation, CSP, preview behavior, or full quality gates are not objectively green by the July 20 release cutoff, disable cloud mode and submit the local personalized dashboard on the last known-green baseline. Do not weaken authentication, Firestore authorization, privacy, fallback, or release gates to keep cloud sync enabled.
 
 ## 15. Acceptance criteria
 
 1. The final app opens and runs a guided lab without authentication.
 2. The dashboard works from current validated local progress with Firebase absent.
-3. Optional Google sign-in can synchronize progress across clean browser sessions.
-4. The server rejects missing, invalid, wrong-project, expired, oversized, and cross-user auth attempts.
-5. A verified assessment records one idempotent attempt summary and may complete one approved lesson.
-6. A failing, abandoned, test-only, or unsubmitted attempt never records completion.
-7. Local import is bounded, schema-valid, explicitly marked, and cannot introduce unknown lessons or private learner content.
-8. Cloud failure never discards or blocks local progress, challenge execution, assessment, or reports.
-9. Personal metrics are correct, deterministic, explained, accessible, and do not claim certification.
-10. No Firestore record, log, public DTO, evidence file, or client bundle contains forbidden learner, answer, provider, auth-token, or credential data.
-11. One user cannot access another user's data; direct browser Firestore access is denied.
-12. Cloud history is capped, duplicate writes are idempotent, and free-tier usage is bounded.
-13. The validated fixture fallback and zero-token guided lessons remain functional and visibly labeled.
-14. The existing OpenAI live path remains optional, server-only, and subordinate to deterministic tests.
-15. All unit, emulator integration, route adversarial, E2E/accessibility, build, security, dependency, fallback, production, and primary-demo gates pass on one reviewed SHA.
-16. Removing Firebase configuration returns the reviewed local-only app without a code rollback.
-17. Netlify preview passes public guest, signed-in sync, security-header, timeout, rate-control, logging, and responsive-layout checks before production promotion.
-18. PRD, roadmap, build log, testing guide, threat model, deployment runbook, demo script, submission draft, and completion report accurately distinguish local, cloud, live OpenAI, and fallback evidence.
+3. A learner can create an email/password account, verify it, log in, request a password reset, sign out, and synchronize progress without any FaultSmith server, database, log, or evidence artifact receiving password material.
+4. Optional Google sign-in can synchronize the same bounded metrics model across clean browser sessions.
+5. Unverified email/password identities cannot use cloud progress; verification resend and password reset are bounded, generic, and do not reveal account existence.
+6. Provider collisions never silently create, merge, overwrite, or delete learning profiles; optional linking preserves the authenticated Firebase UID and ships only after dedicated tests pass.
+7. The server rejects missing, unverified, invalid, wrong-project, expired, oversized, and cross-user auth attempts.
+8. A verified assessment records one idempotent attempt summary and may complete one approved lesson.
+9. A failing, abandoned, test-only, or unsubmitted attempt never records completion.
+10. Local import is bounded, schema-valid, explicitly marked, and cannot introduce unknown lessons or private learner content.
+11. Cloud failure never discards or blocks local progress, challenge execution, assessment, or reports.
+12. Personal metrics are correct, deterministic, explained, accessible, and do not claim certification.
+13. No Firestore record, log, public DTO, evidence file, or client bundle contains forbidden learner, answer, provider, auth-token, password, or credential data.
+14. One user cannot access another user's data; direct browser Firestore access is denied.
+15. Cloud history is capped, duplicate writes are idempotent, and free-tier usage is bounded.
+16. The validated fixture fallback and zero-token guided lessons remain functional and visibly labeled.
+17. The existing OpenAI live path remains optional, server-only, and subordinate to deterministic tests.
+18. All unit, emulator integration, route adversarial, E2E/accessibility, build, security, dependency, fallback, production, and primary-demo gates pass on one reviewed SHA.
+19. Removing Firebase configuration returns the reviewed local-only app without a code rollback.
+20. Netlify preview passes public guest, email/password sync, Google sync, security-header, timeout, rate-control, logging, and responsive-layout checks before production promotion.
+21. PRD, roadmap, build log, testing guide, threat model, deployment runbook, demo script, submission draft, and completion report accurately distinguish local, cloud, live OpenAI, and fallback evidence.
 
 ## 16. Definition of Finished
 
@@ -395,11 +421,10 @@ Cloud synchronization is a release candidate, not a submission dependency. If it
 
 - Instructor and cohort analytics
 - Parent, school, or organization administration
-- Email/password, phone, school SSO, multi-factor, and recovery UX
+- Phone, school SSO, multi-factor, passwordless email-link, and additional identity providers
 - Public profiles, sharing, leaderboards, social features, and competitive scoring
 - Formal mastery certification or academic grading
 - Raw code/prose storage and instructor access to learner submissions
 - Billing, subscriptions, premium tiers, and paid Firebase upgrades
 - Firebase Cloud Functions, Cloud Storage, Hosting, BigQuery, and AI Logic
 - Additional curriculum content and model-generated roadmap sequencing
-

@@ -8,7 +8,7 @@
 
 **Product boundary:** Preserve the validated fixture fallback and every existing security invariant.
 
-> **July 19 follow-on amendment:** Optional learner accounts, cross-device progress, and a personal metrics dashboard were promoted into a separate configuration-gated phase. Guest/local behavior in this document remains the required fallback and acceptance baseline. See `docs/PERSONALIZED_LEARNING_PRD.md`.
+> **July 19 follow-on amendment:** Optional email/password accounts, Google sign-in, cross-device progress, and a personal metrics dashboard were promoted into a separate configuration-gated phase. Guest/local behavior in this document remains the required fallback and acceptance baseline. See `docs/PERSONALIZED_LEARNING_PRD.md`.
 
 ## Problem
 
@@ -23,7 +23,7 @@ Ship a hybrid learning entry point with two modes:
 1. **Guided roadmap:** nine ordered lessons backed by the existing nine prevalidated challenges. Each lesson provides a short concept guide, a repeatable investigation checklist, a clear success signal, deterministic progress, and a next-step recommendation. Guided lessons default to prevalidated mode so they require no API credits.
 2. **Practice by skill:** preserve the existing project, skill, difficulty, and validation-mode catalog unchanged for learners who want direct control or the live GPT-5.6 path.
 
-Open-ended natural-language challenge requests, arbitrary repository ingestion, accounts, and cross-device progress remain deferred. They require new AI contracts, sandbox policy, cost controls, and live security validation and are not necessary to prove the guided-learning thesis.
+Open-ended natural-language challenge requests and arbitrary repository ingestion remain deferred. Optional accounts and cross-device progress are governed by the later personalized-learning amendment; they cannot weaken this phase's public guest path, deterministic authority, or local fallback.
 
 ## Curriculum
 

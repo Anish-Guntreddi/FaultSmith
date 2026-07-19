@@ -9,7 +9,7 @@ This milestone converts the current guided-learning release candidate into one s
 **Phase numbering:** Integer phases are planned milestone work. Any urgent insertion uses a decimal phase and must preserve requirement ownership.
 
 - [x] **Phase 1: Release Integration and Independent Quality Gates** — Integrate one release candidate, install independently visible QA/security gates, self-heal material findings, and bind current documentation to objective evidence.
-- [ ] **Phase 01.1: Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard (INSERTED)** — Add a guest-first personal dashboard plus optional Firebase/Google synchronization without making identity or cloud availability a prerequisite.
+- [ ] **Phase 01.1: Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard (INSERTED)** — Add a guest-first personal dashboard plus optional Firebase email/password and Google synchronization without making identity or cloud availability a prerequisite.
 - [ ] **Phase 2: Credential-Controlled Live OpenAI Proof** — With an explicitly authorized server-only credential, prove current GPT-5.6 and Code Interpreter behavior plus safe fallback recovery.
 - [ ] **Phase 3: Approved Public Deployment and Production Verification** — With explicit deployment approval, publish the reviewed commit and verify its security, reliability, and primary workflows in production.
 - [ ] **Phase 4: External UAT, Video, and Final Submission** — Validate learner comprehension, repair human-discovered blockers, publish the demo, and complete every external submission artifact.
@@ -32,21 +32,21 @@ This milestone converts the current guided-learning release candidate into one s
 
 ### Phase 01.1: Personalized learner accounts, cloud progress, and metrics dashboard (INSERTED)
 
-**Goal:** Deliver an explainable personal-progress dashboard in guest mode and optional Google-authenticated cross-device synchronization through a bounded server-mediated Firestore boundary, while Firebase absence or failure preserves the complete existing local experience.
-**Requirements:** [PERS-01, PERS-02, AUTH-01, AUTH-02, CLOUD-01, CLOUD-02, PRIV-01, SEC-03, QA-03, DEP-05]
+**Goal:** Deliver an explainable personal-progress dashboard in guest mode and optional verified email/password or Google-authenticated cross-device synchronization through a bounded server-mediated Firestore boundary, while Firebase absence or failure preserves the complete existing local experience.
+**Requirements:** [PERS-01, PERS-02, AUTH-01, AUTH-02, AUTH-03, AUTH-04, CLOUD-01, CLOUD-02, PRIV-01, SEC-03, QA-03, DEP-05]
 **Depends on:** Phase 1
 **Success Criteria** (what must be TRUE):
   1. A guest can complete and review personalized roadmap metrics without Firebase, an account, or an OpenAI credential; the existing fallback and local persistence remain authoritative and green.
-  2. An optional Google-authenticated learner can restore bounded progress across clean browser sessions, while every server request verifies identity and no user can access another user's data.
+  2. A learner may stay guest, use a verified email/password account, or continue with Google; either account path restores the same bounded metrics model across clean browser sessions while every server request verifies identity and no user can access another user's data.
   3. Only deterministic verified assessments complete lessons; cloud writes are strict, idempotent, capped, private, and exclude source, prose, answers, provider data, tokens, credentials, names, and duplicate identity data.
-  4. Firebase absence, failure, quota exhaustion, sign-in cancellation, sign-out, and configuration-off rollback preserve local progress and never block a challenge or report.
+  4. Firebase absence, failure, quota exhaustion, unverified email, verification/reset abuse, provider collision, sign-in cancellation, sign-out, and configuration-off rollback preserve local progress and never block a challenge or report.
   5. Emulator, route, E2E/accessibility, security, build, dependency, fallback, production, and independent review gates pass on one SHA; credentialed Netlify preview remains approval-gated and cloud mode may be disabled without a code rollback.
-**External dependency gate:** The credential-free implementation and emulator tests can run without user secrets. Real cross-device proof requires the user to create/configure a Firebase Spark project and Google provider privately. Netlify preview remains a separate explicit deployment approval gate.
+**External dependency gate:** The credential-free implementation and emulator tests can run without user secrets. Real cross-device proof requires the user to create/configure a Firebase Spark project, email/password provider/policy/action URLs, and Google provider privately. Netlify preview remains a separate explicit deployment approval gate.
 **Plans:** 6 plans across 5 waves; ready for execution
 
 Plans:
 - [ ] 01.1-01 — strict progress/history contracts, deterministic metrics, and guest dashboard
-- [ ] 01.1-02 — Firebase/runtime/emulator/CI/security-scanner foundation and lazy Google Auth client
+- [ ] 01.1-02 — Firebase/runtime/emulator/CI/security-scanner foundation and lazy email/password + Google Auth client
 - [ ] 01.1-03 — verified identity DAL, server-only Firestore persistence, progress APIs, and assessment binding
 - [ ] 01.1-04 — sync/import/delete/degraded UX, exact CSP, and browser/accessibility hardening
 - [ ] 01.1-05 — independent product/QA/security review, self-heal, docs, and exact-SHA offline freeze
@@ -96,11 +96,11 @@ Plans:
 | Phase | Requirements | Count |
 |-------|--------------|------:|
 | 1. Release Integration and Independent Quality Gates | DEV-01–03, CI-01–06, QA-01–02, SEC-01–02, SAFE-01–02, DOC-01 | 16 |
-| 01.1 Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard | PERS-01–02, AUTH-01–02, CLOUD-01–02, PRIV-01, SEC-03, QA-03, DEP-05 | 10 |
+| 01.1 Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard | PERS-01–02, AUTH-01–04, CLOUD-01–02, PRIV-01, SEC-03, QA-03, DEP-05 | 12 |
 | 2. Credential-Controlled Live OpenAI Proof | LIVE-01–04 | 4 |
 | 3. Approved Public Deployment and Production Verification | DEP-01–04 | 4 |
 | 4. External UAT, Video, and Final Submission | UAT-01–02, SUB-01–03 | 5 |
-| **Total** | **Every v1 requirement mapped exactly once** | **39** |
+| **Total** | **Every v1 requirement mapped exactly once** | **41** |
 
 ## Progress
 
@@ -115,5 +115,5 @@ Plans:
 | 4. External UAT, Video, and Final Submission | 0/TBD | Not started — external evidence | - |
 
 ---
-*Roadmap created: July 18, 2026; expanded July 19, 2026 to 39 v1 requirements*
+*Roadmap created: July 18, 2026; expanded July 19, 2026 to 41 v1 requirements*
 *Canonical authority: `docs/PRD.md`, `docs/EXECUTION_GOAL.md`, and `docs/ROADMAP.md`*

@@ -5,7 +5,7 @@ milestone_name: milestone
 status: ready_to_execute
 stopped_at: Phase 01.1 planned and independently verified; ready to execute Plans 01 and 02 in Wave 1
 last_updated: "2026-07-19T14:00:00.000Z"
-last_activity: July 19, 2026 — Phase 01.1 PRD, research, validation, and six executable plans passed independent plan verification.
+last_activity: July 19, 2026 — Three-path guest/email-password/Google amendment passed the GSD verification and revision loop.
 progress:
   total_phases: 5
   completed_phases: 1
@@ -28,7 +28,7 @@ See: `.planning/PROJECT.md` (updated July 18, 2026)
 Phase: 01.1 of 5 (Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard)
 Plan: 0 of 6 complete; Plans 01 and 02 are ready in parallel Wave 1
 Status: Planned and independently verified; credential-free implementation and emulator verification precede real Firebase configuration
-Last activity: July 19, 2026 — Six plans across four implementation waves plus a human provider/deployment checkpoint passed structural and independent plan checks.
+Last activity: July 19, 2026 — Six plans across four implementation waves plus a human provider/deployment checkpoint passed structural and independent plan checks after two targeted self-heal revisions.
 
 Progress: [██░░░░░░░░] 20%
 
@@ -73,7 +73,8 @@ Decisions are logged in `.planning/PROJECT.md`. Recent decisions affecting curre
 - Preserve and visibly label the real prevalidated fixture fallback through every phase.
 - Defer custom prompts, repository ingestion, runtime swarms, and other material product expansion until a later PRD cycle.
 - Phase 01.1 inserted after Phase 1: Personalized learner accounts, cloud progress, and metrics dashboard (URGENT).
-- Keep guest/local progress as the default reliability path; optional Google identity and Firestore synchronization are configuration-gated and server-mediated.
+- Keep guest/local progress as the default reliability path; optional verified email/password or Google identity and Firestore synchronization are configuration-gated and server-mediated.
+- Firebase owns passwords, verification, reset, and provider identity. Unverified password accounts stay local; provider collisions cannot silently merge or split progress.
 - If real Firebase or preview gates miss the release cutoff, disable cloud mode and retain the local personalized dashboard on the last known-green candidate.
 
 ### Roadmap Evolution
@@ -87,7 +88,7 @@ None yet.
 ### Blockers/Concerns
 
 - Phase 2 Plan 06 requires the user to privately configure a valid funded server-only `OPENAI_API_KEY`, confirm only the live health boolean, and later privately remove it before final source scanning.
-- Real Phase 01.1 cloud proof requires the user to create a Firebase Spark project, enable Google Authentication and Firestore, authorize only reviewed domains, and privately configure client/server values; emulator and local-only work do not require those credentials.
+- Real Phase 01.1 cloud proof requires the user to create a Firebase Spark project, enable email/password and Google Authentication plus Firestore, configure the password policy, enumeration protection, reviewed domains/action URLs, and privately configure client/server values; emulator and local-only work do not require those credentials.
 - Phase 3 requires explicit deployment approval and access to the selected host configuration.
 - Phase 4 requires five external testers, video publication, and the primary Codex `/feedback` Session ID.
 - The submission deadline is July 21, 2026 at 5:00 PM Pacific; release proof takes priority over feature breadth.

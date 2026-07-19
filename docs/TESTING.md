@@ -203,6 +203,21 @@ With user-provided authorization and a server-only key:
 
 If any live step fails, keep the fallback green, record the exact provider response safely, repair against current official documentation, add a mock regression, and rerun all downstream gates.
 
+## Planned Phase 01.1 account and cloud gates — not yet implemented
+
+The approved personalized-learning phase must add credential-free Firebase Auth/Firestore emulator coverage before any real project is configured. Required cases are:
+
+- public guest access with Firebase absent, partial, degraded, and disabled;
+- email/password creation, Firebase password-policy guidance, verification-pending local continuity, verified login, resend cooldown, generic password reset, and sign-out;
+- proof that password values never enter FaultSmith server requests, localStorage, event logs, evidence, source fixtures, or client/server logs;
+- email-enumeration-resistant account states and bounded verification/reset abuse behavior;
+- Google success, cancellation, popup block, provider collision, and UID-preserving linking or a safe unsupported fallback;
+- unverified token denial, wrong-project/expired/oversized token denial, same-UID success, two-UID isolation, direct-client Firestore denial, idempotency, retention, and deletion;
+- Playwright/axe/keyboard/password-manager/responsive coverage at 1440 × 900 and 390 × 844;
+- cloud-on-emulator and cloud-off full quality, fallback, production, bundle, source, audit, and primary-demo gates on one SHA.
+
+Real Firebase evidence remains a separate human checkpoint. It must prove both verified email/password and Google account paths, email-action URLs, provider-collision behavior, clean-session sync, cross-user isolation, safe logs, bounded usage, and configuration-off rollback without recording any email, UID, password, token, project value, or document content.
+
 ## External submission validation still required
 
 - Public deployment and unauthenticated cross-network smoke

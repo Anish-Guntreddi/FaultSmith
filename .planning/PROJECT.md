@@ -30,7 +30,7 @@ Learners must practice reading real failure evidence, reasoning about root cause
 
 ### Active
 
-- [ ] Add a guest-first My Progress dashboard and optional Google-authenticated Firebase synchronization without making identity or cloud availability a prerequisite.
+- [ ] Add a guest-first My Progress dashboard and optional verified email/password or Google-authenticated Firebase synchronization without making identity or cloud availability a prerequisite.
 - [ ] Run a credential-controlled live GPT-5.6 and Code Interpreter smoke without weakening or removing the validated fixture fallback.
 - [ ] With explicit deployment approval, publish an unauthenticated demo and verify the primary workflow, security headers, health endpoint, fallback, and recording layout in production.
 - [ ] Collect five external tester results, publish the under-three-minute demo video, and capture the primary Codex `/feedback` Session ID for the final submission.
@@ -47,7 +47,7 @@ Learners must practice reading real failure evidence, reasoning about root cause
 ## Context
 
 - The product was expanded through an approved July 18, 2026 PRD amendment to address a growing educational problem: students can generate code with AI but often cannot parse failures, debug behavior, or maintain what was produced.
-- The user approved a second July 19, 2026 scope amendment: add a personal metrics dashboard for all learners and optional Firebase/Google cross-device synchronization before Netlify deployment, while preserving the local anonymous baseline.
+- The user approved a second July 19, 2026 scope amendment: add a personal metrics dashboard for all learners and optional Firebase cross-device synchronization before Netlify deployment, while preserving the local anonymous baseline. The locked identity choices are guest, verified email/password, and Google.
 - Beginners need organized categories, concept guides, and hardcoded validated exercises that ground them without consuming model tokens. Advanced users retain the live-capable direct catalog for more dynamic practice.
 - The guided-learning implementation is committed on `agent/guided-learning-mvp` and is represented by draft GitHub PR #13. Reviewed implementation candidate `fee2087` and green evidence head `71f2379` are externally recorded on that PR; the PR remains unmerged.
 - All normal automated tests mock or avoid paid OpenAI calls. The live smoke is separate and explicitly credential controlled.
@@ -57,7 +57,7 @@ Learners must practice reading real failure evidence, reasoning about root cause
 
 ## Constraints
 
-- **Locked product:** Education track, Python learners, curated projects, Expense Approval primary demo, GPT-5.6, Responses API, Code Interpreter, Next.js/TypeScript, guest browser-local persistence plus optional configuration-gated Firebase/Google synchronization — further material changes require user approval.
+- **Locked product:** Education track, Python learners, curated projects, Expense Approval primary demo, GPT-5.6, Responses API, Code Interpreter, Next.js/TypeScript, guest browser-local persistence plus optional configuration-gated Firebase email/password or Google synchronization — further material changes require user approval.
 - **Execution safety:** No learner Python or learner-supplied command may execute on the application host; client paths, files, IDs, text, counts, sizes, duration, and output remain bounded.
 - **Evidence authority:** Original-pass, mutated-fail, signature match, repaired-pass, and final verification are deterministic; a model may veto or explain but never promote failing evidence.
 - **Secret handling:** `OPENAI_API_KEY` is server-only, never logged, committed, sent to the client, or exposed through a `NEXT_PUBLIC_` variable.
