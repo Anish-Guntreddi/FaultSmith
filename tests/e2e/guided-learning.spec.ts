@@ -219,6 +219,35 @@ test("My Progress is keyboard reachable, axe-clean, and keeps the lesson launch 
   await expect(page.getByText("Prevalidated fixture · deterministic verifier")).toBeVisible();
 });
 
+test("with Firebase unset the experience stays local-only with no sign-in surface or wall", async ({ page }) => {
+  const firebaseRequests: string[] = [];
+  page.on("request", (request) => {
+    const host = new URL(request.url()).hostname;
+    if (/(?:^|\.)(?:googleapis\.com|firebaseapp\.com|google\.com|gstatic\.com|firebaseio\.com)$/i.test(host)) {
+      firebaseRequests.push(request.url());
+    }
+  });
+
+  await openSeeded(page, { [PROGRESS_KEY]: v1ProgressSeed, [HISTORY_KEY]: [verifiedSeedAttempt] });
+
+  // The roadmap is reachable immediately — no login wall anywhere.
+  await expect(page.getByRole("button", { name: "Start guided lab", exact: false })).toBeVisible();
+
+  await openMyProgress(page);
+  // Configuration-off rollback: the storage surface is local-only and no
+  // account path is offered at all.
+  await expect(page.getByText("Optional account sync is not configured", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Create account", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Continue with Google" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Log in", exact: true })).toHaveCount(0);
+
+  // The dashboard renders local evidence exactly as before.
+  await expect(page.getByRole("region", { name: "Roadmap evidence" })).toContainText("2/ 9 lessons verified");
+
+  // No Firebase or Google origin is ever contacted in cloud-off mode.
+  expect(firebaseRequests).toEqual([]);
+});
+
 test("dashboard layouts at 1440x900 and 390x844 have no horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openSeeded(page, { [PROGRESS_KEY]: v1ProgressSeed, [HISTORY_KEY]: [verifiedSeedAttempt] });

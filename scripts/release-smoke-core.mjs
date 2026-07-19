@@ -363,6 +363,13 @@ function editableFilesFromChallenge(challenge, stage) {
   return editable;
 }
 
+const CLOUD_SYNC_STATES = new Set([
+  "cloud_saved",
+  "local_only",
+  "unauthorized",
+  "cloud_unavailable",
+]);
+
 function assertAssessment(value, stage, expectedExecutionMode, expectedAssessmentSource) {
   const response = assertKeys(
     value,
@@ -377,9 +384,13 @@ function assertAssessment(value, stage, expectedExecutionMode, expectedAssessmen
       "elapsedSeconds",
       "hypothesisRevisions",
     ],
-    [],
+    // Optional bounded cloud-sync fact (descriptive only; never authority).
+    ["cloudSync"],
     stage,
   );
+  if (Object.hasOwn(response, "cloudSync") && !CLOUD_SYNC_STATES.has(response.cloudSync)) {
+    fail("RESPONSE_SCHEMA", stage);
+  }
   const assessment = assertKeys(
     response.assessment,
     [
