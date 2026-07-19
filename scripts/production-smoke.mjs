@@ -13,6 +13,7 @@ const DEFAULT_BASE_URL = "http://127.0.0.1:3000";
 const DEFAULT_SURFACE_TIMEOUT_MS = 10_000;
 const DEFAULT_LIFECYCLE_TIMEOUT_MS = 35_000;
 const MAX_ROOT_BYTES = 512_000;
+const MAX_SOCIAL_IMAGE_BYTES = 1_500_000;
 
 function fail(ruleId, stage, status) {
   throw new SmokeFailure(ruleId, stage, Number.isInteger(status) ? { status } : {});
@@ -36,7 +37,14 @@ async function surfaceRequest(origin, path, stage, fetchImpl, timeoutMs) {
       method: "GET",
       redirect: "manual",
       signal: AbortSignal.timeout(timeoutMs),
-      headers: { Accept: path === "/" ? "text/html" : "application/json" },
+      headers: {
+        Accept:
+          path === "/" || path === "/learn"
+            ? "text/html"
+            : path.includes("image")
+              ? "image/png,image/*"
+              : "application/json",
+      },
     });
   } catch {
     fail("PRODUCTION_NETWORK", stage);
@@ -46,6 +54,32 @@ async function surfaceRequest(origin, path, stage, fetchImpl, timeoutMs) {
     fail("PRODUCTION_REDIRECT", stage);
   }
   return response;
+}
+
+async function readBoundedImage(response, stage) {
+  const declared = Number(response.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > MAX_SOCIAL_IMAGE_BYTES) {
+    fail("PRODUCTION_IMAGE", stage);
+  }
+  if (!response.body) fail("PRODUCTION_IMAGE", stage);
+  const reader = response.body.getReader();
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > MAX_SOCIAL_IMAGE_BYTES) {
+        await reader.cancel();
+        fail("PRODUCTION_IMAGE", stage);
+      }
+    }
+  } catch (error) {
+    if (error instanceof SmokeFailure) throw error;
+    fail("PRODUCTION_IMAGE", stage);
+  }
+  if (total < 1_000) fail("PRODUCTION_IMAGE", stage);
+  return total;
 }
 
 async function readBoundedText(response, stage, maxBytes = MAX_ROOT_BYTES) {
@@ -83,6 +117,143 @@ function cspDirective(policy, name) {
     .find((part) => part.startsWith(prefix));
 }
 
+function assertSecurityHeaders(response, origin, stage) {
+  const csp = requireHeader(
+    response,
+    "content-security-policy",
+    /default-src\s+'self'/i,
+    stage,
+  );
+  for (const directive of [
+    /object-src\s+'none'/i,
+    /base-uri\s+'self'/i,
+    /form-action\s+'self'/i,
+    /frame-ancestors\s+'none'/i,
+  ]) {
+    if (!directive.test(csp)) fail("PRODUCTION_CSP", `${stage}:content-security-policy`);
+  }
+  for (const directiveName of ["script-src", "connect-src"]) {
+    const directive = cspDirective(csp, directiveName);
+    if (!directive || !directive.includes("'self'") || /(?:^|\s)\*(?:\s|$)/.test(directive)) {
+      fail("PRODUCTION_CSP", `${stage}:${directiveName}`);
+    }
+  }
+  if (cspDirective(csp, "script-src")?.includes("'unsafe-eval'")) {
+    fail("PRODUCTION_CSP", `${stage}:script-src`);
+  }
+  requireHeader(
+    response,
+    "cross-origin-opener-policy",
+    /^same-origin(?:-allow-popups)?$/i,
+    stage,
+  );
+  requireHeader(response, "cross-origin-resource-policy", "same-origin", stage);
+  const permissions = requireHeader(response, "permissions-policy", /camera=\(\)/i, stage);
+  for (const policy of [/microphone=\(\)/i, /geolocation=\(\)/i]) {
+    if (!policy.test(permissions)) fail("PRODUCTION_HEADER", `${stage}:permissions-policy`);
+  }
+  requireHeader(response, "referrer-policy", "no-referrer", stage);
+  requireHeader(response, "x-content-type-options", "nosniff", stage);
+  requireHeader(response, "x-frame-options", "DENY", stage);
+  if (origin.startsWith("https://")) {
+    requireHeader(
+      response,
+      "strict-transport-security",
+      /(?:^|;)\s*max-age=63072000(?:;|$)/i,
+      stage,
+    );
+  }
+  if (response.headers.has("x-powered-by")) {
+    fail("PRODUCTION_DISCLOSURE", `${stage}:x-powered-by`);
+  }
+}
+
+function findHtmlAttribute(html, tagName, identityAttribute, identityValue, valueAttribute) {
+  const tags = html.match(new RegExp(`<${tagName}\\b[^>]*>`, "gi")) ?? [];
+  for (const tag of tags) {
+    const attributes = new Map();
+    for (const match of tag.matchAll(/([a-z_:][-a-z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)) {
+      attributes.set(match[1].toLowerCase(), (match[2] ?? match[3] ?? "").replaceAll("&amp;", "&"));
+    }
+    if (attributes.get(identityAttribute)?.toLowerCase() === identityValue.toLowerCase()) {
+      return attributes.get(valueAttribute);
+    }
+  }
+  return undefined;
+}
+
+function readableHtmlText(html) {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replaceAll("&#x27;", "'")
+    .replaceAll("&#39;", "'")
+    .replace(/\s+/g, " ");
+}
+
+function requireMetadataUrl(
+  html,
+  { tagName, identityAttribute, identityValue, valueAttribute, expectedOrigin, expectedPath, stage },
+) {
+  const value = findHtmlAttribute(
+    html,
+    tagName,
+    identityAttribute,
+    identityValue,
+    valueAttribute,
+  );
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    fail("PRODUCTION_METADATA", `${stage}:${identityValue}`);
+  }
+  if (
+    url.origin !== expectedOrigin ||
+    url.pathname !== expectedPath ||
+    url.username ||
+    url.password ||
+    url.hash ||
+    (!identityValue.includes("image") && url.search)
+  ) {
+    fail("PRODUCTION_METADATA", `${stage}:${identityValue}`);
+  }
+}
+
+function assertRouteMetadata(html, origin, pathname, stage) {
+  requireMetadataUrl(html, {
+    tagName: "link",
+    identityAttribute: "rel",
+    identityValue: "canonical",
+    valueAttribute: "href",
+    expectedOrigin: origin,
+    expectedPath: pathname,
+    stage,
+  });
+  requireMetadataUrl(html, {
+    tagName: "meta",
+    identityAttribute: "property",
+    identityValue: "og:url",
+    valueAttribute: "content",
+    expectedOrigin: origin,
+    expectedPath: pathname,
+    stage,
+  });
+  for (const [identityAttribute, identityValue, expectedPath] of [
+    ["property", "og:image", "/opengraph-image"],
+    ["name", "twitter:image", "/twitter-image"],
+  ]) {
+    requireMetadataUrl(html, {
+      tagName: "meta",
+      identityAttribute,
+      identityValue,
+      valueAttribute: "content",
+      expectedOrigin: origin,
+      expectedPath,
+      stage,
+    });
+  }
+}
+
 export async function assertProductionSurface({
   baseUrl,
   expectedMode = "fallback",
@@ -94,6 +265,38 @@ export async function assertProductionSurface({
 } = {}) {
   const origin = normalizeBaseUrl(baseUrl);
   const root = await surfaceRequest(origin, "/", "root", fetchImpl, surfaceTimeoutMs);
+  requireHeader(root, "content-type", /^text\/html(?:;|$)/i, "root");
+  const rootHtml = await readBoundedText(root, "root");
+  if (
+    !/<title[^>]*>\s*FaultSmith\b/i.test(rootHtml) ||
+    !/AI can write the patch/i.test(rootHtml)
+  ) {
+    fail("PRODUCTION_SHELL", "root");
+  }
+  assertRouteMetadata(rootHtml, origin, "/", "root");
+  assertSecurityHeaders(root, origin, "root");
+
+  const learn = await surfaceRequest(origin, "/learn", "learn", fetchImpl, surfaceTimeoutMs);
+  requireHeader(learn, "content-type", /^text\/html(?:;|$)/i, "learn");
+  const learnHtml = await readBoundedText(learn, "learn");
+  if (
+    !/<title[^>]*>\s*Learning Lab\s+[^<]*FaultSmith/i.test(learnHtml) ||
+    !/Learn to debug code you didn't write/i.test(readableHtmlText(learnHtml))
+  ) {
+    fail("PRODUCTION_SHELL", "learn");
+  }
+  assertRouteMetadata(learnHtml, origin, "/learn", "learn");
+  assertSecurityHeaders(learn, origin, "learn");
+
+  for (const [path, stage] of [
+    ["/opengraph-image", "opengraph-image"],
+    ["/twitter-image", "twitter-image"],
+  ]) {
+    const image = await surfaceRequest(origin, path, stage, fetchImpl, surfaceTimeoutMs);
+    requireHeader(image, "content-type", /^image\/png(?:;|$)/i, stage);
+    await readBoundedImage(image, stage);
+  }
+
   const health = await surfaceRequest(
     origin,
     "/api/health",
@@ -102,46 +305,6 @@ export async function assertProductionSurface({
     surfaceTimeoutMs,
   );
 
-  requireHeader(root, "content-type", /^text\/html(?:;|$)/i, "root");
-  const rootHtml = await readBoundedText(root, "root");
-  if (!/<title[^>]*>\s*FaultSmith\b/i.test(rootHtml)) fail("PRODUCTION_SHELL", "root");
-
-  const csp = requireHeader(root, "content-security-policy", /default-src\s+'self'/i, "root");
-  for (const directive of [
-    /object-src\s+'none'/i,
-    /base-uri\s+'self'/i,
-    /form-action\s+'self'/i,
-    /frame-ancestors\s+'none'/i,
-  ]) {
-    if (!directive.test(csp)) fail("PRODUCTION_CSP", "root:content-security-policy");
-  }
-  for (const directiveName of ["script-src", "connect-src"]) {
-    const directive = cspDirective(csp, directiveName);
-    if (!directive || !directive.includes("'self'") || /(?:^|\s)\*(?:\s|$)/.test(directive)) {
-      fail("PRODUCTION_CSP", `root:${directiveName}`);
-    }
-  }
-  if (cspDirective(csp, "script-src")?.includes("'unsafe-eval'")) {
-    fail("PRODUCTION_CSP", "root:script-src");
-  }
-  requireHeader(root, "cross-origin-opener-policy", "same-origin", "root");
-  requireHeader(root, "cross-origin-resource-policy", "same-origin", "root");
-  const permissions = requireHeader(root, "permissions-policy", /camera=\(\)/i, "root");
-  for (const policy of [/microphone=\(\)/i, /geolocation=\(\)/i]) {
-    if (!policy.test(permissions)) fail("PRODUCTION_HEADER", "root:permissions-policy");
-  }
-  requireHeader(root, "referrer-policy", "no-referrer", "root");
-  requireHeader(root, "x-content-type-options", "nosniff", "root");
-  requireHeader(root, "x-frame-options", "DENY", "root");
-  if (origin.startsWith("https://")) {
-    requireHeader(
-      root,
-      "strict-transport-security",
-      /(?:^|;)\s*max-age=63072000(?:;|$)/i,
-      "root",
-    );
-  }
-  if (root.headers.has("x-powered-by")) fail("PRODUCTION_DISCLOSURE", "root:x-powered-by");
   const cacheControl = requireHeader(health, "cache-control", /(?:^|,)\s*no-store\b/i, "health");
   if (/(?:^|,)\s*(?:public|s-maxage|max-age)\b/i.test(cacheControl)) {
     fail("PRODUCTION_CACHE", "health:cache-control");
@@ -160,6 +323,8 @@ export async function assertProductionSurface({
     mode: expectedMode,
     repositorySha: lifecycleEvidence.repositorySha,
     rootStatus: 200,
+    learnStatus: 200,
+    socialImages: "verified",
     healthStatus: 200,
     headerPolicy: "verified",
     apiCache: "no-store",
@@ -247,7 +412,8 @@ export async function runCli(argv, dependencies = {}) {
     }
     stdout(
       `Production smoke passed: mode=${result.mode} root=${result.rootStatus} ` +
-        `health=${result.healthStatus} headers=${result.headerPolicy} cache=${result.apiCache} ` +
+        `learn=${result.learnStatus} social=${result.socialImages} health=${result.healthStatus} ` +
+        `headers=${result.headerPolicy} cache=${result.apiCache} ` +
         `sha=${result.repositorySha.slice(0, 12)} origin=${result.origin}`,
     );
     if (options.evidence) stdout("Sanitized lifecycle evidence written under test-results/.");

@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 vi.mock("server-only", () => ({}));
 
@@ -108,6 +110,45 @@ describe("prevalidated fixture registry", () => {
       for (const hint of fixture.hints) {
         expect(hint).not.toContain(fixture.fixedSnippet);
         expect(hint).not.toContain(fixture.hiddenReferenceSolution);
+      }
+    }
+  });
+
+  it("keeps curated fixture internals out of public marketing surfaces", () => {
+    const publicSource = [
+      "src/components/landing-page.tsx",
+      "src/components/debugging-case-file.tsx",
+      "src/app/opengraph-image.tsx",
+    ]
+      .map((path) => readFileSync(resolve(process.cwd(), path), "utf8"))
+      .join("\n")
+      .replaceAll("&gt;", ">")
+      .replaceAll("&lt;", "<")
+      .replaceAll("&quot;", '"')
+      .replace(/<[^>]+>/g, "")
+      .replace(/\s+/g, " ");
+
+    for (const fixture of challengeFixtures) {
+      const protectedValues = [
+        ...fixture.expectedFailureTests,
+        fixture.expectedFailureSignature,
+        fixture.hiddenRootCause,
+        fixture.hiddenReferenceSolution,
+        fixture.fixedSnippet,
+        fixture.brokenSnippet,
+        ...fixture.hints,
+      ];
+
+      for (const allowedFile of fixture.allowedFiles) {
+        const escapedPath = allowedFile.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        expect(publicSource).not.toMatch(new RegExp(`(^|[^\\w])${escapedPath}($|[^\\w])`));
+      }
+
+      for (const value of protectedValues) {
+        const normalizedValue = value.replace(/\s+/g, " ").trim();
+        if (normalizedValue.length >= 8) {
+          expect(publicSource).not.toContain(normalizedValue);
+        }
       }
     }
   });

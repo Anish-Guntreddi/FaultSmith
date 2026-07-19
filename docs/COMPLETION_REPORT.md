@@ -1,7 +1,7 @@
 # FaultSmith Completion Report
 
 **Checkpoint:** July 19, 2026  
-**Release state:** the Phase 01.1 offline/emulator candidate passed the complete local gate set (272 unit, 23 emulator-integration, 13 default + 16 Firebase-mode browser tests, build, bundle/source scans, zero-vulnerability audit, fallback/production smoke) with three independent reviews and no accepted blocker/high; the exact frozen runtime SHA and final approvals are recorded in `.planning/phases/01.1-personalized-learner-accounts-cloud-progress-and-metrics-dashboard/`. The prior Phase 2 offline runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1` and evidence head `953821e782531f59dcf5d21a3b76e7dc76dd1c38` (all four required GitHub jobs green) are preserved as history. Real Firebase proof, live credential proof, deployment, and human submission actions remain explicitly pending
+**Release state:** the current local candidate includes the public `/` landing story and complete `/learn` application, and passes the complete local gate set (281 unit, 23 emulator-integration, 20 default + 16 Firebase-mode browser tests, build, 24-artifact bundle/source scans, zero-vulnerability audit, fallback/production smoke) after independent product/QA/security/motion review. The prior Phase 2 offline runtime SHA `5fcae2713e449dd0a7bc73c0a4858f476d60a7a1` and evidence head `953821e782531f59dcf5d21a3b76e7dc76dd1c38` (all four required GitHub jobs green) are preserved as history. Remaining real Firebase human checks, live credential proof, deployment, and human submission actions remain explicitly pending.
 **Primary evidence:** `docs/TESTING.md`, `docs/BUILD_LOG.md`, `docs/THREAT_MODEL.md`
 
 ## Executive result

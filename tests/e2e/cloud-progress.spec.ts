@@ -109,9 +109,9 @@ async function openSeeded(page: Page, entries: Record<string, unknown> = {}) {
     },
     { cleanToken: token, seededEntries: entries },
   );
-  await page.goto(`/?e2e-clean=${encodeURIComponent(token)}`);
+  await page.goto(`/learn?e2e-clean=${encodeURIComponent(token)}`);
   await expect(page.getByRole("heading", { name: "Learn to debug code you didn't write." })).toBeVisible();
-  await page.evaluate(() => window.history.replaceState(null, "", "/"));
+  await page.evaluate(() => window.history.replaceState(null, "", "/learn"));
 }
 
 /** The application's inline alert; excludes Next.js's empty route announcer. */

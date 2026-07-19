@@ -6,7 +6,7 @@
 
 ## Before recording
 
-1. Start from the project selection screen and reset any saved attempt.
+1. Reset any saved attempt in `/learn`, then return to the public landing page at `/` for the opening shot.
 2. Confirm Expense Approval, Inventory Service, and Notification Preferences all show `ready`.
 3. Use a production build or stable preview URL.
 4. Run `npm run smoke:production -- --base-url <public HTTPS URL>` against the exact reviewed deployment. If demonstrating live mode, run the explicit live smoke first. Never expose the key, terminal, evidence file, or provider identifiers.
@@ -15,13 +15,17 @@
 
 ## Timed narrative
 
-### 0:00–0:25 — The problem and roadmap
+### 0:00–0:18 — The problem and hook
 
-“Students can now ask AI for a patch before they learn to parse a failure. That dependency breaks down when they inherit unfamiliar software. FaultSmith builds the missing habit: read evidence, form a hypothesis, and prove the smallest repair.”
+On the landing hero, say: “AI can write the patch. FaultSmith teaches you to prove it. Students can now receive working code before they learn to parse a failure, and that dependency breaks down when they inherit unfamiliar software.”
+
+Click **Start a guided lab**.
+
+### 0:18–0:35 — The learning system and roadmap
 
 Show the three-phase, nine-lesson Guided roadmap and the **Prevalidated lab · no API credits required** label. Briefly point to **Practice by skill** as the advanced/live path, then start Lesson 1.
 
-### 0:25–0:45 — Forge and validate
+### 0:35–0:55 — Forge and validate
 
 Click **Start guided lab**.
 
@@ -29,7 +33,7 @@ Click **Start guided lab**.
 
 Point briefly to the mode label and validation evidence. Do not dwell on loading animation.
 
-### 0:45–1:25 — Investigate
+### 0:55–1:30 — Investigate
 
 Show the failing `amount == 500` test and the mutated comparison in the editor.
 
@@ -37,7 +41,7 @@ Show the failing `amount == 500` test and the mutated comparison in the editor.
 
 Enter: `The approval threshold excludes the exact boundary value.` Reveal the first hint. Change `amount > 500` to `amount >= 500`.
 
-### 1:25–1:50 — Prove the repair
+### 1:30–1:52 — Prove the repair
 
 Click **Run test suite**.
 
@@ -45,7 +49,7 @@ Click **Run test suite**.
 
 Show `6 passed · 0 failed`.
 
-### 1:50–2:15 — Explain and assess
+### 1:52–2:15 — Explain and assess
 
 Enter: `The mutation excluded exactly 500 even though the requirement is inclusive. Changing > to >= restores the boundary while preserving behavior above and below it.`
 

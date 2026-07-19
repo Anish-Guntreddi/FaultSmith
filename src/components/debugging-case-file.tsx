@@ -117,7 +117,8 @@ export function DebuggingCaseFile() {
     const root = rootRef.current;
     if (!root) return;
 
-    const mediaQuery = window.matchMedia("(min-width: 1024px) and (prefers-reduced-motion: no-preference)");
+    const enhancedMotionQuery = "(min-width: 1024px) and (min-height: 720px) and (prefers-reduced-motion: no-preference)";
+    const mediaQuery = window.matchMedia(enhancedMotionQuery);
     let cancelled = false;
     let loading = false;
     let observer: IntersectionObserver | null = null;
@@ -147,7 +148,7 @@ export function DebuggingCaseFile() {
 
         gsap.registerPlugin(ScrollTrigger);
         gsapMedia = gsap.matchMedia();
-        gsapMedia.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", () => {
+        gsapMedia.add(enhancedMotionQuery, () => {
           root.dataset.motion = "enhanced";
           const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-case-visual-stage]"));
           const animatedLines = Array.from(root.querySelectorAll<HTMLElement>("[data-case-line]"));

@@ -16,15 +16,51 @@ const requiredHeaders = {
   "strict-transport-security": "max-age=63072000",
 };
 
-async function withServer({ headers = {}, healthHeaders = {}, status = 200 } = {}, callback) {
+function metadataTags(origin, pathname) {
+  return [
+    `<link rel="canonical" href="${origin}${pathname === "/" ? "" : pathname}">`,
+    `<meta property="og:url" content="${origin}${pathname === "/" ? "" : pathname}">`,
+    `<meta property="og:image" content="${origin}/opengraph-image?asset=1">`,
+    `<meta name="twitter:image" content="${origin}/twitter-image?asset=1">`,
+  ].join("");
+}
+
+async function withServer(
+  {
+    headers = {},
+    healthHeaders = {},
+    learnHeaders = {},
+    metadataOrigin,
+    status = 200,
+    learnBody,
+  } = {},
+  callback,
+) {
   const server = createServer((request, response) => {
+    const isHtml = request.url === "/" || request.url === "/learn";
+    const isImage = request.url === "/opengraph-image" || request.url === "/twitter-image";
+    const origin = metadataOrigin ?? `http://${request.headers.host}`;
     response.writeHead(status, {
       ...requiredHeaders,
       ...headers,
+      ...(request.url === "/learn" ? learnHeaders : {}),
       ...(request.url === "/api/health" ? { "cache-control": "no-store", ...healthHeaders } : {}),
-      "content-type": request.url === "/" ? "text/html" : "application/json",
+      "content-type": isHtml ? "text/html" : isImage ? "image/png" : "application/json",
     });
-    response.end(request.url === "/" ? "<!doctype html><title>FaultSmith</title>" : "{}");
+    if (request.url === "/") {
+      response.end(
+        `<!doctype html><title>FaultSmith — Learn to prove the fix</title>${metadataTags(origin, "/")}<h1>AI can write the patch</h1>`,
+      );
+    } else if (request.url === "/learn") {
+      response.end(
+        learnBody ??
+          `<!doctype html><title>Learning Lab — FaultSmith</title>${metadataTags(origin, "/learn")}<h1>Learn to debug code you didn't write</h1>`,
+      );
+    } else if (isImage) {
+      response.end(Buffer.alloc(2_048, 1));
+    } else {
+      response.end("{}");
+    }
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const address = server.address();
@@ -42,7 +78,7 @@ function lifecycleEvidence(mode, origin) {
 }
 
 describe("production surface smoke", () => {
-  it("verifies loopback root, headers, health cache, and shared fallback lifecycle", async () => {
+  it("verifies landing, product, social images, headers, health cache, and fallback lifecycle", async () => {
     await withServer({}, async (baseUrl) => {
       const lifecycle = vi.fn(async ({ expectedMode }) => lifecycleEvidence(expectedMode, baseUrl));
       const result = await assertProductionSurface({
@@ -53,6 +89,8 @@ describe("production surface smoke", () => {
       });
       expect(result).toMatchObject({
         rootStatus: 200,
+        learnStatus: 200,
+        socialImages: "verified",
         healthStatus: 200,
         headerPolicy: "verified",
         apiCache: "no-store",
@@ -64,6 +102,45 @@ describe("production surface smoke", () => {
           timeoutMs: 35_000,
         }),
       );
+    });
+  });
+
+  it("accepts the reviewed cloud-on opener policy required by Google popup auth", async () => {
+    await withServer(
+      { headers: { "cross-origin-opener-policy": "same-origin-allow-popups" } },
+      async (baseUrl) => {
+        await expect(
+          assertProductionSurface({
+            baseUrl,
+            repositorySha: sha,
+            lifecycle: vi.fn(async () => lifecycleEvidence("fallback", baseUrl)),
+          }),
+        ).resolves.toMatchObject({ headerPolicy: "verified" });
+      },
+    );
+  });
+
+  it("fails closed when the dedicated product shell is absent", async () => {
+    await withServer({ learnBody: "<!doctype html><title>FaultSmith</title>" }, async (baseUrl) => {
+      await expect(
+        assertProductionSurface({ baseUrl, repositorySha: sha, lifecycle: vi.fn() }),
+      ).rejects.toMatchObject({ ruleId: "PRODUCTION_SHELL", stage: "learn" });
+    });
+  });
+
+  it("applies the security policy to the dedicated product route", async () => {
+    await withServer({ learnHeaders: { "x-frame-options": "SAMEORIGIN" } }, async (baseUrl) => {
+      await expect(
+        assertProductionSurface({ baseUrl, repositorySha: sha, lifecycle: vi.fn() }),
+      ).rejects.toMatchObject({ ruleId: "PRODUCTION_HEADER", stage: "learn:x-frame-options" });
+    });
+  });
+
+  it("binds canonical and social metadata to the tested deployment origin", async () => {
+    await withServer({ metadataOrigin: "https://stale.example" }, async (baseUrl) => {
+      await expect(
+        assertProductionSurface({ baseUrl, repositorySha: sha, lifecycle: vi.fn() }),
+      ).rejects.toMatchObject({ ruleId: "PRODUCTION_METADATA", stage: "root:canonical" });
     });
   });
 
@@ -164,13 +241,23 @@ describe("production surface smoke", () => {
 
   it("requires HSTS for HTTPS production origins", async () => {
     const fetchImpl = vi.fn(async (url) => {
-      const health = String(url).endsWith("/api/health");
-      return new Response(health ? "{}" : "<!doctype html><title>FaultSmith</title>", {
+      const path = new URL(String(url)).pathname;
+      const health = path === "/api/health";
+      const image = path === "/opengraph-image" || path === "/twitter-image";
+      const body =
+        path === "/"
+          ? `<!doctype html><title>FaultSmith — Learn to prove the fix</title>${metadataTags("https://faultsmith.invalid", "/")}<h1>AI can write the patch</h1>`
+          : path === "/learn"
+            ? `<!doctype html><title>Learning Lab — FaultSmith</title>${metadataTags("https://faultsmith.invalid", "/learn")}<h1>Learn to debug code you didn't write</h1>`
+            : image
+              ? new Uint8Array(2_048)
+              : "{}";
+      return new Response(body, {
         status: 200,
         headers: {
           ...requiredHeaders,
           "strict-transport-security": "max-age=0",
-          "content-type": health ? "application/json" : "text/html",
+          "content-type": health ? "application/json" : image ? "image/png" : "text/html",
           "cache-control": health ? "no-store" : "",
         },
       });

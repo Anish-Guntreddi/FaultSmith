@@ -8,9 +8,9 @@ async function openClean(page: Page) {
       window.localStorage.clear();
     }
   }, token);
-  await page.goto(`/?e2e-clean=${encodeURIComponent(token)}`);
+  await page.goto(`/learn?e2e-clean=${encodeURIComponent(token)}`);
   await expect(page.getByRole("heading", { name: "Learn to debug code you didn't write." })).toBeVisible();
-  await page.evaluate(() => window.history.replaceState(null, "", "/"));
+  await page.evaluate(() => window.history.replaceState(null, "", "/learn"));
 }
 
 async function openPrimaryFixture(page: Page) {

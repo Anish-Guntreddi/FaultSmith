@@ -1,6 +1,6 @@
 # FaultSmith Testing and Quality Guide
 
-**Last full local checkpoint:** July 19, 2026 (Debugging Case File motion + responsive lifecycle self-heal)
+**Last full local checkpoint:** July 19, 2026 (public landing, `/learn` separation, and expanded production surface)
 **Environment:** macOS arm64, Node.js 24.9.0, npm 11.6.0, Next.js 16.2.10, Playwright 1.61.1, Chromium, Temurin JDK 24 for Firebase emulators  
 **External policy:** normal tests make no live OpenAI calls and never contact real Firebase
 
@@ -22,11 +22,11 @@ The current Phase 01.1 offline candidate run produced (exact-SHA evidence, inclu
 | --- | --- |
 | ESLint | Pass; zero errors/warnings |
 | TypeScript `tsc --noEmit` | Pass |
-| Vitest | 20 files, 272 tests passed |
+| Vitest | 21 files, 281 tests passed |
 | Firebase emulator vitest (`test:firebase`) | 2 files, 23 tests passed (deny-all rules across five identity states; same-user/cross-user, idempotency, retention, one-time import, deletion) |
 | Next.js production build | Pass |
-| Client bundle leakage check | Pass; 21 static artifacts inspected |
-| Playwright default suite | 13 passed (Firebase-mode tests correctly env-gated) |
+| Client bundle leakage check | Pass; 24 production artifacts inspected with no protected marker |
+| Playwright default suite | 20 passed (16 Firebase-mode tests correctly env-gated) |
 | Playwright Firebase emulator suite (`test:e2e:firebase`) | 16 scenarios passed |
 | npm audit at moderate threshold | Pass; zero vulnerabilities |
 | Source/history security scan | Pass; full working tree plus all reachable history inspected with no matched value printed (exact per-run counts are recorded in the SHA-bound phase review reports) |
@@ -73,6 +73,23 @@ The motion review approved the final implementation after two self-heals: stale 
 
 The first remote browser run then found two CI-only reload failures outside the animation component. The durable-state repair writes learner-edited files and prose synchronously at each input boundary, holds the mode controls until the queued local progress/history restore finishes, and restores the two evidence keys independently. The primary-demo and verified-dashboard tests assert their exact browser-storage snapshots before reload; those two scenarios passed 20/20 repetitions with the CI two-worker profile, followed by the complete 18-scenario standard suite and 16-scenario Firebase emulator suite.
 
+## Public landing and route-separation checkpoint
+
+The judge-facing story is served at `/`; the complete learning application is served at `/learn`. The dedicated landing regression proves:
+
+- all five product calls-to-action resolve to `/learn`, and the application brand returns to `/`;
+- the public story, navigation, and learning product produce no page or console error during the route round trip;
+- both pages are axe-clean and overflow-free at 1440×900 and 390×844;
+- a 1280×600 desktop remains static/non-sticky for the Debugging Case File, preventing the enhanced monitor from exceeding a short viewport;
+- `/` and `/learn` publish distinct absolute canonical URLs plus route-specific Open Graph/Twitter titles;
+- `/opengraph-image` and `/twitter-image` return non-empty generated PNG assets;
+- the landing source does not contain any curated allowlisted file identity, expected failure test/signature, hidden root cause/reference, repair/fault snippet, or progressive hint;
+- metadata origin resolution prefers the configured canonical site, derives Netlify preview/production origins, rejects missing Netlify origins, and rejects non-HTTPS public production origins.
+
+The expanded production smoke now rejects a deployment unless `/` contains the landing shell, `/learn` contains the distinct learning shell, both HTML routes carry the complete reviewed security-header set (including only `same-origin` or the reviewed Firebase/Google-popup `same-origin-allow-popups` COOP values), their canonical/Open Graph/Twitter image URLs are absolute and bound to the tested origin, both social-image routes return bounded PNGs, `/api/health` remains no-store, and the complete fallback API lifecycle passes.
+
+Final landing-candidate evidence: ESLint and TypeScript passed; 21 Vitest files / 281 tests passed; Firebase emulator integration passed 23/23; the Next.js build generated `/`, `/learn`, five challenge/health routes plus progress, and both social-image routes without warnings; the leakage scan passed 24 artifacts; the complete default browser gate passed 20/20 with 16 Firebase scenarios correctly skipped; the dedicated Firebase browser gate passed 16/16; production fallback and the expanded production surface smoke passed; audit found zero vulnerabilities. The ignored operator `.env.local` correctly blocks the direct source scan without printing values. An isolated copy of the exact current tree excluding only that private file passed the source/history scan across 200 working-tree files and 68 reachable commits.
+
 The earlier Phase 2 run below is preserved as historical evidence:
 
 | Gate | Result |
@@ -106,7 +123,7 @@ npm run smoke:production -- --base-url http://127.0.0.1:3122 --evidence test-res
 npm run readiness:prepare
 ```
 
-Fallback and production smoke validate seven public lifecycle stages and the production HTML/header/cache surface. The evidence writer is opt-in, exclusive/non-overwriting, symlink-safe, and limited to ignored `test-results/`. Evidence contains no code, hint text, learner prose, raw output, credential, provider/container ID, or hidden answer.
+Fallback and production smoke validate seven public lifecycle stages, both HTML routes, both generated social images, and the production header/cache surface. The evidence writer is opt-in, exclusive/non-overwriting, symlink-safe, and limited to ignored `test-results/`. Evidence contains no code, hint text, learner prose, raw output, credential, provider/container ID, or hidden answer.
 
 `npm run smoke:live -- --base-url http://127.0.0.1:3122 --evidence test-results/live.json` is the only provided paid proof. It refuses to POST unless the explicit live flag is present and health reports `liveOpenAIConfigured: true`; no key argument is accepted. `npm run quality` and GitHub CI never invoke it.
 
@@ -194,7 +211,7 @@ The script parses the server fixture registry without importing or executing it,
 ## Production smoke test
 
 ```bash
-npm run build
+NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3122 npm run build
 npm run start -- --hostname 127.0.0.1 --port 3122
 ```
 

@@ -77,6 +77,13 @@ Display headlines use tight tracking and strong weight. Instrument labels use up
 
 ## Component grammar
 
+### Public landing
+
+- The public entry route uses the same graphite grid, warm amber action, cyan instrumentation, green evidence, panel hierarchy, and sans/monospace division as the learning product.
+- The hero communicates the dependency problem and evidence-first promise before presenting a fictional demonstration trace. Public examples may never reuse curated fixture files, signatures, hints, root causes, or repairs.
+- The landing flow is editorial rather than dashboard-dense: problem → method → learning modes → evidence boundaries → one final action into `/learn`.
+- Social previews are generated in application code from the same token palette; they add no remote image, font, CDN, or CSP origin.
+
 ### Header
 
 - Sticky translucent rail with the FaultSmith mark, current system state, and release label.
@@ -147,4 +154,6 @@ The visual system is not complete until these states have objective evidence at 
 - Not-verified report
 - Firebase disabled/degraded local fallback
 - Debugging Case File at Observe, Hypothesize, Repair, and Verify
+- Public landing hero and complete story at 1440×900 and 390×844
+- Public landing at 1280×600 with the Debugging Case File remaining static/non-sticky
 - Desktop-enhanced → mobile-static and desktop-enhanced → reduced-motion-static teardown

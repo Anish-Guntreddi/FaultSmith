@@ -18,6 +18,8 @@ npm audit --audit-level=moderate
 
 Then start the exact production build without a key and run the fallback and production smoke commands documented in `docs/TESTING.md`. Do not promote a SHA whose fallback path is not green.
 
+Set `NEXT_PUBLIC_SITE_URL` to the final HTTPS origin before the production build. Netlify builds also derive this value from the platform-provided `DEPLOY_PRIME_URL`/`URL`; a Netlify build fails closed if no deployment origin exists, and non-loopback production origins must use HTTPS. The production smoke validates the landing shell at `/`, the complete application shell at `/learn`, and both generated social-preview image routes.
+
 ## 2. Prove the provider path locally
 
 Place `OPENAI_API_KEY` only in the ignored root `.env.local`; never place it in a `NEXT_PUBLIC_` variable, command argument, committed file, screenshot, recording, or evidence artifact. Confirm only that `/api/health` reports `liveOpenAIConfigured: true`, then run the explicit paid live smoke once. Normal quality commands never invoke live mode.
@@ -50,7 +52,8 @@ npm run smoke:production -- --base-url https://YOUR-APP.example --live --evidenc
 
 Also verify in a clean browser and from a separate network:
 
-- root and `/api/health` return HTTP 200 without login or redirect;
+- `/`, `/learn`, `/opengraph-image`, `/twitter-image`, and `/api/health` return HTTP 200 without login or redirect;
+- both HTML routes publish their own absolute canonical URL and route-specific Open Graph/Twitter title; the smoke binds canonical and social-image URLs to the exact tested deployment origin;
 - HTTPS, HSTS, CSP, frame denial, `nosniff`, referrer, permissions, opener, and resource policies are present; `X-Powered-By` is absent;
 - API responses use `Cache-Control: no-store`;
 - the primary Expense Approval flow fits 1440 × 900 and 390 × 844 without horizontal overflow;

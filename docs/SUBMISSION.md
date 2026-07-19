@@ -22,6 +22,7 @@ Most programming education shows the happy path, while increasingly capable AI c
 
 ## What it does
 
+- Opens with a judge-facing public story that explains the AI-dependency problem, demonstrates FaultSmith's evidence-first method with fictional case data, and routes directly into the complete learning lab.
 - Offers three curated Python systems: Expense Approval, Inventory Service, and Notification Preferences.
 - Organizes the nine validated labs into a three-phase beginner-to-advanced roadmap with concept guides, investigation checklists, local mastery evidence, and deterministic next-step recommendations.
 - Preserves a direct Practice by skill catalog for advanced learners and an optional constrained GPT-5.6 live path.
@@ -86,7 +87,7 @@ The [official hackathon rules](https://openai.devpost.com/rules) require working
 
 ## Disclosure
 
-The application has a production-ready local fallback, automated mocked coverage, a public source repository with GitHub Actions CI, and credential-safe release tooling. On the July 19 Phase 01.1 offline candidate, 272 unit/integration tests, 23 Firebase emulator-integration tests, 13 default plus 16 emulator-mode browser/accessibility workflows, the production build, source/bundle security scans, zero-vulnerability audit, and the complete fallback/production smoke passed, with three independent product/QA/security reviews and no accepted blocker/high finding (exact-SHA ledger in the repository's `.planning` phase records). The account/cloud-sync path is proven against local Firebase emulators only: no real Firebase project exists yet, the live OpenAI smoke has not run because `OPENAI_API_KEY` was not present, and no deployment has been authorized. If real cloud gates miss the deadline, the same build ships with cloud sync disabled and the full local personalized dashboard intact. The remaining placeholder fields must be updated with objective evidence before final submission.
+The application has a production-ready local fallback, a public landing surface, automated mocked coverage, a public source repository with GitHub Actions CI, and credential-safe release tooling. On the July 19 local candidate, 281 unit/integration tests, 23 Firebase emulator-integration tests, 20 default plus 16 emulator-mode browser/accessibility workflows, the production build, 24-artifact bundle security scan, source/history security scan, zero-vulnerability audit, and the complete fallback/production smoke passed. Independent product/QA/security/motion reviews found and closed landing fixture leakage, stale root-only smoke coverage, metadata-origin and route-specific social gaps, and a low-height motion edge case. A private Firebase project has passed the sanitized automated real-project smoke; its remaining Google/inbox/clean-browser/cloud-off checks are still human-gated. The live OpenAI smoke and deployment remain unperformed pending credentials/approval. If cloud checkpoints miss the deadline, the same build ships with cloud sync disabled and the full local personalized dashboard intact. The remaining placeholder fields must be updated with objective evidence before final submission.
 
 ### Dependencies and assistance
 

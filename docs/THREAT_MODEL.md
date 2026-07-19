@@ -1,7 +1,7 @@
 # FaultSmith Threat Model
 
-**Review date:** July 19, 2026 (updated for the implemented Phase 01.1 identity/cloud boundary)
-**Scope:** browser client, Next.js API routes, server-only challenge catalog, OpenAI Responses API and Code Interpreter boundary, browser-local persistence, implemented Firebase email/password + Google identity and server-mediated Cloud Firestore progress (emulator-proven, real project pending), and deployment configuration
+**Review date:** July 19, 2026 (updated for the public landing/application route separation)
+**Scope:** public landing and social metadata surfaces, browser learning client, Next.js API routes, server-only challenge catalog, OpenAI Responses API and Code Interpreter boundary, browser-local persistence, implemented Firebase email/password + Google identity and server-mediated Cloud Firestore progress (emulator-proven), and deployment configuration
 
 ## Security objectives
 
@@ -31,6 +31,7 @@
 | --- | --- | --- | --- |
 | Browser → Next.js routes | All JSON, headers, IDs, files, prose | Request guard and Zod schemas | content type, body size, strict keys, length/count/path limits, rate limit |
 | Public DTO → server fixtures | Browser-visible challenge | Hidden fixture metadata | `server-only` modules and explicit DTO construction |
+| Public marketing → server fixtures | Landing copy, fictional case study, and generated social images | Curated root causes, failure signatures, hints, and repairs | marketing sources contain no fixture imports; registry regression scans public source text for protected fixture values and allowlisted file identities |
 | Server → GPT-5.6 | Project/learner text can contain instructions | Fixed developer instructions and structured schema | data delimiting, strict structured output, semantic equality against approved contract |
 | Server → Code Interpreter | Learner Python is hostile | Ephemeral OpenAI sandbox | fixed server command/bundle, timeout, output sanitation; no host subprocess |
 | Test result → model assessment | Learner prose and provider scores are probabilistic | Deterministic verification policy | hidden fixture answers are omitted from model input; provider returns only three scores; prose, completion, minimality, and execution fields are server-owned |
@@ -46,6 +47,7 @@
 - `POST /api/challenges/hint`
 - `POST /api/challenges/assess`
 - `GET /api/health`
+- `GET /`, `GET /learn`, `GET /opengraph-image`, and `GET /twitter-image`
 - Project/skill/difficulty controls
 - Source, hypothesis, and explanation text
 - Browser-local saved attempt
@@ -59,6 +61,7 @@
 | High if absent; mitigated | Submit shell command, file ID, or container ID | execute/assess routes | strict schemas accept only challenge ID and bounded file snapshots; server owns command and ephemeral execution | route adversarial tests reject extra keys; source search finds no host subprocess use | OpenAI sandbox behavior still requires live smoke |
 | High if absent; mitigated | Path traversal or modification outside allowlist | contracts/workflows | normalized relative path schema, duplicate detection, exact server allowlist | traversal and arbitrary-file tests; fixture allowlist tests | curated catalog correctness remains trusted |
 | High if absent; mitigated | Hidden solution leaks through JSON, bundle, storage, or imports | fixtures/DTO/client | server-only fixture modules, explicit public schema, no hidden client imports | API hidden-field tests, client import scan, E2E storage review, bundle string scan procedure | source repository intentionally contains fixture answers server-side |
+| High if absent; mitigated | A public landing example reveals a curated fixture root cause or repair before the learner investigates | landing/social metadata | landing examples are explicitly fictional and do not reuse catalog file names, signatures, snippets, hidden causes, or hints | registry-level public-marketing leakage regression plus independent adversarial review | public repository still contains server-only fixture definitions by design |
 | High if absent; mitigated | Future hints or a model-generated repair bypass progressive disclosure | hint route/gateway/client | future hints omitted from public challenge; separate strict hint schema; exact approved-step equality and repair/reference rejection | hint workflow/route tests, fixture hint invariant, browser-storage E2E | a learner can still call the bounded hint endpoint out of UI order; hints never contain the completed patch |
 | High if absent; mitigated | GPT declares failing patch correct | assessment | execute exact snapshot first; force `not_verified` on any failing/errored result | failing-patch unit, route, and E2E tests | none in current policy path |
 | High if absent; mitigated | Prompt injection changes command or reveals answer through assessment prose | GPT inputs | mark file/prose content untrusted; exact contract/hint checks; omit hidden answers from assessment input; strict score-only assessment; server-owned command and feedback prose | malicious assessment mock, hidden-input exclusion, injection-shaped route, and semantic-invalid-plan tests | live score quality may vary, but provider prose cannot reach the learner and scores cannot alter verification |
@@ -117,3 +120,5 @@ The Phase 1 independent security review found one high live-assessment disclosur
 The Phase 01.1 independent security/adversarial review of the accounts/cloud boundary found zero blocker/high issues and one accepted low (cross-origin containment parity on the token-accepting assess route), which was repaired with a permanent regression; two informational observations (tolerant server-side cloud-document recovery, per-instance rate limiting pending deployment controls) were consciously accepted with recorded rationale. The automated real-project smoke subsequently passed 22/22 sanitized stages without recording an email, UID, token, password, project value, document content, or credential. Human Google/inbox/browser and cloud-off cleanup proof remain separate. The complete finding ledger is in `.planning/phases/01.1-personalized-learner-accounts-cloud-progress-and-metrics-dashboard/`.
 
 No accepted local blocker/high remains open. Distributed rate limiting must be added before a paid credential is exposed publicly; nonce/hash CSP feasibility must be re-evaluated and documented during deployment; real Firebase project behavior (password policy, enumeration protection, token refresh, provider linking) remains a human-gated checkpoint. None of these residuals is represented as already solved.
+
+The public-route review initially found that a marketing trace reproduced the primary curated boundary fault. That trace was replaced with a fictional non-catalog case, and a fixture-registry regression now rejects protected file identities, failure tests/signatures, hidden causes/references, fault/repair snippets, and hints in public marketing sources. Follow-up review also required production proof on the real `/learn` route: the smoke now applies the full security-header policy to both HTML routes, binds canonical/Open Graph/Twitter URLs to the exact tested origin, bounds both generated PNGs, and rejects path-specific header drift or stale metadata origins. Independent security recheck found no remaining issue in the landing scope.

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 
+import { BrandLockup, BrandMark } from "@/components/brand-mark";
 import { DebuggingCaseFile } from "@/components/debugging-case-file";
 import { GuidedRoadmap } from "@/components/guided-roadmap";
 import { ProgressDashboard } from "@/components/progress-dashboard";
@@ -60,19 +62,6 @@ const difficultyOptions: Array<{ value: Difficulty; label: string }> = [
   { value: "advanced", label: "Advanced" },
 ];
 
-function BrandMark() {
-  return (
-    <span
-      aria-hidden="true"
-      className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-xl border border-amber-300/25 bg-[linear-gradient(145deg,rgba(242,184,75,0.14),rgba(105,208,203,0.035))] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-    >
-      <span className="h-3.5 w-3.5 rotate-45 rounded-[3px] border-2 border-amber-200" />
-      <span className="absolute bottom-1.5 h-[2px] w-4 rounded-full bg-cyan-200/60" />
-      <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-amber-300/15 blur-sm" />
-    </span>
-  );
-}
-
 function StatusDot({ tone = "amber" }: { tone?: "amber" | "green" | "red" }) {
   const color = tone === "green" ? "bg-emerald-400" : tone === "red" ? "bg-red-400" : "bg-amber-400";
   return <span aria-hidden="true" className={`inline-block h-1.5 w-1.5 rounded-full ${color}`} />;
@@ -93,13 +82,9 @@ function AppHeader({ stage, verified }: { stage: Stage; verified: boolean }) {
   return (
     <header className="sticky top-0 z-50 border-b border-white/8 bg-[#090c10]/88 backdrop-blur-xl">
       <div className="mx-auto flex h-[4.5rem] max-w-[1480px] items-center justify-between px-5 lg:px-8">
-        <div className="flex items-center gap-3">
-          <BrandMark />
-          <div>
-            <div className="font-instrument text-[13px] font-semibold tracking-[0.2em] text-[#f6f1e6]">FAULTSMITH</div>
-            <div className="font-instrument text-[9px] uppercase tracking-[0.17em] text-zinc-500">Deliberate debugging practice</div>
-          </div>
-        </div>
+        <Link href="/" aria-label="Return to the FaultSmith landing page" className="rounded-xl">
+          <BrandLockup />
+        </Link>
         <div className="hidden items-center gap-2.5 text-xs text-zinc-400 sm:flex">
           <span className="status-pill px-3 py-1.5">
             <StatusDot tone={stage === "report" ? (verified ? "green" : "red") : "amber"} />
