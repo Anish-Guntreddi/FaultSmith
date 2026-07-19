@@ -39,6 +39,19 @@ Requirements for the current release/submission milestone. Existing learner-faci
 - [ ] **LIVE-03**: Live hint and assessment responses satisfy their strict schemas, never reveal a completed repair, and cannot mark non-passing execution evidence as verified.
 - [ ] **LIVE-04**: Missing key, invalid provider output, timeout, expiration, or provider failure still recovers to the real visibly labeled fixture path after the credentialed smoke changes.
 
+### Personalized Learning and Cloud Progress
+
+- [ ] **PERS-01**: Guest learner can open a My Progress dashboard that derives bounded completion, score, hint, test-run, phase, skill, and recent-attempt metrics from validated local state without Firebase or OpenAI.
+- [ ] **PERS-02**: Learner receives a transparent deterministic reinforcement or next-lesson recommendation whose displayed reason is derived from verified evidence and never penalizes experimentation or claims certification.
+- [ ] **AUTH-01**: Learner can optionally sign in with Google to synchronize progress, sign out to return to guest mode, and use every core challenge workflow without an account or login wall.
+- [ ] **AUTH-02**: Every cloud-progress request verifies a Firebase ID token server-side, derives identity only from the verified UID, rejects invalid/expired/wrong-project/oversized tokens, and never changes unauthenticated challenge-route behavior.
+- [ ] **CLOUD-01**: A verified assessment can idempotently persist one bounded attempt summary and approved lesson completion through a server-only Firestore repository; failing or unsubmitted evidence cannot create completion.
+- [ ] **CLOUD-02**: Local and cloud progress merge monotonically with explicit evidence provenance, capped history, bounded retries, and a visible local-only fallback when Firebase is absent, degraded, or out of quota.
+- [ ] **PRIV-01**: Cloud records, logs, DTOs, bundles, and evidence exclude source code, learner prose, hints, hidden answers, raw test output, prompts, provider IDs, tokens, credentials, names, and duplicated email; learner can delete their cloud learning data.
+- [ ] **SEC-03**: Cross-user access, client-supplied UID/path authority, direct browser Firestore access, credential leakage, unsafe CSP expansion, unbounded sync, and multi-instance abuse are denied by contracts, token verification, rules, server mediation, scans, and deployment controls.
+- [ ] **QA-03**: Firebase Auth/Firestore emulator integration, route adversarial coverage, guest/signed-in/degraded E2E, accessibility, responsive layout, build, bundle/source security, dependency audit, fallback smoke, and the complete existing quality gate pass on one reviewed SHA.
+- [ ] **DEP-05**: After explicit approval, a Netlify Deploy Preview of the reviewed SHA proves guest access, Google sync, cross-session restoration, free-tier monitoring, rate controls, safe logs, security headers, and configuration-off rollback before production promotion.
+
 ### Public Deployment
 
 - [ ] **DEP-01**: With explicit deployment approval, a judge can open the exact reviewed commit at a stable public HTTPS URL without an account or preview authentication.
@@ -66,7 +79,6 @@ Deferred until the submission milestone is complete and a new requirements/PRD c
 
 ### Product Platform
 
-- **PLAT-01**: Learner can opt into an account for cross-device progress synchronization.
 - **PLAT-02**: Instructor can organize cohorts, assign learning paths, and review aggregated evidence without exposing private code/prose by default.
 - **PLAT-03**: FaultSmith can expose stable reusable domain packages after client/server boundaries and versioning are deliberately designed.
 
@@ -79,7 +91,7 @@ Deferred until the submission milestone is complete and a new requirements/PRD c
 | Runtime learner-facing multi-agent swarm | Adds latency and nondeterministic authority; the swarm is approved for development only |
 | Automatic paid live calls in normal CI | Creates nondeterminism, credential exposure surface, and uncontrolled spend |
 | Unverifiable certification or competitive ranking | Browser-local evidence is practice feedback, not identity-backed certification |
-| Authentication, payments, social features, native mobile apps, or additional languages before submission | Do not advance the core evidence-first debugging proof or current judging deliverables |
+| Mandatory authentication, payments, social features, native mobile apps, or additional languages before submission | Optional Google sync is narrowly approved; the remaining features do not advance the core evidence-first debugging proof or current judging deliverables |
 
 ## Traceability
 
@@ -103,6 +115,16 @@ Each v1 requirement is owned by exactly one roadmap phase. Canonical scope and f
 | SAFE-01 | Phase 1 | Complete |
 | SAFE-02 | Phase 1 | Complete |
 | DOC-01 | Phase 1 | Complete |
+| PERS-01 | Phase 01.1 | Pending — inserted scope |
+| PERS-02 | Phase 01.1 | Pending — inserted scope |
+| AUTH-01 | Phase 01.1 | Pending — inserted scope |
+| AUTH-02 | Phase 01.1 | Pending — inserted scope |
+| CLOUD-01 | Phase 01.1 | Pending — inserted scope |
+| CLOUD-02 | Phase 01.1 | Pending — inserted scope |
+| PRIV-01 | Phase 01.1 | Pending — inserted scope |
+| SEC-03 | Phase 01.1 | Pending — inserted scope |
+| QA-03 | Phase 01.1 | Pending — inserted scope |
+| DEP-05 | Phase 01.1 | Pending — deployment approval gate |
 | LIVE-01 | Phase 2 | Pending — credential gate |
 | LIVE-02 | Phase 2 | Pending — credential gate |
 | LIVE-03 | Phase 2 | Pending — credential gate |
@@ -118,11 +140,11 @@ Each v1 requirement is owned by exactly one roadmap phase. Canonical scope and f
 | SUB-03 | Phase 4 | Pending — external evidence |
 
 **Coverage:**
-- v1 requirements: 29 total
-- Mapped to phases: 29
+- v1 requirements: 39 total
+- Mapped to phases: 39
 - Unmapped: 0 ✓
 - Duplicate phase ownership: 0 ✓
 
 ---
 *Requirements defined: July 18, 2026*  
-*Last updated: July 18, 2026 after four-phase GSD roadmap creation*
+*Last updated: July 19, 2026 after the approved personalized-learning insertion*

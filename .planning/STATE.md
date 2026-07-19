@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: awaiting_external_input
-stopped_at: Phase 2 Plan 05 complete; Plan 06 awaits private server-only OPENAI_API_KEY configuration
-last_updated: "2026-07-19T03:16:00.000Z"
-last_activity: July 18, 2026 — Offline checkpoint 953821e passed local production smoke and all four required GitHub checks.
+status: planning
+stopped_at: Phase 01.1 inserted; personalized learning PRD and execution plans in progress
+last_updated: "2026-07-19T12:00:00.000Z"
+last_activity: July 19, 2026 — User approved planning a guest-first metrics dashboard plus optional Firebase/Google cloud synchronization before deployment.
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 1
   total_plans: 12
   completed_plans: 11
-  percent: 25
+  percent: 20
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: `.planning/PROJECT.md` (updated July 18, 2026)
 
 **Core value:** Learners must practice reading real failure evidence, reasoning about root causes, and proving minimal repairs instead of receiving an answer that bypasses the debugging process.
-**Current focus:** Phase 2 — Credential-Controlled Live OpenAI Proof
+**Current focus:** Phase 01.1 — Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard
 
 ## Current Position
 
-Phase: 2 of 4 (Credential-Controlled Live OpenAI Proof)
-Plan: 5 of 6 complete; Plan 06 is the human credential/live-proof checkpoint
-Status: Awaiting private configuration of a valid funded server-only `OPENAI_API_KEY`
-Last activity: July 18, 2026 — Offline checkpoint `953821e` passed 126 unit/integration tests, seven browser workflows, strict fallback/production smoke, source/bundle/audit, independent adversarial recheck, and four required GitHub checks in run 29671442532.
+Phase: 01.1 of 5 (Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard)
+Plan: Planning in progress; credential-free implementation and emulator verification come before real Firebase configuration
+Status: Approved material scope insertion; PRD, research, validation, and executable plans are being prepared
+Last activity: July 19, 2026 — The user approved optional Google sync and personalized metrics, with Netlify hosting and Firebase Spark services, while retaining public guest access and local fallback.
 
-Progress: [███░░░░░░░] 25%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -72,6 +72,13 @@ Decisions are logged in `.planning/PROJECT.md`. Recent decisions affecting curre
 - Stabilize and independently review one SHA before accepting live, deployment, UAT, or video evidence.
 - Preserve and visibly label the real prevalidated fixture fallback through every phase.
 - Defer custom prompts, repository ingestion, runtime swarms, and other material product expansion until a later PRD cycle.
+- Phase 01.1 inserted after Phase 1: Personalized learner accounts, cloud progress, and metrics dashboard (URGENT).
+- Keep guest/local progress as the default reliability path; optional Google identity and Firestore synchronization are configuration-gated and server-mediated.
+- If real Firebase or preview gates miss the release cutoff, disable cloud mode and retain the local personalized dashboard on the last known-green candidate.
+
+### Roadmap Evolution
+
+- Phase 01.1 inserted after Phase 1: Personalized learner accounts, cloud progress, and metrics dashboard (URGENT)
 
 ### Pending Todos
 
@@ -80,6 +87,7 @@ None yet.
 ### Blockers/Concerns
 
 - Phase 2 Plan 06 requires the user to privately configure a valid funded server-only `OPENAI_API_KEY`, confirm only the live health boolean, and later privately remove it before final source scanning.
+- Real Phase 01.1 cloud proof requires the user to create a Firebase Spark project, enable Google Authentication and Firestore, authorize only reviewed domains, and privately configure client/server values; emulator and local-only work do not require those credentials.
 - Phase 3 requires explicit deployment approval and access to the selected host configuration.
 - Phase 4 requires five external testers, video publication, and the primary Codex `/feedback` Session ID.
 - The submission deadline is July 21, 2026 at 5:00 PM Pacific; release proof takes priority over feature breadth.
