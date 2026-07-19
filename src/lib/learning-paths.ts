@@ -231,7 +231,7 @@ export const learningPhases: LearningPhase[] = [
 
 export const learningSteps = learningPhases.flatMap((phase) => phase.steps);
 
-const completionSchema = z
+export const learningCompletionSchema = z
   .object({
     stepId: learningStepIdSchema,
     completedAt: z.number().int().nonnegative(),
@@ -248,7 +248,7 @@ const progressContainerSchema = z
   })
   .strict();
 
-export type LearningCompletion = z.infer<typeof completionSchema>;
+export type LearningCompletion = z.infer<typeof learningCompletionSchema>;
 export type LearningProgress = {
   version: 1;
   completions: LearningCompletion[];
@@ -266,7 +266,7 @@ export function parseLearningProgress(value: unknown): LearningProgress {
 
   const byStep = new Map<LearningStepId, LearningCompletion>();
   for (const candidate of container.data.completions) {
-    const completion = completionSchema.safeParse(candidate);
+    const completion = learningCompletionSchema.safeParse(candidate);
     if (!completion.success) continue;
     const current = byStep.get(completion.data.stepId);
     if (!current || completion.data.completedAt >= current.completedAt) {
@@ -285,7 +285,7 @@ export function recordLearningCompletion(
   completion: LearningCompletion,
 ): LearningProgress {
   const parsedProgress = parseLearningProgress(progress);
-  const parsedCompletion = completionSchema.safeParse(completion);
+  const parsedCompletion = learningCompletionSchema.safeParse(completion);
   if (!parsedCompletion.success) return parsedProgress;
 
   return {

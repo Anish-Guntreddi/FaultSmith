@@ -5,6 +5,7 @@ import {
   emptyLearningProgress,
   getLearningRecommendation,
   isLearningStepUnlocked,
+  learningCompletionSchema,
   learningPhases,
   learningSteps,
   parseLearningProgress,
@@ -43,6 +44,13 @@ describe("guided learning registry", () => {
       { stepId: "evidence-boundaries", completedAt: 3, overallScore: 88, hintsUsed: 1, testRuns: 2 },
     ]);
     expect(JSON.stringify(parsed)).not.toContain("hypothesis");
+  });
+
+  it("exposes a strict completion schema for reuse by cloud-ready progress contracts", () => {
+    const valid = { stepId: "evidence-boundaries", completedAt: 5, overallScore: 90, hintsUsed: 0, testRuns: 1 };
+    expect(learningCompletionSchema.safeParse(valid).success).toBe(true);
+    expect(learningCompletionSchema.safeParse({ ...valid, hypothesis: "prose" }).success).toBe(false);
+    expect(learningCompletionSchema.safeParse({ ...valid, overallScore: 101 }).success).toBe(false);
   });
 
   it("unlocks sequentially and recommends reinforcement or the next lesson", () => {
