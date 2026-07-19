@@ -47,7 +47,7 @@ Requirements for the current release/submission milestone. Existing learner-faci
 - [x] **AUTH-02**: Every cloud-progress request verifies a Firebase ID token server-side, derives identity only from the verified UID, rejects invalid/expired/wrong-project/oversized tokens, and never changes unauthenticated challenge-route behavior.
 - [x] **AUTH-03**: Firebase owns password storage, policy enforcement, email verification, and password reset; unverified password identities cannot access cloud progress, FaultSmith never persists or logs password material, and account-facing responses resist email enumeration and resend abuse.
 - [x] **AUTH-04**: Email/password and Google provider collisions never silently create, merge, overwrite, or delete progress; any optional link requires an authenticated recent session, preserves one Firebase UID, and ships only after emulator and real-provider proof.
-- [ ] **CLOUD-01**: A verified assessment can idempotently persist one bounded attempt summary and approved lesson completion through a server-only Firestore repository; failing or unsubmitted evidence cannot create completion.
+- [x] **CLOUD-01**: A verified assessment can idempotently persist one bounded attempt summary and approved lesson completion through a server-only Firestore repository; failing or unsubmitted evidence cannot create completion.
 - [x] **CLOUD-02**: Local and cloud progress merge monotonically with explicit evidence provenance, capped history, bounded retries, and a visible local-only fallback when Firebase is absent, degraded, or out of quota.
 - [x] **PRIV-01**: Cloud records, logs, DTOs, bundles, and evidence exclude source code, learner prose, hints, hidden answers, raw test output, prompts, provider IDs, passwords, tokens, credentials, names, and duplicated email; learner can delete their cloud learning data.
 - [x] **SEC-03**: Cross-user access, client-supplied UID/path authority, direct browser Firestore access, credential leakage, unsafe CSP expansion, unbounded sync, and multi-instance abuse are denied by contracts, token verification, rules, server mediation, scans, and deployment controls.
@@ -117,14 +117,14 @@ Each v1 requirement is owned by exactly one roadmap phase. Canonical scope and f
 | SAFE-01 | Phase 1 | Complete |
 | SAFE-02 | Phase 1 | Complete |
 | DOC-01 | Phase 1 | Complete |
-| PERS-01 | Phase 01.1 | Pending — inserted scope |
-| PERS-02 | Phase 01.1 | Pending — inserted scope |
+| PERS-01 | Phase 01.1 | Complete |
+| PERS-02 | Phase 01.1 | Complete |
 | AUTH-01 | Phase 01.1 | Complete |
 | AUTH-02 | Phase 01.1 | Complete |
 | AUTH-03 | Phase 01.1 | Complete |
 | AUTH-04 | Phase 01.1 | Complete |
-| CLOUD-01 | Phase 01.1 | Pending — inserted scope |
-| CLOUD-02 | Phase 01.1 | Pending — inserted scope |
+| CLOUD-01 | Phase 01.1 | Complete |
+| CLOUD-02 | Phase 01.1 | Complete |
 | PRIV-01 | Phase 01.1 | Complete |
 | SEC-03 | Phase 01.1 | Complete |
 | QA-03 | Phase 01.1 | Complete |

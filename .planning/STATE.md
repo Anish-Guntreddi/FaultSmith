@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01.1-02-PLAN.md
-last_updated: "2026-07-19T07:58:17.650Z"
-last_activity: "July 19, 2026 — Plan 01.1-02 delivered the credential-free Firebase foundation: Node 22+ runtime, audit-clean SDKs, lazy local_only auth adapter, default-deny Firestore rules proven in the demo emulator, and extended secret/bundle leakage gates."
+stopped_at: Completed 01.1-03-PLAN.md
+last_updated: "2026-07-19T08:27:03.162Z"
+last_activity: "July 19, 2026 — Plan 01.1-03 delivered the authenticated server persistence boundary: lazy Admin/identity DAL (verified-token-only UID), fixed-path Firestore repository with SHA-256 idempotent server_verified persistence and 50-attempt retention, same-origin no-store /api/progress routes, and an assessment sync hook whose bounded cloudSync fact never alters the deterministic report."
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 13
-  percent: 67
+  completed_plans: 14
+  percent: 78
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: `.planning/PROJECT.md` (updated July 18, 2026)
 ## Current Position
 
 Phase: 01.1 of 5 (Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard)
-Plan: 2 of 6 complete (Wave 1 done: Plans 01 and 02); Plan 03 (server identity/persistence) is next
+Plan: 3 of 6 complete (Wave 1 done; Wave 2 started); Plan 04 (sync UI) is next
 Status: Executing; credential-free implementation and emulator verification precede real Firebase configuration
-Last activity: July 19, 2026 — Plan 01.1-02 delivered the credential-free Firebase foundation: Node 22+ runtime, audit-clean SDKs, lazy local_only auth adapter, default-deny Firestore rules proven in the demo emulator, and extended secret/bundle leakage gates.
+Last activity: July 19, 2026 — Plan 01.1-03 delivered the authenticated server persistence boundary: lazy Admin/identity DAL (verified-token-only UID), fixed-path Firestore repository with SHA-256 idempotent server_verified persistence and 50-attempt retention, same-origin no-store /api/progress routes, and an assessment sync hook whose bounded cloudSync fact never alters the deterministic report.
 
-Progress: [███████░░░] 67%
+Progress: [████████░░] 78%
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Progress: [███████░░░] 67%
 | Phase 02 P05 | 31 min | integration, adversarial self-heal, full local/remote gates | 14 files + GitHub state |
 | Phase 01.1 P01 | 19 min | 2 tasks | 11 files |
 | Phase 01.1 P02 | 26 min | 2 tasks | 18 files |
+| Phase 01.1 P03 | 25 min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,10 @@ Decisions are logged in `.planning/PROJECT.md`. Recent decisions affecting curre
 - [Phase 01.1]: Transitive @opentelemetry/core and uuid pinned via npm overrides for a zero-vulnerability audit instead of downgrading firebase-tools — Plan forbids vulnerable or audit-skipping dependency states
 - [Phase 01.1]: Only the exact NEXT_PUBLIC_FIREBASE_API_KEY name is scanner-allowlisted as public metadata; variants and publicized server secrets still fail closed — Firebase web API key is public project metadata, not authorization
 - [Phase 01.1]: Provider link attempts that would change the UID sign out and report link_unavailable; password reset reports generic success to prevent account enumeration — Progress must never migrate across UIDs and auth flows must stay enumeration-resistant
+- [Phase 01.1]: Identity DAL requires email_verified true provider-independently, rejecting unverified email/password identities without provider literals in server code — Fail-closed, satisfies AUTH requirements, and keeps the password-boundary scanner clean
+- [Phase 01.1]: Persisted attempt summaries record challengeSource prevalidated and take lesson difficulty from the unique challenge-to-lesson registry mapping — The server never accepts source, lesson, or difficulty authority from a progress-write client
+- [Phase 01.1]: cloudSync is an optional bounded enum on the shared assessment response; it is descriptive only and can never change completion or test authority — Legacy saved responses still parse strictly while cloud-aware clients get the sync fact
+- [Phase 01.1]: Cloud profile lives in one transactional learningProfiles/{uid} document with a localImportedAt marker enforcing the bounded one-time import (409 on replay) — Makes replay collapse, retention, isolation, and deletion trivially verifiable
 
 ### Roadmap Evolution
 
@@ -104,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-19T07:58:07.460Z
-Stopped at: Completed 01.1-02-PLAN.md
+Last session: 2026-07-19T08:26:54.715Z
+Stopped at: Completed 01.1-03-PLAN.md
 Resume file: None
