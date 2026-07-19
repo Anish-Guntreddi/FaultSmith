@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01.1-01-PLAN.md
-last_updated: "2026-07-19T07:51:26.859Z"
-last_activity: July 19, 2026 — Plan 01.1-01 delivered strict progress/attempt contracts, deterministic migration/merge/metrics, and the offline guest My Progress dashboard with full local gates green.
+stopped_at: Completed 01.1-02-PLAN.md
+last_updated: "2026-07-19T07:58:17.650Z"
+last_activity: "July 19, 2026 — Plan 01.1-02 delivered the credential-free Firebase foundation: Node 22+ runtime, audit-clean SDKs, lazy local_only auth adapter, default-deny Firestore rules proven in the demo emulator, and extended secret/bundle leakage gates."
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 12
+  completed_plans: 13
   percent: 67
 ---
 
@@ -26,9 +26,9 @@ See: `.planning/PROJECT.md` (updated July 18, 2026)
 ## Current Position
 
 Phase: 01.1 of 5 (Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard)
-Plan: 1 of 6 complete (Plan 01 executed); Wave 1 Plan 02 in parallel
-Status: Executing Wave 1; credential-free implementation and emulator verification precede real Firebase configuration
-Last activity: July 19, 2026 — Plan 01.1-01 delivered strict progress/attempt contracts, deterministic migration/merge/metrics, and the offline guest My Progress dashboard with full local gates green.
+Plan: 2 of 6 complete (Wave 1 done: Plans 01 and 02); Plan 03 (server identity/persistence) is next
+Status: Executing; credential-free implementation and emulator verification precede real Firebase configuration
+Last activity: July 19, 2026 — Plan 01.1-02 delivered the credential-free Firebase foundation: Node 22+ runtime, audit-clean SDKs, lazy local_only auth adapter, default-deny Firestore rules proven in the demo emulator, and extended secret/bundle leakage gates.
 
 Progress: [███████░░░] 67%
 
@@ -62,6 +62,7 @@ Progress: [███████░░░] 67%
 | Phase 02 P04 | 10 min | production smoke and deployment/rollback runbook | 3 files |
 | Phase 02 P05 | 31 min | integration, adversarial self-heal, full local/remote gates | 14 files + GitHub state |
 | Phase 01.1 P01 | 19 min | 2 tasks | 11 files |
+| Phase 01.1 P02 | 26 min | 2 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,10 @@ Decisions are logged in `.planning/PROJECT.md`. Recent decisions affecting curre
 - [Phase 01.1]: Keep v1 learning-progress key untouched; v2 learner profile composes v1 completions plus a dedicated bounded attempt-history key, migrating deterministically without fabricating history
 - [Phase 01.1]: Certified progress metrics count only server_verified verified attempts; migrated/local-import data advances the roadmap but never verified score averages
 - [Phase 01.1]: Test-run counts are descriptive process evidence only and never enter any score computation
+- [Phase 01.1]: Node runtime raised to engines >=22.0.0 with .nvmrc 24 to match Firebase Admin 14 support while CI stays Node 24 — Firebase Admin 14 requires Node 22+; CI/workstation already run Node 24
+- [Phase 01.1]: Transitive @opentelemetry/core and uuid pinned via npm overrides for a zero-vulnerability audit instead of downgrading firebase-tools — Plan forbids vulnerable or audit-skipping dependency states
+- [Phase 01.1]: Only the exact NEXT_PUBLIC_FIREBASE_API_KEY name is scanner-allowlisted as public metadata; variants and publicized server secrets still fail closed — Firebase web API key is public project metadata, not authorization
+- [Phase 01.1]: Provider link attempts that would change the UID sign out and report link_unavailable; password reset reports generic success to prevent account enumeration — Progress must never migrate across UIDs and auth flows must stay enumeration-resistant
 
 ### Roadmap Evolution
 
@@ -99,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-19T07:51:26.857Z
-Stopped at: Completed 01.1-01-PLAN.md
+Last session: 2026-07-19T07:58:07.460Z
+Stopped at: Completed 01.1-02-PLAN.md
 Resume file: None

@@ -42,7 +42,7 @@ This milestone converts the current guided-learning release candidate into one s
   4. Firebase absence, failure, quota exhaustion, unverified email, verification/reset abuse, provider collision, sign-in cancellation, sign-out, and configuration-off rollback preserve local progress and never block a challenge or report.
   5. Emulator, route, E2E/accessibility, security, build, dependency, fallback, production, and independent review gates pass on one SHA; credentialed Netlify preview remains approval-gated and cloud mode may be disabled without a code rollback.
 **External dependency gate:** The credential-free implementation and emulator tests can run without user secrets. Real cross-device proof requires the user to create/configure a Firebase Spark project, email/password provider/policy/action URLs, and Google provider privately. Netlify preview remains a separate explicit deployment approval gate.
-**Plans:** 1/6 plans executed
+**Plans:** 2/6 plans executed
 
 Plans:
 - [ ] 01.1-01 — strict progress/history contracts, deterministic metrics, and guest dashboard
@@ -96,7 +96,7 @@ Plans:
 | Phase | Requirements | Count |
 |-------|--------------|------:|
 | 1. Release Integration and Independent Quality Gates | DEV-01–03, CI-01–06, QA-01–02, SEC-01–02, SAFE-01–02, DOC-01 | 16 |
-| 01.1 Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard | 1/6 | In Progress|  | 2. Credential-Controlled Live OpenAI Proof | LIVE-01–04 | 4 |
+| 01.1 Personalized Learner Accounts, Cloud Progress, and Metrics Dashboard | 2/6 | In Progress|  | 2. Credential-Controlled Live OpenAI Proof | LIVE-01–04 | 4 |
 | 3. Approved Public Deployment and Production Verification | DEP-01–04 | 4 |
 | 4. External UAT, Video, and Final Submission | UAT-01–02, SUB-01–03 | 5 |
 | **Total** | **Every v1 requirement mapped exactly once** | **41** |
