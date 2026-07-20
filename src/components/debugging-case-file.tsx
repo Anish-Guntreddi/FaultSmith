@@ -256,7 +256,7 @@ export function DebuggingCaseFile() {
       <header className="case-file-heading">
         <div>
           <div className="instrument-label text-cyan-200">A debugging case file · four evidence gates</div>
-          <h2 id="debugging-case-file-heading" className="prompt-heading mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
+          <h2 id="debugging-case-file-heading" className="prompt-heading font-instrument mt-2 text-3xl font-semibold tracking-[-0.02em] text-white sm:text-4xl">
             See the investigation, not just the answer.
           </h2>
         </div>

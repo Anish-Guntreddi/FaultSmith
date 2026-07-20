@@ -16,8 +16,14 @@
   --cyan: #69d0cb;
   --red: #ff7a72;
   --green: #70d69e;
-  --font-interface: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-instrument: ui-monospace, "SFMono-Regular", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  /* Self-hosted terminal-forward type system (Art Direction rebuild, July
+     2026). --font-sans / --font-mono are injected by next/font/local in
+     src/app/layout.tsx (vendored OFL woff2, zero external origins); the
+     system stacks that follow are the fallback chain, not the primary
+     face. Every existing --font-interface/--font-instrument consumer below
+     picks up the new faces automatically through this one indirection. */
+  --font-interface: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-instrument: var(--font-mono), ui-monospace, "SFMono-Regular", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
   --shadow-panel: 0 28px 80px rgba(0, 0, 0, 0.28), 0 4px 18px rgba(0, 0, 0, 0.22);
   --shadow-active: 0 0 0 1px rgba(242, 184, 75, 0.1), 0 18px 55px rgba(0, 0, 0, 0.24);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -1221,13 +1227,19 @@ input:-webkit-autofill:focus {
   max-width: 50rem;
 }
 
+/* Mono display headline — the terminal-forward signature. JetBrains Mono is
+   a fixed-width face, so it needs looser tracking and a smaller clamp than
+   the old variable-sans headline (-0.065em/6.6rem would collide glyphs and
+   overflow); -0.025em/5.6rem reads as a deliberately set mono headline
+   rather than default typewriter spacing. */
 .landing-hero-copy h1 {
   margin-top: 1.5rem;
   color: #f7f3eb;
-  font-size: clamp(3.1rem, 6.3vw, 6.6rem);
-  font-weight: 650;
-  letter-spacing: -0.065em;
-  line-height: 0.94;
+  font-family: var(--font-instrument);
+  font-size: clamp(2.35rem, 5.1vw, 5.6rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.04;
 }
 
 .landing-hero-copy h1 span {
@@ -1602,16 +1614,19 @@ input:-webkit-autofill:focus {
   max-width: 50rem;
 }
 
+/* Section headings share the hero's mono display treatment (see
+   .landing-hero-copy h1 above for the tracking/size rationale). */
 .landing-section-heading h2,
 .landing-problem-copy h2,
 .landing-evidence-intro h2,
 .landing-final-cta h2 {
   margin-top: 0.7rem;
   color: #f5f1e9;
-  font-size: clamp(2.35rem, 4vw, 4.25rem);
-  font-weight: 650;
-  letter-spacing: -0.055em;
-  line-height: 1;
+  font-family: var(--font-instrument);
+  font-size: clamp(1.9rem, 3.4vw, 3.4rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
 }
 
 .landing-section-heading > p,

@@ -68,12 +68,14 @@ The interface communicates one learning loop everywhere:
 
 ## Typography
 
-FaultSmith uses two dependency-free stacks:
+FaultSmith self-hosts two OFL type families as `next/font/local` woff2 files under `public/fonts/` (no CDN, no external origin — the CSP's `font-src 'self' data:` directive is unchanged; only same-origin static assets are served):
 
-- **Interface/display:** `ui-sans-serif`, `system-ui`, `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, sans-serif.
-- **Instrumentation/code:** `ui-monospace`, `SFMono-Regular`, `Cascadia Code`, `Roboto Mono`, `Menlo`, `Consolas`, monospace.
+- **Instrumentation/display — JetBrains Mono** (`--font-mono`, weights 400/500/600/700): code, paths, test output, timing, counters, instrument labels, and — as of the Art Direction rebuild — the hero headline and every major section heading. Mono display type is the terminal-forward signature: it is what makes the product read as a debugging instrument rather than a generic SaaS page.
+- **Interface/body — IBM Plex Sans** (`--font-sans`, weights 400/500/600/700): instruction copy, authentication, learning explanations, and all other paragraph/control text.
 
-Display headlines use tight tracking and strong weight. Instrument labels use uppercase monospace, 0.14–0.18 em tracking, and concise language. Paragraphs remain sentence case with comfortable 1.55–1.75 line height.
+`--font-interface` and `--font-instrument` (the tokens every component consumes) resolve to `var(--font-sans)` / `var(--font-mono)` first, falling back to the previous system stacks (`ui-sans-serif`/`ui-monospace` etc.) if the vendored files ever fail to load — so the fallback chain, not just the primary face, stays dependency-free.
+
+Mono display headlines (hero `h1`, section `h2`s) use a deliberately loosened tracking (‑0.02em to ‑0.025em) and a reduced clamp versus the old variable-sans scale — JetBrains Mono's fixed-width glyphs are wider than a proportional sans at the same point size, so the previous ‑0.055em/‑0.065em tracking and larger clamp would collide characters and overflow. The goal is a headline that reads as intentionally set in mono, not typewriter-cramped. Instrument labels use uppercase monospace, 0.14–0.18 em tracking, and concise language. Body paragraphs remain sentence case, IBM Plex Sans, with comfortable 1.55–1.75 line height.
 
 ## Component grammar
 
