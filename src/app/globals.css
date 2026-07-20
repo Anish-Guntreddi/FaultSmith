@@ -1045,127 +1045,12 @@ input:-webkit-autofill:focus {
   box-shadow: inset 0 0 36px rgba(0, 0, 0, 0.34);
 }
 
-.landing-console-command {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  color: #d0d5d8;
-  font-family: var(--font-instrument);
-  font-size: 0.66rem;
-}
-
-.landing-console-command strong {
-  font-size: 0.58rem;
-  font-weight: 650;
-}
-
-.landing-console-failure {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  margin-top: 1rem;
-  border: 1px solid rgba(255, 122, 114, 0.18);
-  border-radius: 0.75rem;
-  padding: 0.75rem;
-  background: rgba(255, 122, 114, 0.05);
-  color: #d8dddf;
-  font-family: var(--font-instrument);
-  font-size: 0.58rem;
-}
-
-.landing-console-failure span {
-  border-radius: 999px;
-  padding: 0.25rem 0.4rem;
-  background: rgba(255, 122, 114, 0.12);
-  color: var(--red);
-  font-size: 0.5rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-}
-
-.landing-console-code {
-  display: grid;
-  gap: 0.2rem;
-  margin-top: 1rem;
-  border-left: 2px solid var(--amber);
-  padding: 0.7rem 0.8rem;
-  background: rgba(242, 184, 75, 0.045);
-  color: #d5dadc;
-  font-family: var(--font-instrument);
-  font-size: 0.62rem;
-}
-
-.landing-console-code i {
-  display: inline-block;
-  width: 1.5rem;
-  color: #6d7780;
-  font-style: normal;
-}
-
-.landing-console-code b {
-  color: #ffb5af;
-}
-
-.landing-trace {
-  display: grid;
-  gap: 0.5rem;
-  margin: 1.3rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.landing-trace li {
-  display: grid;
-  grid-template-columns: 1.6rem 1fr auto;
-  align-items: center;
-  gap: 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 0.7rem;
-  padding: 0.65rem 0.75rem;
-  background: rgba(255, 255, 255, 0.018);
-}
-
-.landing-trace > li > span,
 .landing-card-number {
   color: var(--amber);
   font-family: var(--font-instrument);
   font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.12em;
-}
-
-.landing-trace strong,
-.landing-trace small {
-  display: block;
-  font-family: var(--font-instrument);
-}
-
-.landing-trace strong {
-  color: #dfe4e6;
-  font-size: 0.64rem;
-}
-
-.landing-trace small {
-  margin-top: 0.2rem;
-  color: #8f989f;
-  font-size: 0.54rem;
-}
-
-.landing-trace i {
-  color: #879099;
-  font-family: var(--font-instrument);
-  font-size: 0.5rem;
-  font-style: normal;
-  letter-spacing: 0.06em;
-}
-
-.landing-trace .is-verified {
-  border-color: rgba(112, 214, 158, 0.18);
-  background: rgba(112, 214, 158, 0.05);
-}
-
-.landing-trace .is-verified i {
-  color: #a6ecc3;
 }
 
 .landing-console-footer {
@@ -1186,6 +1071,223 @@ input:-webkit-autofill:focus {
   align-items: center;
   gap: 0.55rem;
   color: #b8e8cb;
+}
+
+/* === Hero debugging demo (marquee animated typing/running/failing/
+   hypothesize/repair/verify loop) =========================================
+   Replaces the previous static HeroConsole. React state drives which stage
+   is showing and how much of it has "typed" or "streamed" in; CSS only
+   handles the resulting opacity/transform reveals (never layout
+   properties), matching the case-file's transform/opacity-only rule. The
+   whole visual block is aria-hidden — see debugging-demo.tsx — so none of
+   the class names below need their own reduced-motion overrides beyond the
+   global animation-duration collapse at the bottom of this file. */
+.terminal-frame-body.debug-demo-body {
+  position: relative;
+  min-height: 12.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.debug-demo-phase-label {
+  margin-bottom: 0.9rem;
+}
+
+.debug-demo-stage {
+  animation: debug-demo-stage-reveal var(--dur-base) var(--ease-out) both;
+}
+
+@keyframes debug-demo-stage-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(0.3em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.debug-demo-command {
+  color: #d0d5d8;
+  font-family: var(--font-instrument);
+  font-size: 0.66rem;
+}
+
+.debug-demo-cursor {
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-left: 0.15em;
+  vertical-align: -0.15em;
+  background: var(--cursor-color);
+  animation: cursor-blink var(--dur-blink) step-end infinite;
+}
+
+.debug-demo-spinner-line {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+  color: #8e98a2;
+  font-family: var(--font-instrument);
+  font-size: 0.62rem;
+}
+
+.debug-demo-spinner {
+  color: var(--amber);
+  font-size: 0.75rem;
+}
+
+.debug-demo-stream {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.95rem;
+}
+
+.debug-demo-line {
+  opacity: 0;
+  transform: translateY(0.3em);
+  animation: debug-demo-line-reveal var(--dur-base) var(--ease-out) both;
+  color: #b7bcc1;
+  font-family: var(--font-instrument);
+  font-size: 0.6rem;
+}
+
+@keyframes debug-demo-line-reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.debug-demo-status {
+  display: inline-block;
+  min-width: 3.6rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.debug-demo-status-passed {
+  color: var(--green);
+}
+
+.debug-demo-status-failed {
+  color: var(--red);
+}
+
+/* The failing line highlights on its own merit (border + tint), not color
+   alone — the PASSED/FAILED text above already states status in words. */
+.debug-demo-line-fail {
+  border-left: 2px solid var(--red);
+  border-radius: 0.3rem;
+  padding: 0.15rem 0.5rem 0.15rem 0.45rem;
+  background: rgba(255, 122, 114, 0.07);
+}
+
+.debug-demo-line-assert {
+  margin-top: 0.4rem;
+  border: 1px solid rgba(255, 122, 114, 0.2);
+  border-radius: 0.6rem;
+  padding: 0.65rem 0.8rem;
+  background: rgba(255, 122, 114, 0.06);
+  color: #ffb5af;
+  font-weight: 700;
+}
+
+.debug-demo-hypothesis {
+  margin-top: 0.4rem;
+}
+
+.debug-demo-diff {
+  margin-top: 0.4rem;
+}
+
+.debug-demo-diff-token {
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+  font-weight: 800;
+}
+
+.debug-demo-seal {
+  margin-top: 1rem;
+}
+
+.debug-demo-dot {
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.debug-demo-dot-amber {
+  background: var(--amber);
+  box-shadow: 0 0 0 4px rgba(242, 184, 75, 0.08);
+}
+
+.debug-demo-dot-red {
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgba(255, 122, 114, 0.08);
+}
+
+.debug-demo-dot-cyan {
+  background: var(--cyan);
+  box-shadow: 0 0 0 4px rgba(105, 208, 203, 0.08);
+}
+
+.debug-demo-dot-green {
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgba(112, 214, 158, 0.08);
+}
+
+.debug-demo-footer span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #c7cdd1;
+}
+
+.debug-demo-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.7rem;
+}
+
+/* WCAG 2.2.2: the demo auto-plays past 5s, so this control must be visible,
+   keyboard-reachable, and must genuinely stop the underlying clock (see
+   the `playing` gate in debugging-demo.tsx) — not just pause a CSS
+   animation that keeps advancing state underneath it. */
+.debug-demo-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: #cfd4d8;
+  font-family: var(--font-instrument);
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out);
+}
+
+.debug-demo-toggle-glyph {
+  color: var(--amber);
+  font-size: 0.65rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .debug-demo-toggle:hover {
+    border-color: rgba(242, 184, 75, 0.35);
+    background: rgba(242, 184, 75, 0.06);
+    color: #f7f0e2;
+  }
 }
 
 .landing-section {
@@ -1609,14 +1711,20 @@ input:-webkit-autofill:focus {
    shadow, 3D transform). The TerminalFrame they contain should contribute
    only its titlebar (dots + mono label) and content slot, not a second
    competing card outline. */
-.landing-console > .terminal-frame,
+/* .landing-console is a descendant (not child) combinator here: the hero's
+   animated debugging demo wraps its TerminalFrame in an aria-hidden div (see
+   debug-demo-visual below) so the churning terminal output stays out of the
+   accessibility tree while the Pause/Play control and sr-only summary do
+   not — the bezel treatment still needs to reach the frame through that
+   extra layer. */
+.landing-console .terminal-frame,
 .case-monitor-shell > .terminal-frame {
   border: none;
   background: none;
   box-shadow: none;
 }
 
-.landing-console > .terminal-frame > .terminal-frame-bar,
+.landing-console .terminal-frame > .terminal-frame-bar,
 .case-monitor-shell > .terminal-frame > .terminal-frame-bar {
   padding-inline: 0.7rem;
 }
@@ -2221,6 +2329,21 @@ input:-webkit-autofill:focus {
     opacity: 1;
     transform: none;
   }
+
+  /* Belt-and-suspenders: debugging-demo.tsx already skips its timer and
+     renders the static verified frame under reduced motion, so these rarely
+     fire — but a live preference change mid-loop (query event) should not
+     leave a stale opacity/transform mid-animation for one frame either. */
+  .debug-demo-stage,
+  .debug-demo-line {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .debug-demo-cursor {
+    animation: none;
+  }
 }
 
 /* Muted laboratory labels still meet WCAG AA on every dark surface. */
@@ -2428,19 +2551,6 @@ input:-webkit-autofill:focus {
 
   .terminal-frame-body.landing-console-body {
     padding: 1rem;
-  }
-
-  .landing-console-command {
-    display: grid;
-  }
-
-  .landing-console-failure {
-    align-items: flex-start;
-  }
-
-  .landing-console-failure code {
-    min-width: 0;
-    overflow-wrap: anywhere;
   }
 
   .landing-console-footer {

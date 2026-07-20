@@ -120,3 +120,58 @@ test("landing and product routes remain responsive while the health API stays av
   }));
   expect(lowHeightOverflow.page).toBeLessThanOrEqual(lowHeightOverflow.viewport);
 });
+
+test("hero debugging demo auto-plays, exposes a working pause control, and stays static under reduced motion", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const toggle = page.getByRole("button", { name: "Pause debugging demo animation" });
+  await expect(toggle).toBeVisible();
+
+  // A concise, always-present static summary stands in for the aria-hidden,
+  // continuously-changing terminal content for assistive tech.
+  await expect(page.locator(".debug-demo .sr-only")).toHaveText(/pytest run on test_cursor_pagination\.py/);
+  await expect(page.locator(".debug-demo [aria-hidden='true']").first()).toBeVisible();
+
+  // The loop is genuinely mid-flight: capture the visible phase label, wait,
+  // and confirm it moved on its own — not merely a CSS animation replaying
+  // the same DOM content.
+  const phaseLabel = page.locator(".debug-demo-phase-label");
+  const before = await phaseLabel.textContent();
+  // The "typing" stage alone runs ~1.8s; wait past it so the phase label is
+  // guaranteed to have advanced at least once under real auto-play.
+  await page.waitForTimeout(2200);
+  const duringPlay = await phaseLabel.textContent();
+  expect(duringPlay).not.toBe(before);
+
+  // Pausing must be keyboard-operable and must actually halt the loop.
+  await toggle.focus();
+  await expect(toggle).toBeFocused();
+  await toggle.press("Enter");
+  await expect(page.getByRole("button", { name: "Play debugging demo animation" })).toBeVisible();
+  const paused = await phaseLabel.textContent();
+  await page.waitForTimeout(1200);
+  await expect(phaseLabel).toHaveText(paused ?? "");
+
+  await page.getByRole("button", { name: "Play debugging demo animation" }).click();
+  await expect(page.getByRole("button", { name: "Pause debugging demo animation" })).toBeVisible();
+
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
+test("hero debugging demo renders a static verified frame with no pause control under prefers-reduced-motion", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  await expect(page.getByRole("button", { name: /debugging demo animation/i })).toHaveCount(0);
+  await expect(page.locator(".debug-demo-phase-label")).toHaveText("VERIFY / PROOF SEALED");
+  await expect(page.locator(".debug-demo .sr-only")).toHaveText(/Re-running the suite passes all tests/);
+
+  const before = await page.locator(".debug-demo-footer").textContent();
+  await page.waitForTimeout(1200);
+  await expect(page.locator(".debug-demo-footer")).toHaveText(before ?? "");
+});

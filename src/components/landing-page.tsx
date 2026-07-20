@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 import { BrandLockup } from "@/components/brand-mark";
 import { DebuggingCaseFile } from "@/components/debugging-case-file";
-import { TerminalFrame } from "@/components/terminal-frame";
+import { DebuggingDemo } from "@/components/debugging-demo";
 import { Card } from "@/components/ui";
 
 const learningModes = [
@@ -87,41 +87,6 @@ function TraceTicker() {
             <em key={`b-${event}`}>{event}</em>
           ))}
         </span>
-      </div>
-    </div>
-  );
-}
-
-function HeroConsole() {
-  return (
-    <div className="landing-console" aria-label="Example FaultSmith evidence sequence">
-      <TerminalFrame
-        label="record_buffer.py · demonstration trace"
-        meta="DEMO-024"
-        bodyClassName="landing-console-body"
-      >
-        <div className="landing-console-command">
-          <span className="text-zinc-500">$</span> pytest -q
-          <strong className="text-red-300">5 passed · 1 failed</strong>
-        </div>
-        <div className="landing-console-failure">
-          <span>FAILED</span>
-          <code>test_trailing_record_is_preserved</code>
-        </div>
-        <div className="landing-console-code" aria-hidden="true">
-          <span><i>18</i> if record.is_complete():</span>
-          <span><i>19</i> &nbsp;&nbsp;emit(record)</span>
-        </div>
-        <ol className="landing-trace" aria-label="FaultSmith investigation stages">
-          <li><span>01</span><div><strong>Observe</strong><small>Trailing record disappears</small></div><i>captured</i></li>
-          <li><span>02</span><div><strong>Hypothesize</strong><small>Final buffer skips the emit path</small></div><i>reasoned</i></li>
-          <li><span>03</span><div><strong>Repair</strong><small>One causal branch changed</small></div><i>minimal</i></li>
-          <li className="is-verified"><span>04</span><div><strong>Verify</strong><small>Full focused suite passes</small></div><i>sealed</i></li>
-        </ol>
-      </TerminalFrame>
-      <div className="landing-console-footer">
-        <span><i className="bg-emerald-400" /> Repair verified</span>
-        <span>6 passed · 0 failed · 47ms</span>
       </div>
     </div>
   );
@@ -213,7 +178,7 @@ export function LandingPage() {
           <div className="landing-hero-visual motion-rise">
             <div className="landing-orbit landing-orbit-amber" aria-hidden="true" />
             <div className="landing-orbit landing-orbit-cyan" aria-hidden="true" />
-            <HeroConsole />
+            <DebuggingDemo />
           </div>
         </section>
 
