@@ -103,6 +103,21 @@ test("landing and product routes remain responsive while the health API stays av
     expect(overflow.page).toBeLessThanOrEqual(overflow.viewport);
   }
 
+  await page.goto("/");
+  const mobileNavigation = page.locator(".landing-nav-mobile");
+  const mobileNavigationTrigger = page.locator(".landing-nav-mobile-trigger");
+  await mobileNavigationTrigger.click();
+  await expect(mobileNavigation).toHaveAttribute("open", "");
+  await mobileNavigation.getByRole("link", { name: "Method", exact: true }).click();
+  await expect(page).toHaveURL(/#method$/);
+  await expect(mobileNavigation).not.toHaveAttribute("open", "");
+
+  await mobileNavigationTrigger.click();
+  await expect(mobileNavigation).toHaveAttribute("open", "");
+  await mobileNavigationTrigger.press("Escape");
+  await expect(mobileNavigation).not.toHaveAttribute("open", "");
+  await expect(mobileNavigationTrigger).toBeFocused();
+
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();

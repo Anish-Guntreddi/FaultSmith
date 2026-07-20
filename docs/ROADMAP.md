@@ -1,9 +1,9 @@
 # FaultSmith Roadmap and Direction Review
 
-**Last direction review:** July 19, 2026
+**Last direction review:** July 20, 2026
 **Locked track:** Education  
 **Locked primary demo:** Expense Approval boundary condition  
-**Current state:** Phase 01.1, the Forensic Workbench design, the isolated Debugging Case File motion pass, and the judge-facing public landing surface are complete locally. `/` now presents the product problem, method, learning system, and evidence boundaries; the complete guest-first product lives at `/learn`, with two-way navigation, distinct canonical/social metadata, generated social previews, and production smoke coverage for both surfaces. The complete local/emulator gate set passes with 281 unit/integration tests, 23 Firebase emulator-integration tests, 20 default browser tests, 16 Firebase-mode browser tests, production build, 24-artifact client-bundle scan, and zero-vulnerability audit. A private Firebase Spark project is configured and its sanitized automated real-project smoke passed 22/22 stages; Google popup/cancel/collision, real inbox links, clean-browser UI restoration, and the private credential-removal/cloud-off checkpoint remain pending human proof. Netlify deployment, live OpenAI proof, external UAT, recording, and final submission actions are still pending.
+**Current state:** Phase 01.1, the Forensic Workbench, the isolated Debugging Case File motion pass, and the judge-facing public landing surface are complete locally. The July 20 presentation polish adds a shared primitive layer, a looping but pausable fictional debugging trace, a one-shot Reasoning Bypass Circuit, consistent roadmap/progress instrumentation, and a development-only styleguide. `/` presents the problem, method, learning system, and evidence boundaries; the complete guest-first product lives at `/learn`. The current local/emulator gate set passes with 325 unit/integration tests, 23 Firebase emulator-integration tests, 24 default browser tests, 16 Firebase-mode browser tests, production build, 25-artifact client-bundle scan, fallback/production smoke, and a zero-vulnerability audit. A private Firebase Spark project is configured and its sanitized automated real-project smoke passed 22/22 stages; Google popup/cancel/collision, real inbox links, clean-browser UI restoration, and the private credential-removal/cloud-off checkpoint remain pending human proof. Netlify deployment, live OpenAI proof, external UAT, recording, and final submission actions are still pending.
 
 ## Completed milestones
 
@@ -25,6 +25,7 @@
 | Forensic Workbench design system | Locked visual principles/tokens in `docs/DESIGN_SYSTEM.md`; unified roadmap, skill practice, progress/account sync, workspace, validation, and both report states; Observe → Hypothesize → Repair → Verify rhythm; desktop/mobile visual review plus keyboard/axe/overflow gates green; no new dependency or remote asset |
 | Debugging Case File motion narrative | Presentation-only GSAP/ScrollTrigger split chunks dynamically load near one desktop explanatory section; native CSS-sticky scroll demonstrates the four-step investigation loop; mobile/reduced-motion/static fallbacks, teardown transitions, compositor-only properties, no-overflow, and bundle-leakage regressions pass; core practice and fixture fallback remain independent |
 | Public hackathon landing and route separation | Theme-consistent story at `/`; complete application at `/learn`; two-way routing, axe/console/desktop/mobile/low-height checks, route-specific canonical/Open Graph/Twitter metadata, code-generated social images, Netlify-origin validation, and production smoke for every public surface; fixture-leak regression prevents marketing content from exposing curated faults or answers |
+| Forensic Terminal presentation polish | Shared Button/Card/Badge/Field/SegmentedControl/StatDisplay/StatusDot primitives; polished landing, roadmap, skill practice, progress/account, workspace, and evidence surfaces; fictional pausable hero trace; one-shot reasoning-bypass schematic; reduced-motion/static fallbacks; development-only `/styleguide`; mobile menu closes on selection and Escape with focus restored; full quality/security gates green |
 
 ## Remaining PRD gaps requiring external action
 
@@ -47,12 +48,12 @@ These are intentionally not marked complete by local fallback evidence.
 - **Highest judging opportunity:** accurately show the zero-token guided curriculum, then—only after credentialed proof—show GPT emitting the exact approved live contract, Code Interpreter producing execution evidence, and deterministic policy controlling release.
 - **API-credit constraint:** live generation can require original and mutated executions, plus assessment. The fixture path allows unlimited rehearsal without spend.
 - **Curriculum boundary:** guided metadata must never contain hidden answers or become an alternate execution authority. Mitigation: lesson data references only public project-skill IDs; fixtures and assessments remain server-owned.
-- **Time constraint:** Phase 01.1 has a mandatory configuration-off rollback. If real Firebase identity, isolation, CSP, preview, or complete gates miss the July 20 cutoff, ship the local personalized dashboard on the last known-green baseline.
+- **Time constraint:** the local product/UI candidate is now frozen for presentation. If any remaining live Firebase, OpenAI, or deployment checkpoint fails, ship the last known-green guest-first build with cloud sync disabled and the validated fixture fallback intact.
 - **Competition access requirement:** the [official rules](https://openai.devpost.com/rules) require working project access through a website, functioning demo, or test build plus a public repository/video. For this browser application, a stable unauthenticated HTTPS deployment is the safest compliance path even though the rules do not name Vercel specifically.
 
 ## Recommended next milestone
 
-The local implementation, automated Firebase proof, public landing hook, Forensic Workbench design, and judge-facing motion narrative are ready. Next: complete the remaining human real-Firebase browser checks, privately omit/remove the credential file long enough to prove the canonical cloud-off/source-scan rollback, then run the separately credentialed OpenAI smoke. After explicit Netlify approval, configure `NEXT_PUBLIC_SITE_URL` plus platform controls, deploy a preview, run the expanded `/` + `/learn` + social-image + API production smoke, and complete five-person UAT. If any cloud checkpoint fails, disable sync through configuration and retain the local dashboard, fixture fallback, and validated learning loop.
+The local implementation and presentation candidate are ready. Next: rehearse the guest-first fixture workflow, complete the remaining human real-Firebase browser checks, privately omit/remove the credential file long enough to prove the canonical cloud-off/source-scan rollback, then run the separately credentialed OpenAI smoke. After explicit Netlify approval, configure `NEXT_PUBLIC_SITE_URL` plus platform controls, deploy a preview, run the expanded `/` + `/learn` + social-image + API production smoke, and complete five-person UAT. If any cloud checkpoint fails, disable sync through configuration and retain the local dashboard, fixture fallback, and validated learning loop.
 
 ## Explicitly deferred scope
 
@@ -67,8 +68,8 @@ The local implementation, automated Firebase proof, public landing hook, Forensi
 ## Judging-criteria direction review
 
 - **Technological implementation:** strongest when the validated GPT contract, sandbox boundary, deterministic override rule, and recovery states are demonstrated together.
-- **Design:** the locked Forensic Workbench and isolated Debugging Case File make the evidence → hypothesis → minimal repair → exact verification loop visible in both the working product and a memorable scroll narrative without premature answer leakage, scroll-jacking, or novelty-terminal effects.
+- **Design:** the locked Forensic Workbench, fictional live trace, Reasoning Bypass Circuit, and isolated Debugging Case File make the evidence → hypothesis → minimal repair → exact verification loop visible from hook to working product without premature answer leakage, scroll-jacking, or decorative motion that obscures content.
 - **Potential impact:** a reusable practice loop can turn passive tutorials into deliberate debugging exercises.
 - **Quality of idea:** the deliberate, validated failure is the differentiator; adding broad project ingestion before submission would weaken reliability and safety.
 
-Direction is aligned with the approved July 19 personalized-learning PRD amendment. No additional material product expansion is recommended before submission.
+Direction is aligned with the approved July 19 personalized-learning PRD amendment and the July 20 presentation design lock. No additional material product expansion is recommended before submission.

@@ -1,6 +1,6 @@
 # FaultSmith Testing and Quality Guide
 
-**Last full local checkpoint:** July 19, 2026 (public landing, `/learn` separation, and expanded production surface)
+**Last full local checkpoint:** July 20, 2026 (Forensic Terminal presentation polish and mobile navigation self-heal)
 **Environment:** macOS arm64, Node.js 24.9.0, npm 11.6.0, Next.js 16.2.10, Playwright 1.61.1, Chromium, Temurin JDK 24 for Firebase emulators  
 **External policy:** normal tests make no live OpenAI calls and never contact real Firebase
 
@@ -88,7 +88,20 @@ The judge-facing story is served at `/`; the complete learning application is se
 
 The expanded production smoke now rejects a deployment unless `/` contains the landing shell, `/learn` contains the distinct learning shell, both HTML routes carry the complete reviewed security-header set (including only `same-origin` or the reviewed Firebase/Google-popup `same-origin-allow-popups` COOP values), their canonical/Open Graph/Twitter image URLs are absolute and bound to the tested origin, both social-image routes return bounded PNGs, `/api/health` remains no-store, and the complete fallback API lifecycle passes.
 
-Final landing-candidate evidence: ESLint and TypeScript passed; 21 Vitest files / 281 tests passed; Firebase emulator integration passed 23/23; the Next.js build generated `/`, `/learn`, five challenge/health routes plus progress, and both social-image routes without warnings; the leakage scan passed 24 artifacts; the complete default browser gate passed 20/20 with 16 Firebase scenarios correctly skipped; the dedicated Firebase browser gate passed 16/16; production fallback and the expanded production surface smoke passed; audit found zero vulnerabilities. The ignored operator `.env.local` correctly blocks the direct source scan without printing values. An isolated copy of the exact current tree excluding only that private file passed the source/history scan across 200 working-tree files and all reachable history.
+Final presentation-candidate evidence: ESLint and TypeScript passed; 24 Vitest files / 325 tests passed; Firebase emulator integration passed 23/23; the Next.js build generated `/`, `/learn`, five challenge/health routes plus progress, both social-image routes, and the production-404 styleguide surface without warnings; the leakage scan passed 25 artifacts; the complete default browser gate passed 24/24 with 16 Firebase scenarios correctly skipped; the dedicated Firebase browser gate passed 16/16; production fallback and expanded production surface smoke passed; audit found zero vulnerabilities. The ignored operator `.env.local` correctly blocks the direct source scan without printing values, so the canonical direct scan remains a private credential-removal checkpoint. An isolated copy of the exact working tree excluding only that private file and generated artifacts passed the source/history scan across 993 files and 88 reachable commits.
+
+## Forensic Terminal presentation-polish checkpoint
+
+The July 20 handoff was reviewed as one presentation path rather than as isolated components: public hook → guided roadmap → skill practice → My Progress → fixture-backed lab. The final pass verified:
+
+- the hero's fictional debugging trace auto-plays, genuinely pauses, stops off-screen, and becomes a static verified frame under reduced motion;
+- the Reasoning Bypass Circuit plays once, exposes an explicit replay control, retains keyboard focus, and renders the complete end state without JavaScript or motion;
+- landing, roadmap, practice, progress/account, workspace, case-file, and evidence/report surfaces share the same tokens and component primitives;
+- 1440×900, 390×844, and 1280×600 layouts have no horizontal overflow or short-viewport sticky trap;
+- the mobile landing disclosure closes after a section selection, closes on Escape, and restores focus to its trigger;
+- axe checks, route round trips, generated metadata/images, validated fixture fallback, and production security headers remain green.
+
+Objective results: 325/325 Vitest, 23/23 Firebase emulator integration, 24/24 default Playwright, 16/16 Firebase-mode Playwright, production build, 25-artifact leakage scan, fallback/production smoke, isolated source/history scan (993 files / 88 commits), and zero vulnerabilities at the moderate audit threshold.
 
 The earlier Phase 2 run below is preserved as historical evidence:
 

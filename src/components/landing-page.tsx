@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { BrandLockup } from "@/components/brand-mark";
 import { DebuggingCaseFile } from "@/components/debugging-case-file";
 import { DebuggingDemo } from "@/components/debugging-demo";
+import { LandingMobileNav } from "@/components/landing-mobile-nav";
 import { ReasoningBypassFigure } from "@/components/reasoning-bypass-figure";
 import { Card } from "@/components/ui";
 
@@ -108,20 +109,10 @@ export function LandingPage() {
             <a href="#learning-system" className="focus-brackets">Learning system</a>
             <a href="#evidence" className="focus-brackets">Evidence</a>
           </div>
-          {/* Below 1024px .landing-nav-links is hidden; this disclosure is
-              the only way to reach in-page sections from the header on
-              tablet/phone. Native <details>/<summary> keeps it keyboard-
-              and screen-reader-operable with no client-side JavaScript. */}
-          <details className="landing-nav-mobile">
-            <summary className="landing-nav-mobile-trigger focus-brackets rounded-xl" aria-label="Open navigation menu">
-              <span className="landing-nav-mobile-icon" aria-hidden="true" />
-            </summary>
-            <div className="landing-nav-mobile-panel">
-              <a href="#method" className="focus-brackets">Method</a>
-              <a href="#learning-system" className="focus-brackets">Learning system</a>
-              <a href="#evidence" className="focus-brackets">Evidence</a>
-            </div>
-          </details>
+          {/* Below 1024px the desktop links are hidden; this native
+              disclosure keeps every story section reachable and closes
+              itself after selection so it never covers the destination. */}
+          <LandingMobileNav />
           <Link href="/learn" className="primary-action landing-nav-cta focus-brackets rounded-xl px-4 py-2.5 text-xs font-semibold">
             Open FaultSmith <ArrowIcon />
           </Link>

@@ -1,9 +1,9 @@
 # Public Landing Problem Statement Section — Design Brief
 
-**Status:** Implementation-ready design direction  
-**Surface:** Public landing page  
-**Target views:** 1440 × 900 and 390 × 844  
-**Source of truth:** `docs/DESIGN_SYSTEM.md` and the approved Forensic Terminal upgrade spec  
+**Status:** Implementation-ready design direction
+**Surface:** Public landing page
+**Target views:** 1440 × 900 and 390 × 844
+**Source of truth:** `docs/DESIGN_SYSTEM.md` and the approved Forensic Terminal upgrade spec
 **Implementation constraint:** Replace the current `landing-problem` content; do not add a second problem section.
 
 ## Decision at a glance
