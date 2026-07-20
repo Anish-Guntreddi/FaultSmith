@@ -293,7 +293,8 @@ button:disabled {
     transform var(--dur-fast) var(--ease-out),
     border-color var(--dur-base) var(--ease-out),
     background-color var(--dur-base) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out);
+    box-shadow var(--dur-base) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1643,40 +1644,51 @@ input:-webkit-autofill:focus {
   letter-spacing: 0.06em;
 }
 
-.workspace-status-line-stages {
+/* The footer intentionally shows only the *current* stage, not the full
+   Observe → Hypothesize → Repair → Verify list: that full four-stage view
+   already lives in the workflow rail above the columns. Repeating it here
+   would just be the same data in the same visual language a few lines of
+   eye-travel away; the footer's distinct job is a persistent one-line
+   callout of what stage the learner is on right now, plus the lesson id. */
+.workspace-status-line-current {
   display: flex;
-  flex-wrap: wrap;
+  min-width: 0;
   align-items: center;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 0.55em;
 }
 
-.workspace-status-line-stages li {
-  display: flex;
+.workspace-status-line-current-index {
+  display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
-  gap: 0.45em;
-  padding: 0.2rem 0.55rem;
+  justify-content: center;
   border-radius: 0.4rem;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.workspace-status-line-stages li + li::before {
-  margin-inline-end: 0.55rem;
-  color: #3d444c;
-  content: "→";
-}
-
-.workspace-status-line-stages li.is-complete {
-  color: var(--green);
-}
-
-.workspace-status-line-stages li.is-active {
+  padding: 0.2rem 0.5rem;
   background: var(--amber);
   color: #201404;
   font-weight: 700;
+}
+
+.workspace-status-line-current.is-complete .workspace-status-line-current-index {
+  background: var(--green);
+  color: #06170e;
+}
+
+.workspace-status-line-current-label {
+  flex: 0 0 auto;
+  color: #f3f0e8;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.workspace-status-line-current-note {
+  overflow: hidden;
+  min-width: 0;
+  color: #8e98a2;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .workspace-status-line-lesson {
@@ -1700,6 +1712,7 @@ input:-webkit-autofill:focus {
     justify-content: flex-start;
   }
 
+  .workspace-status-line-current,
   .workspace-status-line-lesson {
     width: 100%;
   }
@@ -1840,7 +1853,7 @@ input:-webkit-autofill:focus {
     display: none;
   }
 
-  .evidence-line {
+  .evidence-stream .evidence-line {
     animation: none;
     opacity: 1;
     transform: none;
@@ -2035,6 +2048,19 @@ input:-webkit-autofill:focus {
 
   .landing-console .terminal-frame-meta {
     display: none;
+  }
+
+  /* Unlike the landing/case-monitor demos above, the workspace evidence
+     frame's meta (pass/fail counts, timing) is real information the learner
+     needs, not decorative chrome — hiding it outright isn't acceptable here.
+     Wrap it onto its own row instead so the label gets room to breathe. */
+  .workspace-evidence-frame .terminal-frame-bar {
+    flex-wrap: wrap;
+    row-gap: 0.3rem;
+  }
+
+  .workspace-evidence-frame .terminal-frame-meta {
+    flex: 1 1 100%;
   }
 
   .terminal-frame-body.landing-console-body {

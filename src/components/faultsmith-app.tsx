@@ -948,14 +948,18 @@ function WorkspaceView(props: WorkspaceProps) {
       {(props.message || props.error) && <div role={props.error ? "alert" : "status"} className={`mb-3 rounded-xl border px-4 py-2.5 text-xs leading-5 ${props.error ? "border-red-400/15 bg-red-400/[0.05] text-red-300" : "border-amber-400/15 bg-amber-400/[0.04] text-amber-200"}`}>{props.error || props.message}</div>}
       <ol aria-label="Investigation workflow" className="workflow-rail mb-3 grid gap-px overflow-hidden rounded-xl sm:grid-cols-4">
         {investigationSteps.map((step, index) => (
-          <li key={step.label} className={`relative flex items-center gap-3 px-4 py-3 ${step.complete ? "bg-emerald-400/[0.035]" : "bg-white/[0.012]"}`}>
+          <li
+            key={step.label}
+            aria-current={index === activeStageIndex ? "step" : undefined}
+            className={`relative flex items-center gap-3 px-4 py-3 ${step.complete ? "bg-emerald-400/[0.035]" : "bg-white/[0.012]"}`}
+          >
             <span className={`font-instrument grid h-6 w-6 shrink-0 place-items-center rounded-full border text-[9px] ${step.complete ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-200" : "border-white/10 bg-black/20 text-zinc-500"}`}>{step.complete ? "✓" : index + 1}</span>
-            <span><span className="block text-xs font-semibold text-zinc-200">{step.label}</span><span className="font-instrument mt-0.5 block text-[9px] leading-4 text-zinc-500">{step.note}</span></span>
+            <span className="text-xs font-semibold text-zinc-200">{step.label}</span>
           </li>
         ))}
       </ol>
       <div className="grid gap-3 xl:grid-cols-[260px_minmax(0,1fr)_370px]">
-        <aside aria-label="Challenge overview" className="lab-panel overflow-hidden rounded-xl"><div className="instrument-label border-b border-white/7 px-4 py-3">Challenge brief</div><div className="p-4"><h2 className="text-sm font-semibold leading-5 text-zinc-100">{props.challenge.title}</h2><p className="mt-3 text-xs leading-5 text-zinc-500">{props.challenge.learnerBrief}</p><div className="evidence-well mt-5 rounded-lg p-3"><div className="instrument-label">Learning objective</div><div className="mt-1 text-xs leading-5 text-zinc-300">{props.challenge.learningObjective}</div></div></div><div className="instrument-label border-y border-white/7 px-4 py-3">Project files</div><div className="font-instrument p-2 text-xs">{props.challenge.files.map((file) => <button key={file.path} type="button" onClick={() => props.setActiveFile(file.path)} className={`mt-1 block w-full rounded-lg px-3 py-2 text-left transition ${file.path === selected?.path ? "bg-amber-400/[0.085] text-amber-200" : "text-zinc-600 hover:bg-white/[0.03] hover:text-zinc-300"}`}><span className="mr-2">{file.editable ? "◆" : "◇"}</span>{file.path}<span className="ml-2 text-[9px] uppercase text-zinc-400">{file.editable ? "editable" : "read only"}</span></button>)}</div></aside>
+        <aside aria-label="Challenge overview" className="lab-panel overflow-hidden rounded-xl"><div className="instrument-label border-b border-white/7 px-4 py-3">Challenge brief</div><div className="p-4"><h2 className="text-sm font-semibold leading-5 text-zinc-100">{props.challenge.title}</h2><p className="mt-3 text-xs leading-5 text-zinc-500">{props.challenge.learnerBrief}</p><div className="evidence-well mt-5 rounded-lg p-3"><div className="instrument-label">Learning objective</div><div className="mt-1 text-xs leading-5 text-zinc-300">{props.challenge.learningObjective}</div></div></div><div className="instrument-label border-y border-white/7 px-4 py-3">Project files</div><div className="font-instrument p-2 text-xs">{props.challenge.files.map((file) => <button key={file.path} type="button" onClick={() => props.setActiveFile(file.path)} className={`mt-1 flex w-full flex-col gap-1 rounded-lg px-3 py-2 text-left transition ${file.path === selected?.path ? "bg-amber-400/[0.085] text-amber-200" : "text-zinc-600 hover:bg-white/[0.03] hover:text-zinc-300"}`}><span className="flex min-w-0 items-center gap-2"><span aria-hidden="true">{file.editable ? "◆" : "◇"}</span><span className="min-w-0 truncate">{file.path}</span></span><span className="text-[9px] uppercase text-zinc-400">{file.editable ? "editable" : "read only"}</span></button>)}</div></aside>
         <section className="lab-panel min-w-0 overflow-hidden rounded-xl">
           <div className="flex items-center justify-between border-b border-white/7 bg-[#0e1318] px-4 py-2.5"><div className="font-instrument flex items-center gap-2 text-[10px] text-zinc-400"><span className={editable ? "text-amber-300" : "text-zinc-600"}>●</span>{selected?.path}<span className="text-zinc-700">{editable ? "editable" : "read only"}</span></div><div className="font-instrument text-[9px] text-cyan-200/65">Python 3.12</div></div>
           <textarea aria-label={editable ? "Python code editor" : `Read-only ${selected?.path}`} value={content} readOnly={!editable} onChange={(event) => updateCode(event.target.value)} spellCheck={false} className={`font-instrument h-[390px] w-full resize-none border-0 bg-[#080c10] p-5 text-[13px] leading-6 outline-none ${editable ? "text-zinc-300 focus:ring-2 focus:ring-inset focus:ring-amber-400/30" : "text-zinc-500"}`} />
@@ -973,7 +977,7 @@ function WorkspaceView(props: WorkspaceProps) {
           >
             <pre key={evidenceStreamKey} aria-label="Sanitized test output" className="font-instrument evidence-stream h-[220px] overflow-auto whitespace-pre-wrap p-4 text-[11px] leading-5 text-zinc-500">
               {evidenceLines.map((line, index) => (
-                <span key={index} className="evidence-line" style={{ animationDelay: `${Math.min(index, 24) * 26}ms` }}>
+                <span key={index} className="evidence-line" style={{ animationDelay: `${index * Math.min(35, 500 / evidenceLines.length)}ms` }}>
                   {line.length > 0 ? line : " "}
                 </span>
               ))}
@@ -1019,18 +1023,11 @@ function WorkspaceView(props: WorkspaceProps) {
         </aside>
       </div>
       <footer aria-label="Investigation status" className="workspace-status-line mt-3">
-        <ol className="workspace-status-line-stages">
-          {investigationSteps.map((step, index) => (
-            <li
-              key={step.label}
-              aria-current={index === activeStageIndex ? "step" : undefined}
-              className={index === activeStageIndex ? "is-active" : step.complete ? "is-complete" : undefined}
-            >
-              <span aria-hidden="true">{step.complete ? "✓" : String(index + 1).padStart(2, "0")}</span>
-              {step.label}
-            </li>
-          ))}
-        </ol>
+        <div className={`workspace-status-line-current${investigationSteps[activeStageIndex].complete ? " is-complete" : ""}`}>
+          <span aria-hidden="true" className="workspace-status-line-current-index">{investigationSteps[activeStageIndex].complete ? "✓" : String(activeStageIndex + 1).padStart(2, "0")}</span>
+          <span className="workspace-status-line-current-label">{investigationSteps[activeStageIndex].label}</span>
+          <span className="workspace-status-line-current-note">{investigationSteps[activeStageIndex].note}</span>
+        </div>
         <div className="workspace-status-line-lesson">
           <span className="workspace-status-line-lesson-key">lesson</span>
           <span>{props.challenge.projectId}/{props.challenge.targetSkill}</span>
