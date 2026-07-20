@@ -3130,6 +3130,95 @@ input:-webkit-autofill:focus {
   padding: 1rem;
 }
 
+.account-sync-callout {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(105, 208, 203, 0.24);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 11px, rgba(105, 208, 203, 0.018) 11px 12px),
+    #0c1116;
+  clip-path: polygon(0 0, calc(100% - 0.8rem) 0, 100% 0.8rem, 100% 100%, 0 100%);
+}
+
+.account-sync-callout::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.2rem;
+  background: var(--cyan);
+  content: "";
+}
+
+.account-sync-callout-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.1rem 1.25rem 1.1rem 1.4rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.account-sync-callout-summary::-webkit-details-marker {
+  display: none;
+}
+
+.account-sync-callout-copy {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.account-sync-callout-copy strong {
+  color: #e8e7e1;
+  font-size: 0.92rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.account-sync-callout-copy > span:last-child {
+  max-width: 52rem;
+  color: #858e97;
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
+.account-sync-callout-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #a9e8e4;
+  font-family: var(--font-instrument);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.account-sync-callout-action i {
+  display: grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  border: 1px solid rgba(105, 208, 203, 0.28);
+  font-size: 0.8rem;
+  font-style: normal;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.account-sync-callout[open] .account-sync-callout-action i {
+  transform: rotate(45deg);
+}
+
+.account-sync-callout-panel {
+  border-top: 1px solid rgba(105, 208, 203, 0.14);
+  padding: 1rem 1.25rem 0;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.account-sync-callout-panel > .ui-instrument-shell {
+  margin-bottom: 1rem;
+  box-shadow: none;
+}
+
 @media (max-width: 639px) {
   .ui-dossier {
     grid-template-columns: 2.75rem minmax(0, 1fr);
@@ -3164,6 +3253,20 @@ input:-webkit-autofill:focus {
 
   .phase-dossier-count {
     display: none;
+  }
+
+  .account-sync-callout-summary {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+    padding-inline: 1rem;
+  }
+
+  .account-sync-callout-action {
+    justify-content: space-between;
+  }
+
+  .account-sync-callout-panel {
+    padding-inline: 0.75rem;
   }
 }
 

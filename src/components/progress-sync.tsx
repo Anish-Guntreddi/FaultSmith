@@ -1046,3 +1046,36 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
     </Card>
   );
 }
+
+export function AccountSyncCallout({
+  sync,
+  context,
+}: {
+  sync: CloudProgressSync;
+  context: "lab" | "result";
+}) {
+  if (sync.configStatus !== "ready" || sync.auth.status === "signed_in") return null;
+
+  const title = context === "lab" ? "Keep this investigation with you" : "Keep your verified evidence";
+  const description = context === "lab"
+    ? "This attempt is already saved on this device. Create an account to back up verified lessons and carry personalized skill metrics to another device."
+    : "Your result is already safe on this device. Create an account to sync verified progress, recommendations, and personalized skill metrics across devices.";
+
+  return (
+    <details className="account-sync-callout mt-4">
+      <summary className="account-sync-callout-summary focus-brackets">
+        <span className="account-sync-callout-copy">
+          <span className="instrument-label text-cyan-200">Optional account · guest-first</span>
+          <strong>{title}</strong>
+          <span>{description}</span>
+        </span>
+        <span aria-hidden="true" className="account-sync-callout-action">
+          Create account or sign in <i>+</i>
+        </span>
+      </summary>
+      <div className="account-sync-callout-panel">
+        <ProgressSyncPanel sync={sync} />
+      </div>
+    </details>
+  );
+}

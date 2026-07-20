@@ -7,7 +7,7 @@ import { BrandLockup, BrandMark } from "@/components/brand-mark";
 import { DebuggingCaseFile } from "@/components/debugging-case-file";
 import { GuidedRoadmap } from "@/components/guided-roadmap";
 import { ProgressDashboard } from "@/components/progress-dashboard";
-import { useCloudProgressSync, type CloudProgressSync } from "@/components/progress-sync";
+import { AccountSyncCallout, useCloudProgressSync, type CloudProgressSync } from "@/components/progress-sync";
 import { TerminalFrame } from "@/components/terminal-frame";
 import { Badge, Button, Card, Dossier, ProcessRail, StatusDot as StatusDotPrimitive } from "@/components/ui";
 import { projects } from "@/lib/catalog";
@@ -758,6 +758,7 @@ export function FaultSmithApp() {
           requestState={requestState}
           message={message}
           error={error}
+          cloudSync={cloudSync}
         />
       )}
       {stage === "report" && challenge && assessment && (
@@ -766,6 +767,7 @@ export function FaultSmithApp() {
           response={assessment}
           guidedStep={activeLearningStep}
           learningProgress={learningProgress}
+          cloudSync={cloudSync}
           onPracticeAgain={resetLab}
           onNewLab={chooseNewLab}
         />
@@ -905,6 +907,7 @@ type WorkspaceProps = {
   revealedHints: string[];
   revealHint: () => void; onSubmit: () => void; onReset: () => void;
   requestState: RequestState; message: string; error: string;
+  cloudSync: CloudProgressSync;
 };
 
 function WorkspaceView(props: WorkspaceProps) {
@@ -994,6 +997,7 @@ function WorkspaceView(props: WorkspaceProps) {
             <label className="block">
               <span className="mb-2 block text-xs font-medium text-zinc-300">Current hypothesis</span>
               <textarea value={props.hypothesis} onChange={(event) => props.setHypothesis(event.target.value)} placeholder="What do you think is causing the failure?" className="evidence-well h-24 w-full resize-none rounded-xl p-3 text-xs leading-5 text-zinc-300 outline-none placeholder:text-zinc-700" />
+              <span className="mt-2 block text-[10px] leading-4 text-zinc-600">Guided labs use a deterministic causal rubric: identify the failed condition, explain why it produced the evidence, and revise when the evidence changes.</span>
             </label>
             <div>
               <div className="mb-2 flex items-center justify-between">
@@ -1046,6 +1050,7 @@ function WorkspaceView(props: WorkspaceProps) {
           <span>{difficultyLabel(props.challenge.difficulty)}</span>
         </div>
       </footer>
+      <AccountSyncCallout sync={props.cloudSync} context="lab" />
     </div>
   );
 }
@@ -1055,6 +1060,7 @@ function ReportView({
   response,
   guidedStep,
   learningProgress,
+  cloudSync,
   onPracticeAgain,
   onNewLab,
 }: {
@@ -1062,6 +1068,7 @@ function ReportView({
   response: AssessmentResponse;
   guidedStep?: LearningStep;
   learningProgress: LearningProgress;
+  cloudSync: CloudProgressSync;
   onPracticeAgain: () => void;
   onNewLab: () => void;
 }) {
@@ -1140,6 +1147,7 @@ function ReportView({
             </div>
           </Card>
         )}
+        <AccountSyncCallout sync={cloudSync} context="result" />
         <Card variant="panel" padding="md" className="mt-5 text-center text-xs text-zinc-500"><span className="font-medium text-zinc-300">Practice next:</span> {result.nextPracticeRecommendation}</Card>
         <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
           <Button variant="secondary" size="md" onClick={onPracticeAgain}>Practice this lab again</Button>

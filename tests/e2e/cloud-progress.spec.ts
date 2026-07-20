@@ -178,6 +178,54 @@ test.describe("cloud progress in Firebase emulator mode", () => {
     await expect(page.getByText("On this device", { exact: true }).first()).toBeVisible();
   });
 
+  test("guest labs explain local saving and offer account-backed personalized metrics", async ({ page }) => {
+    await openSeeded(page);
+    await page.getByRole("button", { name: "Start guided lab", exact: false }).click();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "The missing exact-threshold approval" }),
+    ).toBeVisible();
+
+    const labCallout = page.locator("details.account-sync-callout").filter({
+      hasText: "Keep this investigation with you",
+    });
+    await expect(labCallout).toBeVisible();
+    await expect(labCallout).toContainText("already saved on this device");
+    await expect(labCallout).toContainText("personalized skill metrics");
+
+    const disclosure = labCallout.locator("summary");
+    await expect(disclosure).toHaveCount(1);
+    await disclosure.click();
+    await expect(labCallout.getByRole("button", { name: "Create account", exact: true })).toBeVisible();
+    await expect(labCallout.getByRole("button", { name: "Continue with Google", exact: true })).toBeVisible();
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const viewportWidth = await page.evaluate(() => ({
+      documentWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+    }));
+    expect(viewportWidth.documentWidth).toBeLessThanOrEqual(viewportWidth.viewportWidth);
+
+    await page.getByRole("textbox", { name: "Current hypothesis" }).fill(
+      "The exact threshold is excluded because the boundary comparison is strict.",
+    );
+    const editor = page.getByRole("textbox", { name: "Python code editor" });
+    await editor.fill((await editor.inputValue()).replace("expense.amount > 500", "expense.amount >= 500"));
+    await page.getByRole("textbox", { name: "Root-cause explanation" }).fill(
+      "The strict comparison excluded exactly $500. Restoring the inclusive boundary fixes that case.",
+    );
+    await page.getByRole("button", { name: "Submit patch + reasoning" }).click();
+    await expect(page.getByRole("heading", { name: "You proved the fix, not just the outcome." })).toBeVisible({
+      timeout: 20_000,
+    });
+
+    const resultCallout = page.locator("details.account-sync-callout").filter({
+      hasText: "Keep your verified evidence",
+    });
+    await expect(resultCallout).toBeVisible();
+    await expect(resultCallout).toContainText("recommendations, and personalized skill metrics");
+  });
+
   test("password creation enforces confirm match and the password policy", async ({ page }) => {
     await openSeeded(page);
     await openMyProgress(page);
