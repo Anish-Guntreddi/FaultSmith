@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 
-import { Badge, Button, Card } from "@/components/ui";
+import { Badge, Button, Dossier, ProcessRail } from "@/components/ui";
 import { getProject } from "@/lib/catalog";
 import {
   getLearningRecommendation,
@@ -67,23 +67,30 @@ export function GuidedRoadmap({
           <h2 id="guided-roadmap-heading" className="mt-1.5 text-2xl font-semibold tracking-[-0.03em] text-white">Your debugging roadmap</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">Nine validated labs build the habit of reading evidence, forming a hypothesis, and proving the smallest repair before asking AI for an answer.</p>
         </div>
-        <Card variant="evidence-well" padding="none" className="min-w-56">
+        <div className="roadmap-meter min-w-56" aria-label={`${completeCount} of 9 lessons verified`}>
           <div className="px-4 py-3">
             <div className="flex items-center justify-between text-xs"><span className="text-zinc-400">Roadmap progress</span><span className="font-instrument tabular-nums font-semibold text-emerald-300">{completeCount}/9 verified</span></div>
-            <div className="block-meter mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/6"><div className="progress-fill h-full rounded-full bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" style={{ "--progress": completeCount / learningSteps.length } as CSSProperties} /></div>
+            <div className="roadmap-meter-track mt-2.5"><div className="progress-fill h-full bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" style={{ "--progress": completeCount / learningSteps.length } as CSSProperties} /></div>
           </div>
-        </Card>
+        </div>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
         <div className="space-y-4">
           {learningPhases.map((phase) => (
-            <section key={phase.id} aria-labelledby={`${phase.id}-heading`} className="lab-panel relative overflow-hidden rounded-2xl p-4 sm:p-5">
-              <div aria-hidden="true" className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-amber-300/55 via-cyan-300/15 to-transparent" />
-              <div className="flex gap-3">
-                <span className="font-instrument grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-amber-400/20 bg-amber-400/[0.055] text-xs font-semibold text-amber-200">0{phase.order}</span>
-                <div><h3 id={`${phase.id}-heading`} className="text-base font-semibold tracking-[-0.015em] text-zinc-100">{phase.title}</h3><p className="mt-1 text-xs leading-5 text-zinc-500">{phase.description}</p></div>
+            <Dossier
+              key={phase.id}
+              as="section"
+              index={`0${phase.order}`}
+              tone={phase.order === 1 ? "amber" : phase.order === 2 ? "cyan" : "green"}
+              aria-labelledby={`${phase.id}-heading`}
+              className="phase-dossier"
+            >
+              <div className="phase-dossier-header">
+                <div><span className="instrument-label">Curriculum phase {phase.order}</span><h3 id={`${phase.id}-heading`} className="mt-1 text-base font-semibold tracking-[-0.015em] text-zinc-100">{phase.title}</h3></div>
+                <span aria-hidden="true" className="phase-dossier-count">03 labs</span>
               </div>
+              <p className="mt-1 text-xs leading-5 text-zinc-500">{phase.description}</p>
               <div className="mt-4 grid gap-2 md:grid-cols-3">
                 {phase.steps.map((step) => {
                   const status = lessonStatus(progress, step);
@@ -103,12 +110,12 @@ export function GuidedRoadmap({
                       type="button"
                       aria-pressed={selectedLesson}
                       onClick={() => onSelectStep(step.id)}
-                      className={`lesson-card focus-brackets min-h-32 rounded-xl border p-3 text-left focus-visible:outline-none ${
+                      className={`lesson-record focus-brackets min-h-32 p-3 text-left focus-visible:outline-none ${
                         isActiveSelection
-                          ? "border-amber-400/45 bg-[linear-gradient(145deg,rgba(242,184,75,0.09),rgba(255,255,255,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]"
+                          ? "lesson-record-active"
                           : isLockedSelection
-                            ? "border-white/30 bg-white/[0.035] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                            : "border-white/7 bg-black/15 hover:border-cyan-200/20 hover:bg-white/[0.025]"
+                            ? "lesson-record-locked-selected"
+                            : "lesson-record-idle"
                       }`}
                     >
                       <div className="font-instrument flex items-center justify-between gap-2 text-[9px] uppercase tracking-[0.12em]">
@@ -129,11 +136,18 @@ export function GuidedRoadmap({
                   );
                 })}
               </div>
-            </section>
+            </Dossier>
           ))}
         </div>
 
-        <Card as="aside" aria-label="Selected guided lesson" variant="raised" padding="lg" className="self-start xl:sticky xl:top-24">
+        <Dossier
+          as="aside"
+          index={`L${String(selected.order).padStart(2, "0")}`}
+          tone={selectedState === "Complete" ? "green" : selectedState === "Ready" ? "amber" : "neutral"}
+          active={selectedUnlocked}
+          aria-label="Selected guided lesson"
+          className="selected-lesson-dossier self-start xl:sticky xl:top-24"
+        >
           <div className="flex items-center justify-between gap-3">
             <span className="instrument-label">Lesson {selected.order} of 9</span>
             <Badge variant="neutral" glyph="·">{selected.category}</Badge>
@@ -147,24 +161,26 @@ export function GuidedRoadmap({
           </div>
           <p className="mt-2 text-xs leading-5 text-zinc-500">{project?.title} · {selected.difficulty.charAt(0).toUpperCase() + selected.difficulty.slice(1)}</p>
 
-          <div className="mt-5 rounded-xl border border-amber-400/12 bg-amber-400/[0.04] p-4">
+          <div className="concept-record mt-5">
             <div className="instrument-label text-amber-300">Concept guide</div>
             <p className="mt-2 text-xs leading-5 text-zinc-300">{selected.conceptGuide}</p>
           </div>
 
           <div className="mt-5">
             <div className="instrument-label">Investigation loop</div>
-            <ol className="mt-3 space-y-2">
-              {selected.investigationChecklist.map((item, index) => <li key={item} className="flex gap-3 text-xs leading-5 text-zinc-400"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/5 text-[10px] text-zinc-300">{index + 1}</span><span>{item}</span></li>)}
-            </ol>
+            <ProcessRail
+              compact
+              className="mt-3"
+              steps={selected.investigationChecklist.map((item, index) => ({ number: `0${index + 1}`, title: item }))}
+            />
           </div>
 
-          <Card variant="inset" padding="md" className="mt-5">
+          <div className="selected-success-signal mt-5">
             <div className="instrument-label">Success signal</div>
             <p className="mt-2 text-xs leading-5 text-zinc-300">{selected.successSignal}</p>
-          </Card>
+          </div>
 
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-400/14 bg-emerald-400/[0.04] px-3 py-2.5 text-[11px] leading-4 text-emerald-200"><span aria-hidden="true">✓</span><span>Prevalidated lab · no API credits required</span></div>
+          <div className="selected-validation-stamp mt-4"><span aria-hidden="true">✓</span><span>Prevalidated lab · no API credits required</span></div>
           {!selectedUnlocked && <p className="mt-3 text-xs leading-5 text-zinc-500">Complete the previous lesson to unlock this lab. You can still preview its guide now.</p>}
           <Button
             variant="primary"
@@ -176,7 +192,7 @@ export function GuidedRoadmap({
             {selectedComplete ? "Practice lesson again" : "Start guided lab"} <span aria-hidden="true">→</span>
           </Button>
           <p className="mt-3 text-center text-[10px] leading-4 text-zinc-500">{recommendation.reason}</p>
-        </Card>
+        </Dossier>
       </div>
     </section>
   );

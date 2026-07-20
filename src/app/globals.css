@@ -172,6 +172,308 @@ button:disabled {
   box-shadow: inset 0 1px 8px rgba(0, 0, 0, 0.22);
 }
 
+/* Authored forensic primitives ------------------------------------------------
+   These are deliberately not another family of rounded cards. Dossier shells
+   use cut corners and registration marks; rails expose order and state as part
+   of the silhouette, so the UI still reads as FaultSmith in monochrome. */
+.ui-dossier {
+  --dossier-accent: #8e98a2;
+  --dossier-accent-rgb: 142, 152, 162;
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid rgba(var(--dossier-accent-rgb), 0.28);
+  background:
+    linear-gradient(115deg, rgba(var(--dossier-accent-rgb), 0.065), transparent 31%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 42%),
+    #0e1318;
+  box-shadow: 0 22px 65px rgba(0, 0, 0, 0.24);
+  clip-path: polygon(0 0, calc(100% - 1.1rem) 0, 100% 1.1rem, 100% 100%, 0.8rem 100%, 0 calc(100% - 0.8rem));
+}
+
+.ui-dossier::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-left: 1px solid rgba(var(--dossier-accent-rgb), 0.34);
+  content: "";
+  transform: rotate(-45deg) translate(-0.05rem, -0.25rem);
+  transform-origin: left top;
+}
+
+.ui-dossier-amber {
+  --dossier-accent: var(--amber);
+  --dossier-accent-rgb: 242, 184, 75;
+}
+
+.ui-dossier-cyan {
+  --dossier-accent: var(--cyan);
+  --dossier-accent-rgb: 105, 208, 203;
+}
+
+.ui-dossier-green {
+  --dossier-accent: var(--green);
+  --dossier-accent-rgb: 112, 214, 158;
+}
+
+.ui-dossier-active {
+  border-color: rgba(var(--dossier-accent-rgb), 0.54);
+  box-shadow: 0 0 0 1px rgba(var(--dossier-accent-rgb), 0.09), 0 22px 65px rgba(0, 0, 0, 0.28);
+}
+
+.ui-dossier-rail {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid rgba(var(--dossier-accent-rgb), 0.2);
+  padding: 1.1rem 0.65rem 0.85rem;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 7px, rgba(var(--dossier-accent-rgb), 0.055) 7px 8px),
+    rgba(var(--dossier-accent-rgb), 0.035);
+}
+
+.ui-dossier-index {
+  color: var(--dossier-accent);
+  font-family: var(--font-instrument);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.ui-dossier-axis {
+  width: 1px;
+  flex: 1;
+  margin-block: 0.8rem;
+  background: linear-gradient(to bottom, rgba(var(--dossier-accent-rgb), 0.55), rgba(var(--dossier-accent-rgb), 0.05));
+}
+
+.ui-dossier-axis::before,
+.ui-dossier-axis::after {
+  display: block;
+  width: 0.45rem;
+  height: 1px;
+  margin-left: -0.2rem;
+  background: rgba(var(--dossier-accent-rgb), 0.7);
+  content: "";
+}
+
+.ui-dossier-axis::after {
+  margin-top: calc(100% - 1px);
+}
+
+.ui-dossier-stamp {
+  color: rgba(var(--dossier-accent-rgb), 0.62);
+  font-family: var(--font-instrument);
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+  writing-mode: vertical-rl;
+}
+
+.ui-dossier-body {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding: 1.4rem 1.5rem 1.5rem;
+}
+
+.ui-dossier-register {
+  position: absolute;
+  top: 0.28rem;
+  left: 1.5rem;
+  overflow: hidden;
+  width: calc(100% - 3.5rem);
+  color: rgba(var(--dossier-accent-rgb), 0.3);
+  font-family: var(--font-instrument);
+  font-size: 0.42rem;
+  letter-spacing: 0.72em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ui-evidence-ledger {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: evidence;
+}
+
+.ui-evidence-record {
+  --record-accent: var(--amber);
+  --record-accent-rgb: 242, 184, 75;
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 3.6rem minmax(0, 1fr) auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.35rem 0;
+}
+
+.ui-evidence-record:last-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ui-evidence-record::before {
+  position: absolute;
+  inset: -1px auto auto 0;
+  width: clamp(4rem, 22%, 8rem);
+  height: 1px;
+  background: linear-gradient(90deg, var(--record-accent), transparent);
+  content: "";
+}
+
+.ui-evidence-record-cyan {
+  --record-accent: var(--cyan);
+  --record-accent-rgb: 105, 208, 203;
+}
+
+.ui-evidence-record-green {
+  --record-accent: var(--green);
+  --record-accent-rgb: 112, 214, 158;
+}
+
+.ui-evidence-record-index {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+  color: var(--record-accent);
+  font-family: var(--font-instrument);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.ui-evidence-record-index i {
+  display: block;
+  width: 1.5rem;
+  height: 0.34rem;
+  background: repeating-linear-gradient(90deg, rgba(var(--record-accent-rgb), 0.7) 0 1px, transparent 1px 4px);
+}
+
+.ui-evidence-record-copy h3 {
+  margin: 0;
+  color: #f0eee8;
+  font-size: 0.96rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.ui-evidence-record-copy p {
+  max-width: 34rem;
+  margin: 0.45rem 0 0;
+  color: #818a93;
+  font-size: 0.76rem;
+  line-height: 1.65;
+}
+
+.ui-evidence-record-signal {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+  color: rgba(var(--record-accent-rgb), 0.9);
+  font-family: var(--font-instrument);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-evidence-record-seal {
+  align-self: start;
+  margin-left: 1rem;
+  border: 1px solid rgba(var(--record-accent-rgb), 0.24);
+  padding: 0.3rem 0.45rem;
+  color: rgba(var(--record-accent-rgb), 0.78);
+  font-family: var(--font-instrument);
+  font-size: 0.45rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  transform: rotate(2deg);
+}
+
+.ui-process-rail {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-process-rail li {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 2.35rem minmax(0, 1fr);
+  gap: 0.7rem;
+  padding: 0 0 1rem;
+}
+
+.ui-process-rail li:not(:last-child)::after {
+  position: absolute;
+  top: 1.55rem;
+  bottom: 0.15rem;
+  left: 1.15rem;
+  width: 1px;
+  background: linear-gradient(var(--amber), rgba(242, 184, 75, 0.12));
+  content: "";
+}
+
+.ui-process-node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 2.35rem;
+  height: 1.55rem;
+  place-items: center;
+  border: 1px solid rgba(242, 184, 75, 0.34);
+  background: #10151b;
+  color: var(--amber);
+  font-family: var(--font-instrument);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  clip-path: polygon(0 0, calc(100% - 0.35rem) 0, 100% 0.35rem, 100% 100%, 0 100%);
+}
+
+.ui-process-title {
+  color: #d8d7d2;
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.ui-process-note {
+  margin-top: 0.15rem;
+  color: #747d86;
+  font-size: 0.64rem;
+  line-height: 1.5;
+}
+
+.ui-process-rail-compact li {
+  grid-template-columns: 1.9rem minmax(0, 1fr);
+  gap: 0.65rem;
+  padding-bottom: 0.8rem;
+}
+
+.ui-process-rail-compact .ui-process-node {
+  width: 1.9rem;
+  height: 1.35rem;
+  font-size: 0.5rem;
+}
+
+.ui-process-rail-compact li:not(:last-child)::after {
+  top: 1.35rem;
+  left: 0.92rem;
+}
+
 .mode-switcher {
   display: inline-flex;
   max-width: 100%;
@@ -2485,6 +2787,386 @@ input:-webkit-autofill:focus {
   );
 }
 
+/* Forensic dossier applications -------------------------------------------- */
+.landing-learning-dossier {
+  min-height: 24rem;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.landing-learning-dossier .ui-dossier-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-dossier-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.landing-dossier-code {
+  color: rgba(var(--dossier-accent-rgb), 0.58);
+  font-family: var(--font-instrument);
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+}
+
+.landing-learning-dossier h3 {
+  max-width: 18rem;
+  margin-top: 3.75rem;
+  color: #ece9e2;
+  font-size: 1.45rem;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+
+.landing-learning-dossier p {
+  margin-top: 1rem;
+  color: #9ba3aa;
+  font-size: 0.8rem;
+  line-height: 1.75;
+}
+
+.landing-dossier-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: auto;
+  border-top: 1px dashed rgba(var(--dossier-accent-rgb), 0.22);
+  padding-top: 1rem;
+  color: rgba(var(--dossier-accent-rgb), 0.82);
+  font-family: var(--font-instrument);
+  font-size: 0.58rem;
+  line-height: 1.5;
+}
+
+.landing-problem-bridge .ui-dossier-body {
+  padding: 1.1rem 1.25rem 1.2rem;
+}
+
+.landing-evidence-ledger {
+  align-self: stretch;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ui-dossier-cyan.fine-hover-lift:hover {
+    border-color: rgba(105, 208, 203, 0.44);
+  }
+
+  .ui-dossier-green.fine-hover-lift:hover {
+    border-color: rgba(112, 214, 158, 0.4);
+  }
+}
+
+.roadmap-meter {
+  position: relative;
+  border: 1px solid rgba(112, 214, 158, 0.2);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 9px, rgba(112, 214, 158, 0.035) 9px 10px),
+    rgba(5, 8, 11, 0.62);
+  clip-path: polygon(0 0, calc(100% - 0.7rem) 0, 100% 0.7rem, 100% 100%, 0 100%);
+}
+
+.roadmap-meter::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-left: 1px solid rgba(112, 214, 158, 0.28);
+  content: "";
+  transform: rotate(-45deg) translate(-0.05rem, -0.2rem);
+  transform-origin: left top;
+}
+
+.roadmap-meter-track,
+.release-record-track {
+  position: relative;
+  height: 0.3rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.roadmap-meter-track::after,
+.release-record-track::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: repeating-linear-gradient(90deg, transparent 0 8px, #080a0d 8px 10px);
+}
+
+.phase-dossier .ui-dossier-body {
+  padding: 1.15rem 1.25rem 1.25rem;
+}
+
+.phase-dossier-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.phase-dossier-count {
+  border-bottom: 1px solid rgba(var(--dossier-accent-rgb), 0.3);
+  padding-bottom: 0.25rem;
+  color: rgba(var(--dossier-accent-rgb), 0.72);
+  font-family: var(--font-instrument);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.lesson-record {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(3, 6, 9, 0.34);
+  clip-path: polygon(0 0, calc(100% - 0.55rem) 0, 100% 0.55rem, 100% 100%, 0 100%);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.lesson-record::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.18rem;
+  background: rgba(255, 255, 255, 0.08);
+  content: "";
+}
+
+.lesson-record::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 0.24rem;
+  background: repeating-linear-gradient(90deg, transparent 0 7px, rgba(255, 255, 255, 0.08) 7px 8px);
+  content: "";
+}
+
+.lesson-record-active {
+  border-color: rgba(242, 184, 75, 0.44);
+  background: linear-gradient(145deg, rgba(242, 184, 75, 0.1), rgba(255, 255, 255, 0.012));
+  box-shadow: inset 0.18rem 0 0 rgba(242, 184, 75, 0.62);
+}
+
+.lesson-record-active::before {
+  background: var(--amber);
+}
+
+.lesson-record-locked-selected {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lesson-record-idle:hover {
+    border-color: rgba(105, 208, 203, 0.28);
+    background: rgba(105, 208, 203, 0.035);
+    transform: translateY(-2px);
+  }
+}
+
+.lesson-record:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.selected-lesson-dossier .ui-dossier-body {
+  padding: 1.35rem 1.4rem 1.5rem;
+}
+
+.concept-record,
+.selected-success-signal,
+.release-record {
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1rem 1rem 1rem 1.2rem;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 10px);
+}
+
+.concept-record::before,
+.selected-success-signal::before,
+.release-record::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.18rem;
+  background: var(--amber);
+  content: "";
+}
+
+.selected-success-signal::before,
+.release-record::before {
+  background: var(--green);
+}
+
+.selected-validation-stamp {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px dashed rgba(112, 214, 158, 0.3);
+  padding: 0.65rem 0.8rem;
+  color: #9fe6bb;
+  font-family: var(--font-instrument);
+  font-size: 0.58rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+  transform: rotate(-0.35deg);
+}
+
+.workflow-rail {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 0.8rem) 0, 100% 0.8rem, 100% 100%, 0 100%);
+}
+
+.mode-switcher {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 0.55rem) 0, 100% 0.55rem, 100% 100%, 0 100%);
+}
+
+.mode-tab {
+  border-radius: 0;
+}
+
+.specimen-slab {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 11px, rgba(255, 255, 255, 0.015) 11px 12px),
+    #0e1318;
+  clip-path: polygon(0 0, calc(100% - 0.9rem) 0, 100% 0.9rem, 100% 100%, 0.75rem 100%, 0 calc(100% - 0.75rem));
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.specimen-slab::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.22rem;
+  background: rgba(255, 255, 255, 0.1);
+  content: "";
+}
+
+.specimen-slab-active {
+  border-color: rgba(242, 184, 75, 0.48);
+  box-shadow: inset 0.22rem 0 0 var(--amber), 0 20px 55px rgba(0, 0, 0, 0.28);
+}
+
+.specimen-slab-index {
+  position: absolute;
+  right: 1.2rem;
+  bottom: 3.65rem;
+  color: rgba(255, 255, 255, 0.05);
+  font-family: var(--font-instrument);
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: -0.08em;
+}
+
+.specimen-ready-stamp {
+  border: 1px dashed rgba(112, 214, 158, 0.3);
+  padding: 0.26rem 0.42rem;
+  color: #8de2ae;
+  font-family: var(--font-instrument);
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.specimen-slab-footer {
+  position: absolute;
+  inset: auto 1.25rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-top: 0.8rem;
+  color: #68717a;
+  font-family: var(--font-instrument);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.forge-config-dossier .ui-dossier-body {
+  padding: 1.35rem 1.4rem 1.5rem;
+}
+
+.instrument-select {
+  border: 1px solid rgba(105, 208, 203, 0.18);
+  border-radius: 0;
+  background: rgba(4, 7, 10, 0.66);
+  clip-path: polygon(0 0, calc(100% - 0.45rem) 0, 100% 0.45rem, 100% 100%, 0 100%);
+}
+
+.instrument-option-grid {
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.instrument-option {
+  border: 0;
+  background: #0b0f13;
+  color: #737c85;
+  transition: background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+}
+
+.instrument-option[aria-pressed="true"] {
+  background: linear-gradient(145deg, rgba(242, 184, 75, 0.13), #10151b);
+  color: #f4ce85;
+  box-shadow: inset 0 -2px 0 var(--amber);
+}
+
+.release-record {
+  padding: 1rem;
+}
+
+@media (max-width: 639px) {
+  .ui-dossier {
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+  }
+
+  .ui-dossier-rail {
+    padding-inline: 0.45rem;
+  }
+
+  .ui-dossier-body,
+  .phase-dossier .ui-dossier-body,
+  .selected-lesson-dossier .ui-dossier-body,
+  .forge-config-dossier .ui-dossier-body {
+    padding-inline: 1rem;
+  }
+
+  .landing-learning-dossier {
+    min-height: 20rem;
+  }
+
+  .landing-learning-dossier h3 {
+    margin-top: 2.5rem;
+  }
+
+  .ui-evidence-record {
+    grid-template-columns: 2.7rem minmax(0, 1fr);
+  }
+
+  .ui-evidence-record-seal {
+    display: none;
+  }
+
+  .phase-dossier-count {
+    display: none;
+  }
+}
+
 /* Destructive account/data action: same state vocabulary as
    .primary-action/.instrument-action (default/hover/active/disabled),
    red per the Forensic Workbench color grammar's failure/destructive
@@ -2598,6 +3280,40 @@ input:-webkit-autofill:focus {
 .ui-card-inset {
   border: 1px solid rgba(255, 255, 255, 0.07);
   background: rgba(0, 0, 0, 0.2);
+}
+
+.ui-instrument-shell {
+  position: relative;
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 0.85rem) 0, 100% 0.85rem, 100% 100%, 0 100%);
+}
+
+.ui-instrument-shell::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  content: "";
+  pointer-events: none;
+  transform: rotate(-45deg) translate(-0.04rem, -0.2rem);
+  transform-origin: left top;
+}
+
+.ui-instrument-shell-raised::after {
+  border-left-color: rgba(242, 184, 75, 0.34);
+}
+
+.ui-evidence-well {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 0.45rem) 0, 100% 0.45rem, 100% 100%, 0 100%);
+}
+
+.ui-inset-record {
+  position: relative;
+  border-radius: 0;
+  border-left-color: rgba(105, 208, 203, 0.24);
 }
 
 /* Card: header/footer slot dividers. */

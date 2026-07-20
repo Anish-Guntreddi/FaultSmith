@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { lstatSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -227,10 +227,16 @@ function workingTreeFiles(directory, scanRoot) {
   return files;
 }
 
-function trackedWorkingTreeFiles() {
-  return git(["ls-files", "-z"])
+function repositoryWorkingTreeFiles() {
+  // Scan everything that could enter a commit: tracked files plus untracked
+  // files not excluded by .gitignore. Local credential stores such as
+  // .env.local are intentionally ignored and therefore stay usable for live
+  // verification without making the source gate permanently red. A tracked
+  // ignored file is still returned by --cached and remains fully inspected.
+  return git(["ls-files", "--cached", "--others", "--exclude-standard", "-z"])
     .split("\0")
     .filter(Boolean)
+    .filter((path) => existsSync(resolve(repositoryRoot, path)))
     .map((path) => {
       const absolutePath = resolve(repositoryRoot, path);
       const stats = lstatSync(absolutePath);
@@ -292,14 +298,10 @@ function candidateHistoryPaths(commit) {
 export function scanWorkingTree(scanRoot = repositoryRoot) {
   const findings = [];
   let inspectedFiles = 0;
-  const entries = workingTreeFiles(scanRoot, scanRoot);
-
-  if (scanRoot === repositoryRoot) {
-    const knownPaths = new Set(entries.map(({ path }) => path));
-    for (const entry of trackedWorkingTreeFiles()) {
-      if (!knownPaths.has(entry.path)) entries.push(entry);
-    }
-  }
+  const entries =
+    scanRoot === repositoryRoot
+      ? repositoryWorkingTreeFiles()
+      : workingTreeFiles(scanRoot, scanRoot);
 
   for (const { absolutePath, path, symbolicLink } of entries) {
     if (symbolicLink) {

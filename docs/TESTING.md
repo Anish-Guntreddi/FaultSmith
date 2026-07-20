@@ -302,7 +302,7 @@ npm run test:firebase       # rules + cloud persistence integration (emulators)
 npm run test:e2e:firebase   # 16-scenario browser account/sync suite (emulators)
 ```
 
-On this workstation the default JVM is too old for firebase-tools; select a modern JDK first, e.g. `export JAVA_HOME=$(/usr/libexec/java_home -v 24)`.
+On this workstation the default JVM is too old for firebase-tools; select a modern JDK for both `JAVA_HOME` and executable lookup first, e.g. `export JAVA_HOME=$(/usr/libexec/java_home -v 24)` followed by `export PATH="$JAVA_HOME/bin:$PATH"`.
 
 Implemented and passing evidence:
 
@@ -326,3 +326,30 @@ Real Firebase evidence remains a separate human checkpoint. It must prove both v
 - Primary Codex `/feedback` Session ID
 
 These external gates require user credentials, authorization, or coordination and are not substituted with local evidence.
+
+## July 20 authored-component regression checkpoint
+
+The custom dossier/ledger/instrument pass was verified with:
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run test:e2e
+npm run build
+npm run security:bundle
+npm run security:source
+npm audit --audit-level=high
+
+JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-24.jdk/Contents/Home \
+PATH=/Library/Java/JavaVirtualMachines/temurin-24.jdk/Contents/Home/bin:$PATH \
+npm run test:firebase
+
+JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-24.jdk/Contents/Home \
+PATH=/Library/Java/JavaVirtualMachines/temurin-24.jdk/Contents/Home/bin:$PATH \
+npm run test:e2e:firebase
+```
+
+Results: 325/325 unit/integration tests, 24/24 default browser scenarios, 23/23 Firebase rules/integration scenarios, and 16/16 Firebase browser scenarios passed. The browser suites include axe scans, keyboard reachability, reduced-motion behavior, and horizontal-overflow assertions at 1440 × 900 and 390 × 844. The production build passed, the client leakage gate inspected 25 artifacts, the direct source/history gate inspected 224 committable files and 89 reachable commits, and the dependency audit reported zero vulnerabilities.
+
+The source scanner intentionally follows the Git commit boundary: tracked files plus untracked nonignored files are scanned; gitignored local operator credentials are not. A tracked ignored file is still included. This keeps local live-service testing compatible with a meaningful pre-commit security gate while preserving the rule that credential values never enter output or evidence.

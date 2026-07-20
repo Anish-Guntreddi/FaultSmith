@@ -6,7 +6,7 @@ import { DebuggingCaseFile } from "@/components/debugging-case-file";
 import { DebuggingDemo } from "@/components/debugging-demo";
 import { LandingMobileNav } from "@/components/landing-mobile-nav";
 import { ReasoningBypassFigure } from "@/components/reasoning-bypass-figure";
-import { Card } from "@/components/ui";
+import { Dossier, EvidenceLedger } from "@/components/ui";
 
 const learningModes = [
   {
@@ -43,16 +43,19 @@ const evidenceBoundaries = [
     title: "Tests decide completion",
     description: "A persuasive explanation cannot promote failing code. The exact submitted files are verified before progress advances.",
     signal: "Authority · executed evidence",
+    tone: "amber",
   },
   {
     title: "Fallback stays demo-ready",
     description: "Missing credentials, provider drift, or a timeout recover to a clearly labeled prevalidated challenge instead of breaking the lesson.",
     signal: "Reliability · controlled fixture",
+    tone: "cyan",
   },
   {
     title: "Private by default",
     description: "Guest learning stays on the device. Hidden solutions, provider identifiers, and credentials remain behind server-owned boundaries.",
     signal: "Privacy · bounded state",
+    tone: "green",
   },
 ] as const;
 
@@ -189,10 +192,10 @@ export function LandingPage() {
                 responsible surface, and prove the submitted snapshot. Repeatedly bypass that work and accepting a
                 diff becomes easier than debugging or maintaining unfamiliar code.
               </p>
-              <Card variant="raised" padding="md" className="landing-problem-bridge">
+              <Dossier index="C0" tone="amber" className="landing-problem-bridge">
                 <div className="instrument-label text-amber-300">FaultSmith&apos;s constraint</div>
                 <p>FaultSmith withholds the repair, guides the investigation, and lets executed tests decide completion.</p>
-              </Card>
+              </Dossier>
             </div>
             <ReasoningBypassFigure />
           </div>
@@ -214,15 +217,15 @@ export function LandingPage() {
           </div>
           <div className="landing-learning-grid">
             {learningModes.map((mode) => (
-              <article key={mode.number} className={`landing-learning-card fine-hover-lift landing-learning-card-${mode.tone}`}>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="landing-card-number">{mode.number}</span>
+              <Dossier key={mode.number} index={mode.number} tone={mode.tone} className="landing-learning-dossier fine-hover-lift">
+                <div className="landing-dossier-header">
                   <span className="instrument-label">{mode.eyebrow}</span>
+                  <span aria-hidden="true" className="landing-dossier-code">TRACK/{mode.number}</span>
                 </div>
                 <h3>{mode.title}</h3>
                 <p>{mode.description}</p>
-                <div className="landing-card-detail">{mode.detail}</div>
-              </article>
+                <div className="landing-dossier-detail"><span aria-hidden="true">↳</span>{mode.detail}</div>
+              </Dossier>
             ))}
           </div>
         </section>
@@ -238,20 +241,7 @@ export function LandingPage() {
               Explore the learning system <ArrowIcon />
             </Link>
           </div>
-          <div className="landing-evidence-stack">
-            {evidenceBoundaries.map((boundary, index) => (
-              <Card key={boundary.title} as="article" variant="evidence-well" padding="lg" className="fine-hover-lift">
-                <div className="flex gap-4">
-                  <span className="font-instrument text-[10px] text-amber-300">0{index + 1}</span>
-                  <div>
-                    <h3>{boundary.title}</h3>
-                    <p>{boundary.description}</p>
-                    <div className="landing-evidence-signal"><span />{boundary.signal}</div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <EvidenceLedger items={evidenceBoundaries} className="landing-evidence-ledger" />
         </section>
 
         <section aria-labelledby="final-cta-heading" className="landing-final-cta">

@@ -9,7 +9,7 @@ import { GuidedRoadmap } from "@/components/guided-roadmap";
 import { ProgressDashboard } from "@/components/progress-dashboard";
 import { useCloudProgressSync, type CloudProgressSync } from "@/components/progress-sync";
 import { TerminalFrame } from "@/components/terminal-frame";
-import { Badge, Button, Card, StatusDot as StatusDotPrimitive } from "@/components/ui";
+import { Badge, Button, Card, Dossier, ProcessRail, StatusDot as StatusDotPrimitive } from "@/components/ui";
 import { projects } from "@/lib/catalog";
 import {
   appendAnonymousAttemptEvent,
@@ -809,22 +809,18 @@ function ConfigureView(props: ConfigureProps) {
             <h1 className="max-w-3xl text-[2.65rem] font-semibold leading-[0.98] tracking-[-0.05em] text-[#f7f3eb] sm:text-6xl lg:text-[4.25rem]">Learn to debug code you<span className="text-zinc-500"> didn&apos;t write.</span></h1>
             <p className="mt-6 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">Build the habit AI shortcuts skip: read evidence, form a hypothesis, and prove the smallest repair inside a validated Python lab.</p>
           </div>
-          <aside aria-label="FaultSmith learning method" className="workflow-rail hidden rounded-2xl p-4 lg:block">
+          <aside aria-label="FaultSmith learning method" className="workflow-rail hidden p-4 lg:block">
             <div className="instrument-label text-cyan-200">The investigation loop</div>
-            <ol className="mt-4 grid grid-cols-2 gap-2">
-              {[
-                ["01", "Observe", "Read executed evidence"],
-                ["02", "Hypothesize", "Explain the causal chain"],
-                ["03", "Repair", "Change the smallest surface"],
-                ["04", "Verify", "Prove the exact snapshot"],
-              ].map(([number, title, note]) => (
-                <Card as="li" key={number} variant="evidence-well" padding="sm">
-                  <div className="font-instrument text-[9px] tracking-[0.14em] text-amber-300">{number}</div>
-                  <div className="mt-2 text-xs font-semibold text-zinc-200">{title}</div>
-                  <div className="mt-1 text-[10px] leading-4 text-zinc-500">{note}</div>
-                </Card>
-              ))}
-            </ol>
+            <ProcessRail
+              compact
+              className="mt-4"
+              steps={[
+                { number: "01", title: "Observe", note: "Read executed evidence" },
+                { number: "02", title: "Hypothesize", note: "Explain the causal chain" },
+                { number: "03", title: "Repair", note: "Change the smallest surface" },
+                { number: "04", title: "Verify", note: "Prove the exact snapshot" },
+              ]}
+            />
           </aside>
         </div>
         <div role="group" aria-label="Learning mode" className="mode-switcher mt-9">
@@ -854,37 +850,38 @@ function ConfigureView(props: ConfigureProps) {
           <section aria-labelledby="project-heading">
             <div className="mb-4 flex items-end justify-between"><div><div className="instrument-label">Step 01 · Select evidence domain</div><h2 id="project-heading" className="mt-1.5 text-xl font-semibold tracking-[-0.02em] text-white">Choose a system to investigate</h2></div><div className="font-instrument hidden text-[10px] text-zinc-500 md:block">3 curated Python systems</div></div>
             <div className="grid gap-4 md:grid-cols-3">
-              {projects.map((project) => {
+              {projects.map((project, index) => {
                 const active = props.projectId === project.id;
                 return (
-                  <button key={project.id} type="button" aria-pressed={active} onClick={() => props.setProjectId(project.id)} className={`group relative min-h-72 overflow-hidden rounded-2xl p-5 text-left transition duration-200 focus-visible:outline-none ${active ? "lab-panel-raised" : "lab-panel fine-hover-lift hover:border-white/20"}`}>
-                    <div className="flex items-center justify-between"><span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300/80">{project.eyebrow}</span><span className="rounded-full border border-emerald-400/15 bg-emerald-400/[0.05] px-2 py-1 text-[10px] uppercase tracking-wider text-emerald-300">Ready</span></div>
+                  <button key={project.id} type="button" aria-pressed={active} onClick={() => props.setProjectId(project.id)} className={`specimen-slab group min-h-72 p-5 text-left focus-visible:outline-none ${active ? "specimen-slab-active" : "fine-hover-lift"}`}>
+                    <span aria-hidden="true" className="specimen-slab-index">S/{String(index + 1).padStart(2, "0")}</span>
+                    <div className="flex items-center justify-between gap-3"><span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300/80">{project.eyebrow}</span><span className="specimen-ready-stamp">Ready</span></div>
                     <h3 className="mt-7 text-lg font-medium leading-6 text-zinc-100">{project.title}</h3>
                     <p className="mt-3 text-sm leading-6 text-zinc-500">{project.description}</p>
                     <p className="mt-3 text-[11px] leading-5 text-zinc-600">{project.skills.join(" · ")}</p>
-                    <div className="absolute inset-x-5 bottom-5 flex items-center justify-between border-t border-white/7 pt-4 text-[11px] text-zinc-600"><span>{project.difficulty}</span><span>~{project.estimatedMinutes} min</span></div>
+                    <div className="specimen-slab-footer"><span>{project.difficulty}</span><span>~{project.estimatedMinutes} min</span></div>
                   </button>
                 );
               })}
             </div>
           </section>
-          <Card as="aside" variant="panel" padding="lg" className="self-start xl:sticky xl:top-24">
+          <Dossier as="aside" index="CFG" tone="cyan" className="forge-config-dossier self-start xl:sticky xl:top-24">
             <div className="instrument-label">Step 02 · Configure validation</div><h2 className="mt-1.5 text-xl font-semibold tracking-[-0.02em] text-white">Forge the challenge</h2>
             <div className="mt-7 space-y-6">
-              <label className="block"><span className="mb-2 block text-xs font-medium text-zinc-400">Target skill</span><select value={props.skill} onChange={(event) => props.setSkill(event.target.value)} className="evidence-well w-full rounded-xl px-3.5 py-3 text-sm text-zinc-200 outline-none"><option value="">Select a skill</option>{selected.skills.map((item) => <option key={item}>{item}</option>)}</select></label>
-              <fieldset><legend className="mb-2 text-xs font-medium text-zinc-400">Practice level</legend><div className="grid grid-cols-3 gap-2">{difficultyOptions.map((option) => <button key={option.value} type="button" aria-pressed={props.difficulty === option.value} onClick={() => props.setDifficulty(option.value)} className={`rounded-xl border px-2 py-2.5 text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${props.difficulty === option.value ? "border-amber-400/40 bg-amber-400/10 text-amber-200" : "border-white/8 bg-black/10 text-zinc-500 hover:text-zinc-300"}`}>{option.label}</button>)}</div><p className="mt-2 text-[10px] leading-4 text-zinc-600">Labels this attempt; the curated fault is selected by system and skill.</p></fieldset>
-              <fieldset><legend className="mb-2 text-xs font-medium text-zinc-400">Validation mode</legend><div className="grid grid-cols-2 gap-2"><button type="button" aria-pressed={props.preferLive} onClick={() => props.setPreferLive(true)} className={`rounded-xl border px-3 py-3 text-left text-xs ${props.preferLive ? "border-amber-400/35 bg-amber-400/[0.07] text-amber-200" : "border-white/8 text-zinc-500"}`}><span className="block font-medium">Live + fallback</span><span className="mt-1 block text-[10px] opacity-70">GPT-5.6 when configured</span></button><button type="button" aria-pressed={!props.preferLive} onClick={() => props.setPreferLive(false)} className={`rounded-xl border px-3 py-3 text-left text-xs ${!props.preferLive ? "border-emerald-400/30 bg-emerald-400/[0.06] text-emerald-200" : "border-white/8 text-zinc-500"}`}><span className="block font-medium">Prevalidated</span><span className="mt-1 block text-[10px] opacity-70">Reliable demo fixture</span></button></div></fieldset>
-              <Card variant="inset" padding="md">
+              <label className="block"><span className="mb-2 block text-xs font-medium text-zinc-400">Target skill</span><select value={props.skill} onChange={(event) => props.setSkill(event.target.value)} className="instrument-select w-full px-3.5 py-3 text-sm text-zinc-200 outline-none"><option value="">Select a skill</option>{selected.skills.map((item) => <option key={item}>{item}</option>)}</select></label>
+              <fieldset><legend className="mb-2 text-xs font-medium text-zinc-400">Practice level</legend><div className="instrument-option-grid grid grid-cols-3">{difficultyOptions.map((option) => <button key={option.value} type="button" aria-pressed={props.difficulty === option.value} onClick={() => props.setDifficulty(option.value)} className="instrument-option px-2 py-2.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300">{option.label}</button>)}</div><p className="mt-2 text-[10px] leading-4 text-zinc-600">Labels this attempt; the curated fault is selected by system and skill.</p></fieldset>
+              <fieldset><legend className="mb-2 text-xs font-medium text-zinc-400">Validation mode</legend><div className="instrument-option-grid grid grid-cols-2"><button type="button" aria-pressed={props.preferLive} onClick={() => props.setPreferLive(true)} className="instrument-option px-3 py-3 text-left text-xs"><span className="block font-medium">Live + fallback</span><span className="mt-1 block text-[10px] opacity-70">GPT-5.6 when configured</span></button><button type="button" aria-pressed={!props.preferLive} onClick={() => props.setPreferLive(false)} className="instrument-option px-3 py-3 text-left text-xs"><span className="block font-medium">Prevalidated</span><span className="mt-1 block text-[10px] opacity-70">Reliable demo fixture</span></button></div></fieldset>
+              <div className="release-record p-4">
                 <div className="flex items-center justify-between text-xs"><span className="text-zinc-500">Release gate</span><span className="text-emerald-300">Original pass → Mutant fail</span></div>
-                <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/5"><div className="h-full w-full bg-gradient-to-r from-amber-500/60 to-emerald-400/70" /></div>
-              </Card>
+                <div className="release-record-track mt-3"><div className="h-full w-full bg-gradient-to-r from-amber-500/60 to-emerald-400/70" /></div>
+              </div>
               {props.error && <div role="alert" className="rounded-xl border border-red-400/15 bg-red-400/[0.05] p-3 text-xs leading-5 text-red-300">{props.error}<button type="button" disabled={!ready} onClick={props.onFallback} className="mt-2 block font-semibold underline disabled:opacity-40">Load the prevalidated challenge</button></div>}
               <Button variant="primary" size="lg" disabled={!ready} onClick={props.onForge} className="w-full disabled:opacity-35">
                 Forge debugging lab <span aria-hidden="true">→</span>
               </Button>
               <p className="text-center text-[11px] leading-5 text-zinc-600">Live mode asks GPT-5.6 to emit the approved bounded contract. Executed evidence decides whether it ships.</p>
             </div>
-          </Card>
+          </Dossier>
         </div>
         )}
         <DebuggingCaseFile />

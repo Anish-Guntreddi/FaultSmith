@@ -73,3 +73,9 @@ The local implementation and presentation candidate are ready. Next: rehearse th
 - **Quality of idea:** the deliberate, validated failure is the differentiator; adding broad project ingestion before submission would weaken reliability and safety.
 
 Direction is aligned with the approved July 19 personalized-learning PRD amendment and the July 20 presentation design lock. No additional material product expansion is recommended before submission.
+
+## July 20 authored-component direction review
+
+The presentation candidate now has a FaultSmith-specific component grammar rather than a rounded-card skin: forensic dossiers identify curriculum and lesson artifacts, evidence ledgers present product guarantees as audit records, process rails show causal sequence, and specimen slabs distinguish selectable systems. Tailwind v4 continues to own layout, responsive behavior, and interaction utilities; the custom CSS layer owns the authored silhouette and instrumentation details. Installing the default shadcn Card family was intentionally unnecessary because it would recreate the generic surface pattern this pass removed.
+
+This closes the remaining local presentation-system gap without changing product scope. The next milestone remains external proof: real-service browser checks, credentialed OpenAI smoke, approved Netlify deployment, cross-network smoke, five-person UAT, recording/publication, and the required feedback Session ID. If any service proof fails, retain guest mode and the validated fixture fallback rather than expanding scope.

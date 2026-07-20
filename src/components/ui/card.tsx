@@ -6,10 +6,10 @@ export type CardVariant = "panel" | "raised" | "evidence-well" | "inset";
 export type CardPadding = "none" | "sm" | "md" | "lg";
 
 const variantClass: Record<CardVariant, string> = {
-  panel: "lab-panel rounded-2xl",
-  raised: "lab-panel-raised rounded-2xl",
-  "evidence-well": "evidence-well rounded-xl",
-  inset: "ui-card-inset rounded-xl",
+  panel: "lab-panel ui-instrument-shell",
+  raised: "lab-panel-raised ui-instrument-shell ui-instrument-shell-raised",
+  "evidence-well": "evidence-well ui-evidence-well",
+  inset: "ui-card-inset ui-inset-record",
 };
 
 const paddingClass: Record<CardPadding, string> = {
@@ -35,10 +35,9 @@ export type CardProps = {
 };
 
 /**
- * Surface primitive: wraps the existing .lab-panel / .lab-panel-raised /
- * .evidence-well surfaces (plus a new .ui-card-inset nested-well variant)
- * with one canonical border radius per variant, so call sites stop
- * choosing their own rounded-xl/rounded-2xl/rounded-3xl per instance.
+ * Surface primitive: wraps FaultSmith's panel materials in one consistent
+ * instrument-shell silhouette. Call sites choose hierarchy, while the
+ * primitive owns the cut corner, keyline, and nested-record treatment.
  */
 export function Card({
   variant = "panel",
