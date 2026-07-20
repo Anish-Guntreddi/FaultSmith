@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+import { Badge, Button, Card } from "@/components/ui";
 import { getProject } from "@/lib/catalog";
 import {
   getLearningRecommendation,
@@ -66,10 +67,12 @@ export function GuidedRoadmap({
           <h2 id="guided-roadmap-heading" className="mt-1.5 text-2xl font-semibold tracking-[-0.03em] text-white">Your debugging roadmap</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">Nine validated labs build the habit of reading evidence, forming a hypothesis, and proving the smallest repair before asking AI for an answer.</p>
         </div>
-        <div className="evidence-well min-w-56 rounded-xl px-4 py-3">
-          <div className="flex items-center justify-between text-xs"><span className="text-zinc-400">Roadmap progress</span><span className="font-instrument tabular-nums font-semibold text-emerald-300">{completeCount}/9 verified</span></div>
-          <div className="block-meter mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/6"><div className="progress-fill h-full rounded-full bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" style={{ "--progress": completeCount / learningSteps.length } as CSSProperties} /></div>
-        </div>
+        <Card variant="evidence-well" padding="none" className="min-w-56">
+          <div className="px-4 py-3">
+            <div className="flex items-center justify-between text-xs"><span className="text-zinc-400">Roadmap progress</span><span className="font-instrument tabular-nums font-semibold text-emerald-300">{completeCount}/9 verified</span></div>
+            <div className="block-meter mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/6"><div className="progress-fill h-full rounded-full bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" style={{ "--progress": completeCount / learningSteps.length } as CSSProperties} /></div>
+          </div>
+        </Card>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
@@ -130,8 +133,11 @@ export function GuidedRoadmap({
           ))}
         </div>
 
-        <aside aria-label="Selected guided lesson" className="lab-panel-raised self-start rounded-2xl p-5 xl:sticky xl:top-24">
-          <div className="flex items-center justify-between gap-3"><span className="instrument-label">Lesson {selected.order} of 9</span><span className="status-pill px-2.5 py-1">{selected.category}</span></div>
+        <Card as="aside" aria-label="Selected guided lesson" variant="raised" padding="lg" className="self-start xl:sticky xl:top-24">
+          <div className="flex items-center justify-between gap-3">
+            <span className="instrument-label">Lesson {selected.order} of 9</span>
+            <Badge variant="neutral" glyph="·">{selected.category}</Badge>
+          </div>
           <h3 className="mt-4 text-xl font-semibold tracking-[-0.025em] text-white">{selected.title}</h3>
           <div className="lesson-meta font-instrument mt-2 text-zinc-500">
             <span aria-hidden="true">{permissionBits(selectedState)}</span>
@@ -153,16 +159,24 @@ export function GuidedRoadmap({
             </ol>
           </div>
 
-          <div className="mt-5 rounded-xl border border-white/7 bg-black/20 p-4">
+          <Card variant="inset" padding="md" className="mt-5">
             <div className="instrument-label">Success signal</div>
             <p className="mt-2 text-xs leading-5 text-zinc-300">{selected.successSignal}</p>
-          </div>
+          </Card>
 
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-400/14 bg-emerald-400/[0.04] px-3 py-2.5 text-[11px] leading-4 text-emerald-200"><span aria-hidden="true">✓</span><span>Prevalidated lab · no API credits required</span></div>
           {!selectedUnlocked && <p className="mt-3 text-xs leading-5 text-zinc-500">Complete the previous lesson to unlock this lab. You can still preview its guide now.</p>}
-          <button type="button" disabled={!selectedUnlocked} onClick={() => onStartStep(selected)} className="focus-brackets primary-action mt-4 w-full rounded-xl px-4 py-3.5 text-sm font-semibold focus-visible:outline-none disabled:opacity-35">{selectedComplete ? "Practice lesson again" : "Start guided lab"} <span aria-hidden="true">→</span></button>
+          <Button
+            variant="primary"
+            size="lg"
+            disabled={!selectedUnlocked}
+            onClick={() => onStartStep(selected)}
+            className="mt-4 w-full disabled:opacity-35"
+          >
+            {selectedComplete ? "Practice lesson again" : "Start guided lab"} <span aria-hidden="true">→</span>
+          </Button>
           <p className="mt-3 text-center text-[10px] leading-4 text-zinc-500">{recommendation.reason}</p>
-        </aside>
+        </Card>
       </div>
     </section>
   );

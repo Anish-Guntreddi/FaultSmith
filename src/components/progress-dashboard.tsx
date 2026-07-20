@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react";
 
 import { ProgressSyncPanel, type CloudProgressSync } from "@/components/progress-sync";
+import { Badge, Button, Card, StatusDot } from "@/components/ui";
 import { getLearningStep, type LearningStep } from "@/lib/learning-paths";
 import {
   durationBucketLabels,
@@ -95,19 +96,10 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
               : "Practice evidence — not a certification. Every number below comes from verified lab evidence stored only in this browser."}
           </p>
         </div>
-        <span
-          role="status"
-          className="status-pill w-fit px-3 py-1.5"
-        >
-          <span
-            aria-hidden="true"
-            className={`inline-block h-1.5 w-1.5 rounded-full ${
-              sync.phase === "synced"
-                ? "bg-emerald-400"
-                : sync.phase === "degraded"
-                  ? "bg-red-400"
-                  : "bg-amber-400"
-            }`}
+        <span role="status" className="status-pill w-fit px-3 py-1.5">
+          <StatusDot
+            tone={sync.phase === "synced" ? "verified" : sync.phase === "degraded" ? "failure" : "investigation"}
+            size="sm"
           />
           {sync.storageLabel}
         </span>
@@ -116,25 +108,25 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
       <ProgressSyncPanel sync={sync} />
 
       {isEmpty && (
-        <div className="lab-panel-raised mb-5 rounded-2xl p-5">
+        <Card variant="raised" padding="lg" className="mb-5">
           <div className="instrument-label text-amber-300">No local progress yet</div>
           <p className="mt-2 text-sm leading-6 text-zinc-400">
             Complete your first guided lab to build personal evidence you can see here. Progress records only when a repair is verified by executed tests.
           </p>
-        </div>
+        </Card>
       )}
 
       {roadmapComplete && (
-        <div className="lab-panel mb-5 rounded-2xl border-emerald-400/15 p-5">
+        <Card variant="panel" padding="lg" className="mb-5 border-emerald-400/15">
           <div className="instrument-label text-emerald-300">Roadmap complete</div>
           <p className="mt-2 text-sm leading-6 text-zinc-400">
             All nine lessons are verified on this device. Use Practice by skill for advanced variants and live generated challenges.
           </p>
-        </div>
+        </Card>
       )}
 
       <div className="grid gap-4 xl:grid-cols-[340px_minmax(0,1fr)]">
-        <section aria-labelledby="progress-roadmap-heading" className="lab-panel rounded-2xl p-5">
+        <Card as="section" aria-labelledby="progress-roadmap-heading" variant="panel" padding="lg">
           <h3 id="progress-roadmap-heading" className="instrument-label">Roadmap evidence</h3>
           <div className="mt-4 flex items-baseline gap-2">
             <span className="font-instrument tabular-nums text-4xl font-semibold text-white">{completedCount}</span>
@@ -143,7 +135,7 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
           <EvidenceBar value={(completedCount / TOTAL_LESSON_COUNT) * 100} tone="emerald" />
           <ul className="mt-5 space-y-3">
             {phaseProgress.map((phase) => (
-              <li key={phase.phaseId} className="evidence-well rounded-xl p-3">
+              <Card as="li" key={phase.phaseId} variant="evidence-well" padding="sm">
                 <div className="flex items-center justify-between gap-2 text-xs">
                   <span className="min-w-0 truncate text-zinc-300">{phase.order}. {phase.title}</span>
                   <span className={`font-instrument tabular-nums shrink-0 ${phase.complete ? "font-semibold text-emerald-300" : "text-zinc-500"}`}>
@@ -151,13 +143,13 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
                   </span>
                 </div>
                 <EvidenceBar value={(phase.completedLessons / phase.totalLessons) * 100} tone={phase.complete ? "emerald" : "amber"} />
-              </li>
+              </Card>
             ))}
           </ul>
-        </section>
+        </Card>
 
         <div className="min-w-0 space-y-4">
-          <section aria-labelledby="progress-scores-heading" className="lab-panel rounded-2xl p-5">
+          <Card as="section" aria-labelledby="progress-scores-heading" variant="panel" padding="lg">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 id="progress-scores-heading" className="instrument-label">Verified score dimensions</h3>
               {averages && (
@@ -169,13 +161,13 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
             {scoreCards ? (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {scoreCards.map(([label, score]) => (
-                  <div key={label} className="evidence-well rounded-xl p-4">
+                  <Card key={label} variant="evidence-well" padding="md">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs text-zinc-400">{label}</span>
                       <span className="font-instrument tabular-nums text-sm font-semibold text-zinc-100">{score}</span>
                     </div>
                     <EvidenceBar value={score} />
-                  </div>
+                  </Card>
                 ))}
               </div>
             ) : (
@@ -185,10 +177,10 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
                   : "Verified score averages appear after your first verified repair. Failing attempts stay visible below as process evidence only."}
               </p>
             )}
-          </section>
+          </Card>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <section aria-labelledby="progress-independent-heading" className="lab-panel rounded-2xl p-5">
+            <Card as="section" aria-labelledby="progress-independent-heading" variant="panel" padding="lg">
               <h3 id="progress-independent-heading" className="instrument-label">Independent solves</h3>
               {independent ? (
                 <>
@@ -203,9 +195,9 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
                   {hasUnexplainedCompletions ? missingAttemptEvidenceCopy : "Appears after your first verified repair."}
                 </p>
               )}
-            </section>
+            </Card>
 
-            <section aria-labelledby="progress-testruns-heading" className="lab-panel rounded-2xl p-5">
+            <Card as="section" aria-labelledby="progress-testruns-heading" variant="panel" padding="lg">
               <h3 id="progress-testruns-heading" className="instrument-label">Test-run process evidence</h3>
               {testRunEvidence ? (
                 <>
@@ -220,9 +212,9 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
               <p className="mt-2 text-[10px] leading-4 text-zinc-600">
                 Running tests is healthy debugging process. Test counts never lower a score.
               </p>
-            </section>
+            </Card>
 
-            <section aria-labelledby="progress-strongest-heading" className="lab-panel rounded-2xl p-5">
+            <Card as="section" aria-labelledby="progress-strongest-heading" variant="panel" padding="lg">
               <h3 id="progress-strongest-heading" className="instrument-label">Strongest practiced skill</h3>
               {strongestSkill ? (
                 <>
@@ -236,9 +228,9 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
                   {hasUnexplainedCompletions ? missingAttemptEvidenceCopy : "Appears after your first verified repair."}
                 </p>
               )}
-            </section>
+            </Card>
 
-            <section aria-labelledby="progress-reinforce-heading" className="lab-panel rounded-2xl p-5">
+            <Card as="section" aria-labelledby="progress-reinforce-heading" variant="panel" padding="lg">
               <h3 id="progress-reinforce-heading" className="instrument-label">Reinforcement priority</h3>
               {reinforcement ? (
                 <>
@@ -248,53 +240,45 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
               ) : (
                 <p className="mt-3 text-xs leading-5 text-zinc-500">Nothing flagged — your verified evidence is strong so far.</p>
               )}
-            </section>
+            </Card>
           </div>
 
-          <section aria-labelledby="progress-recent-heading" className="lab-panel rounded-2xl p-5">
+          <Card as="section" aria-labelledby="progress-recent-heading" variant="panel" padding="lg">
             <h3 id="progress-recent-heading" className="instrument-label">Recent attempts</h3>
             {recentAttempts.length > 0 ? (
               <ul className="mt-4 space-y-2">
                 {recentAttempts.map((attempt) => (
-                  <li key={attempt.attemptId} className="evidence-well flex flex-wrap items-center justify-between gap-2 rounded-xl px-4 py-3">
-                    <div className="min-w-0">
-                      <div className="truncate text-xs font-medium text-zinc-200">{attemptTitle(attempt)}</div>
-                      <div className="font-instrument mt-1 text-[10px] text-zinc-600">
-                        {durationBucketLabels[attempt.durationBucket]} · {attempt.hintsUsed}/3 hints · {attempt.testRuns} test run{attempt.testRuns === 1 ? "" : "s"}
+                  <Card as="li" key={attempt.attemptId} variant="evidence-well" padding="none">
+                    <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-xs font-medium text-zinc-200">{attemptTitle(attempt)}</div>
+                        <div className="font-instrument mt-1 text-[10px] text-zinc-600">
+                          {durationBucketLabels[attempt.durationBucket]} · {attempt.hintsUsed}/3 hints · {attempt.testRuns} test run{attempt.testRuns === 1 ? "" : "s"}
+                        </div>
                       </div>
+                      <Badge variant={attempt.status === "verified" ? "verified" : "failure"} glyph={attempt.status === "verified" ? "✓" : "✕"} className="shrink-0 uppercase tracking-wider">
+                        {attempt.status === "verified" ? "Verified" : "Not verified"}
+                      </Badge>
                     </div>
-                    <span
-                      className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${
-                        attempt.status === "verified"
-                          ? "border-emerald-400/20 bg-emerald-400/[0.06] text-emerald-300"
-                          : "border-red-400/20 bg-red-400/[0.06] text-red-300"
-                      }`}
-                    >
-                      {attempt.status === "verified" ? "Verified" : "Not verified"}
-                    </span>
-                  </li>
+                  </Card>
                 ))}
               </ul>
             ) : (
               <p className="mt-4 text-xs leading-5 text-zinc-500">No attempts recorded on this device yet.</p>
             )}
-          </section>
+          </Card>
 
-          <section aria-labelledby="progress-next-heading" className="lab-panel-raised rounded-2xl p-5">
+          <Card as="section" aria-labelledby="progress-next-heading" variant="raised" padding="lg">
             <h3 id="progress-next-heading" className="instrument-label text-amber-300">Recommended next step</h3>
             <p className="mt-2 text-xs leading-5 text-zinc-400">{recommendation.reason}</p>
             {recommendedStep ? (
-              <button
-                type="button"
-                onClick={() => onStartStep(recommendedStep)}
-                className="focus-brackets primary-action mt-4 rounded-xl px-4 py-3 text-sm font-semibold focus-visible:outline-none"
-              >
+              <Button variant="primary" size="md" onClick={() => onStartStep(recommendedStep)} className="mt-4">
                 Start Lesson {recommendedStep.order}: {recommendedStep.title} <span aria-hidden="true">→</span>
-              </button>
+              </Button>
             ) : (
               <p className="mt-3 text-xs leading-5 text-zinc-500">Switch to Practice by skill to keep building evidence with advanced variants.</p>
             )}
-          </section>
+          </Card>
         </div>
       </div>
     </section>
