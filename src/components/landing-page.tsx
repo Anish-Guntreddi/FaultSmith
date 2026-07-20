@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { BrandLockup } from "@/components/brand-mark";
 import { DebuggingCaseFile } from "@/components/debugging-case-file";
 import { DebuggingDemo } from "@/components/debugging-demo";
+import { ReasoningBypassFigure } from "@/components/reasoning-bypass-figure";
 import { Card } from "@/components/ui";
 
 const learningModes = [
@@ -182,34 +183,27 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section aria-labelledby="problem-heading" className="landing-section landing-problem">
-          <div className="landing-section-heading">
-            <div className="instrument-label text-red-300">The skill gap</div>
-            <h2 id="problem-heading" className="prompt-heading prompt-heading-display">The shortcut becomes the dependency.</h2>
-            <p>
-              When every failure goes straight into an AI prompt, learners can receive working code without building the reasoning needed to maintain it.
-            </p>
-          </div>
-          <div className="landing-problem-grid">
-            <Card as="article" variant="panel" padding="lg" className="fine-hover-lift">
-              <span className="landing-card-number">01</span>
-              <h3>Symptoms replace evidence</h3>
-              <p>The visible error gets patched before the failing boundary or causal branch is understood.</p>
-            </Card>
-            <Card as="article" variant="panel" padding="lg" className="fine-hover-lift">
-              <span className="landing-card-number">02</span>
-              <h3>Confidence replaces proof</h3>
-              <p>A plausible answer feels finished even when the exact submitted snapshot was never tested.</p>
-            </Card>
-            <Card as="article" variant="panel" padding="lg" className="fine-hover-lift">
-              <span className="landing-card-number">03</span>
-              <h3>Velocity creates maintenance debt</h3>
-              <p>Code ships faster, but the engineer responsible for it cannot explain or safely extend the behavior.</p>
-            </Card>
-          </div>
-          <div className="landing-thesis lab-panel-raised">
-            <div className="instrument-label text-amber-300">FaultSmith&apos;s intervention</div>
-            <p><strong>Preserve the productive struggle.</strong> Guide the learner through evidence, hypothesis, minimal repair, and verification before revealing confidence.</p>
+        <section id="problem" aria-labelledby="problem-heading" className="landing-section landing-problem">
+          <div className="landing-problem-layout">
+            <div className="landing-problem-copy">
+              <div className="instrument-label text-amber-300">Problem / reasoning bypass</div>
+              <h2 id="problem-heading" className="prompt-heading prompt-heading-display">
+                A patch can pass before the engineer understands why.
+              </h2>
+              <p className="landing-problem-lead">
+                Send a failure straight to a model and the code may recover. The learner may not.
+              </p>
+              <p className="landing-problem-body">
+                The work that disappears is causal: read the evidence, form a hypothesis, change the smallest
+                responsible surface, and prove the submitted snapshot. Repeatedly bypass that work and accepting a
+                diff becomes easier than debugging or maintaining unfamiliar code.
+              </p>
+              <Card variant="raised" padding="md" className="landing-problem-bridge">
+                <div className="instrument-label text-amber-300">FaultSmith&apos;s constraint</div>
+                <p>FaultSmith withholds the repair, guides the investigation, and lets executed tests decide completion.</p>
+              </Card>
+            </div>
+            <ReasoningBypassFigure />
           </div>
         </section>
 

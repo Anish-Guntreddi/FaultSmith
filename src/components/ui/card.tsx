@@ -31,6 +31,7 @@ export type CardProps = {
   as?: ElementType;
   "aria-label"?: string;
   "aria-labelledby"?: string;
+  "aria-describedby"?: string;
 };
 
 /**

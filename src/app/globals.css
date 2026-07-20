@@ -1301,6 +1301,7 @@ input:-webkit-autofill:focus {
 }
 
 .landing-section-heading h2,
+.landing-problem-copy h2,
 .landing-evidence-intro h2,
 .landing-final-cta h2 {
   margin-top: 0.7rem;
@@ -1325,20 +1326,11 @@ input:-webkit-autofill:focus {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.landing-problem-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 3rem;
-}
-
-.landing-problem-grid article,
 .landing-learning-card {
   position: relative;
   min-width: 0;
 }
 
-.landing-problem-grid h3,
 .landing-learning-card h3,
 .landing-evidence-stack h3 {
   margin-top: 2.5rem;
@@ -1348,7 +1340,6 @@ input:-webkit-autofill:focus {
   letter-spacing: -0.025em;
 }
 
-.landing-problem-grid p,
 .landing-learning-card p,
 .landing-evidence-stack p {
   margin-top: 0.8rem;
@@ -1357,24 +1348,463 @@ input:-webkit-autofill:focus {
   line-height: 1.75;
 }
 
-.landing-thesis {
+/* === Problem-statement section (docs/design/PROBLEM_STATEMENT_SECTION_BRIEF.md) === */
+
+.landing-problem-layout {
   display: grid;
-  margin-top: 1rem;
-  border-radius: 1rem;
-  grid-template-columns: 15rem 1fr;
+  grid-template-columns: minmax(22rem, 5fr) minmax(0, 7fr);
   align-items: center;
-  gap: 2rem;
-  padding: 1.35rem 1.5rem;
+  gap: clamp(2.5rem, 6vw, 6rem);
+  margin-top: 3.5rem;
 }
 
-.landing-thesis p {
+.landing-problem-copy {
+  max-width: 31.875rem;
+}
+
+.landing-problem-lead {
+  margin-top: 1.5rem;
+  color: var(--text);
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.6;
+}
+
+.landing-problem-body {
+  max-width: 62ch;
+  margin-top: 1rem;
+  color: #a8afb5;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.landing-problem-bridge {
+  margin-top: 2rem;
+}
+
+.landing-problem-bridge p {
+  margin-top: 0.35rem;
   color: #aeb4ba;
   font-size: 0.84rem;
   line-height: 1.7;
 }
 
-.landing-thesis strong {
-  color: #f0e9da;
+/* === Reasoning Bypass Circuit — signature figure for the section above.
+   Deliberately not TerminalFrame: no window chrome, no command prompt, no
+   source, no test output. Everything here is a fictional schematic (see
+   the "Fictional schematic" Badge) and contains no green — nothing in the
+   story is verified. ============================================== */
+
+.reasoning-bypass-figure {
+  display: flex;
+  min-height: 28.5rem;
+  flex-direction: column;
+  padding: 1.75rem;
+}
+
+.rb-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.rb-header-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.rb-title {
+  color: #8e98a2;
+}
+
+.rb-canvas-wrap {
+  flex: 1;
+  min-width: 0;
+  margin-top: 1.75rem;
+}
+
+.rb-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.rb-branch {
+  display: grid;
+  grid-template-columns: minmax(8.5rem, 10.5rem) 1fr;
+  gap: 1.5rem;
+}
+
+.rb-failure {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.rb-subtext {
+  color: #8e98a2;
+  font-family: var(--font-instrument);
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+}
+
+.rb-rails {
+  display: grid;
+  min-width: 0;
+  grid-template-rows: auto auto;
+  gap: 1.5rem;
+}
+
+.rb-rail {
+  min-width: 0;
+}
+
+.rb-rail-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: var(--font-instrument);
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rb-rail-label-cyan {
+  color: #9be4e0;
+}
+
+.rb-rail-label-amber {
+  color: #f4ce85;
+}
+
+.rb-rail-sublabel {
+  color: #767f88;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.rb-rail-track {
+  position: relative;
+  height: 2px;
+  margin-top: 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.rb-rail-track-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(105, 208, 203, 0.15), rgba(105, 208, 203, 0.85));
+}
+
+.rb-accepts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.rb-nodes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.rb-node {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  /* Resting/final state: already "settled" 8px down — see rb-node-settle. */
+  transform: translateY(0.5rem);
+}
+
+.rb-node-active {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(242, 184, 75, 0.28);
+  border-radius: inherit;
+  background: rgba(242, 184, 75, 0.05);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rb-node-connector {
+  position: absolute;
+  left: -1.15rem;
+  width: 0.75rem;
+  height: 2px;
+  background: rgba(242, 184, 75, 0.4);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rb-node-text {
+  position: relative;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.rb-node-number {
+  color: #767f88;
+  font-family: var(--font-instrument);
+  font-size: 0.68rem;
+}
+
+.rb-node-badge {
+  position: relative;
+  margin-left: auto;
+}
+
+.rb-next-task {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1.5rem;
+}
+
+.rb-next-task-item,
+.rb-blocked {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+
+.rb-tag-label {
+  color: #767f88;
+  font-family: var(--font-instrument);
+  font-size: 0.6rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rb-next-task-text {
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.rb-next-task-arrow {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #9da5ab;
+  font-family: var(--font-instrument);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+}
+
+.rb-blocked {
+  margin-left: auto;
+}
+
+.rb-caption {
+  margin-top: 1.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 1.1rem;
+  color: #9da5ab;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+/* Pre-play values — applied only once the client confirms it can actually
+   run the sequence (see reasoning-bypass-figure.tsx). Everything above is
+   already the complete/static end state, which stays the default CSS for
+   prefers-reduced-motion, no JavaScript, a missing IntersectionObserver,
+   or a hydration failure. */
+.rb-canvas[data-motion="ready"] .rb-diagram {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.rb-canvas[data-motion="ready"] .rb-rail-track-fill {
+  clip-path: inset(0 100% 0 0);
+}
+
+.rb-canvas[data-motion="ready"] .rb-accept {
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
+}
+
+.rb-canvas[data-motion="ready"] .rb-node {
+  transform: translateY(0);
+}
+
+.rb-canvas[data-motion="ready"] .rb-node-active,
+.rb-canvas[data-motion="ready"] .rb-node-connector {
+  opacity: 1;
+}
+
+.rb-canvas[data-motion="ready"] .rb-node-badge {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.rb-canvas[data-motion="ready"] .rb-next-task-item {
+  opacity: 0;
+  transform: translateX(16px);
+}
+
+.rb-canvas[data-motion="ready"] .rb-next-task-arrow {
+  clip-path: inset(0 100% 0 0);
+  transform: translateX(8px);
+}
+
+.rb-canvas[data-motion="ready"] .rb-blocked {
+  opacity: 0;
+  transform: translateX(8px) scale(0.98);
+}
+
+.rb-canvas[data-motion="ready"] .rb-caption {
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+}
+
+/* Playing — the one-shot 3,480ms schedule from the design brief. Only
+   transform, opacity, and clip-path animate; every duration/easing comes
+   from the existing --dur- and --ease- tokens. */
+.rb-canvas[data-motion="playing"] .rb-diagram {
+  animation: rb-enter var(--dur-slow) var(--ease-snap) both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-rail-track-fill {
+  animation: rb-shortcut-reveal var(--dur-reveal) var(--ease-in-out) 420ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-accept:nth-child(1) {
+  animation: rb-accept-in var(--dur-base) var(--ease-snap) 420ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-accept:nth-child(2) {
+  animation: rb-accept-in var(--dur-base) var(--ease-snap) 560ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-accept:nth-child(3) {
+  animation: rb-accept-in var(--dur-base) var(--ease-snap) 700ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(1) {
+  animation: rb-node-settle var(--dur-slow) var(--ease-in-out) 660ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(2) {
+  animation: rb-node-settle var(--dur-slow) var(--ease-in-out) 800ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(3) {
+  animation: rb-node-settle var(--dur-slow) var(--ease-in-out) 940ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(1) .rb-node-active,
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(1) .rb-node-connector {
+  animation: rb-fade-out var(--dur-slow) var(--ease-out) 660ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(2) .rb-node-active,
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(2) .rb-node-connector {
+  animation: rb-fade-out var(--dur-slow) var(--ease-out) 800ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(3) .rb-node-active,
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(3) .rb-node-connector {
+  animation: rb-fade-out var(--dur-slow) var(--ease-out) 940ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(1) .rb-node-badge {
+  animation: rb-badge-in var(--dur-slow) var(--ease-out) 660ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(2) .rb-node-badge {
+  animation: rb-badge-in var(--dur-slow) var(--ease-out) 800ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(3) .rb-node-badge {
+  animation: rb-badge-in var(--dur-slow) var(--ease-out) 940ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-next-task-item {
+  animation: rb-slide-in-x var(--dur-slow) var(--ease-snap) 1320ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-next-task-arrow {
+  animation: rb-arrow-reveal var(--dur-slow) var(--ease-in-out) 1740ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-blocked {
+  animation: rb-blocked-in var(--dur-slow) var(--ease-snap) 2160ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-caption {
+  animation: rb-caption-reveal var(--dur-reveal) var(--ease-out) 2580ms both;
+}
+
+@keyframes rb-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rb-shortcut-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0); }
+}
+
+@keyframes rb-accept-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes rb-node-settle {
+  from { transform: translateY(0); }
+  to { transform: translateY(8px); }
+}
+
+@keyframes rb-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes rb-badge-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes rb-slide-in-x {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes rb-arrow-reveal {
+  from { clip-path: inset(0 100% 0 0); transform: translateX(8px); }
+  to { clip-path: inset(0); transform: translateX(0); }
+}
+
+@keyframes rb-blocked-in {
+  from { opacity: 0; transform: translateX(8px) scale(0.98); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes rb-caption-reveal {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0); }
 }
 
 .landing-method {
@@ -2420,7 +2850,6 @@ input:-webkit-autofill:focus {
     transform: none;
   }
 
-  .landing-problem-grid,
   .landing-learning-grid {
     grid-template-columns: 1fr;
   }
@@ -2429,9 +2858,14 @@ input:-webkit-autofill:focus {
     min-height: 20rem;
   }
 
+  .landing-problem-layout,
   .landing-section-heading-wide,
   .landing-evidence {
     grid-template-columns: 1fr;
+  }
+
+  .landing-problem-copy {
+    max-width: 42rem;
   }
 
   .landing-section-heading-wide > p {
@@ -2558,13 +2992,46 @@ input:-webkit-autofill:focus {
     padding-block: 0.65rem;
   }
 
-  .landing-problem-grid {
-    margin-top: 2rem;
+  .landing-problem-layout {
+    margin-top: 2.5rem;
+    gap: 2.5rem;
   }
 
-  .landing-thesis {
+  .landing-problem-bridge {
+    margin-top: 1.5rem;
+  }
+
+  /* Circuit reflow: failure capsule full width, then MODEL SHORTCUT and
+     REASONING PATH side by side as two equal vertical rails (each still
+     stacking its own chips/nodes), then the next-task strip as three
+     stacked rows. */
+  .reasoning-bypass-figure {
+    min-height: 0;
+    padding: 1rem;
+  }
+
+  .rb-branch {
     grid-template-columns: 1fr;
-    gap: 0.7rem;
+  }
+
+  .rb-rails {
+    grid-template-rows: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .rb-rail-label {
+    font-size: 0.625rem;
+  }
+
+  .rb-next-task {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .rb-blocked {
+    margin-left: 0;
   }
 
   .landing-section-heading h2,

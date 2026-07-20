@@ -16,7 +16,9 @@ test("landing page tells the FaultSmith story and routes into the complete produ
     page.getByRole("heading", { level: 1, name: "AI can write the patch. FaultSmith teaches you to prove it." }),
   ).toBeVisible();
   await expect(page.getByText("OpenAI Build Week · Education")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "The shortcut becomes the dependency." })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "A patch can pass before the engineer understands why." }),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { name: "See the investigation, not just the answer." })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Ground beginners. Stretch advanced learners." })).toBeVisible();
   await expect(page.getByRole("heading", { name: "The AI proposes. The evidence decides." })).toBeVisible();
@@ -174,4 +176,81 @@ test("hero debugging demo renders a static verified frame with no pause control 
   const before = await page.locator(".debug-demo-footer").textContent();
   await page.waitForTimeout(1200);
   await expect(page.locator(".debug-demo-footer")).toHaveText(before ?? "");
+});
+
+test("reasoning bypass figure plays its one-shot circuit into view and replays without losing focus", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "A patch can pass before the engineer understands why." })).toBeVisible();
+  await expect(
+    page.getByText("Send a failure straight to a model and the code may recover. The learner may not."),
+  ).toBeVisible();
+  await expect(page.getByText("FaultSmith withholds the repair, guides the investigation", { exact: false })).toBeVisible();
+
+  const canvas = page.locator(".rb-canvas");
+  await page.locator(".reasoning-bypass-figure").scrollIntoViewIfNeeded();
+  await expect(canvas).toHaveAttribute("data-motion", "playing", { timeout: 5_000 });
+
+  // Let the ~3.48s one-shot sequence finish and settle into its complete,
+  // fully-bypassed end state.
+  await page.waitForTimeout(3_800);
+
+  await expect(page.getByText("Fictional schematic")).toBeVisible();
+  await expect(page.getByText("Observed symptom")).toBeVisible();
+  await expect(page.getByText("Generated diff")).toBeVisible();
+  await expect(page.getByText("Accept 01")).toBeVisible();
+  await expect(page.getByText("Accept 02")).toBeVisible();
+  await expect(page.getByText("Accept 03")).toBeVisible();
+  await expect(page.getByText("READ EVIDENCE", { exact: false })).toBeVisible();
+  await expect(page.getByText("FORM HYPOTHESIS", { exact: false })).toBeVisible();
+  await expect(page.getByText("PROVE REPAIR", { exact: false })).toBeVisible();
+  await expect(page.getByText("Bypassed")).toHaveCount(3);
+  await expect(page.getByText("Unfamiliar codebase")).toBeVisible();
+  await expect(page.getByText("Debug independently", { exact: false })).toBeVisible();
+  await expect(page.getByText("Causal model not formed")).toBeVisible();
+  await expect(
+    page.getByText("A working diff is an output. Debugging skill is the path that produced it."),
+  ).toBeVisible();
+  // Nothing in this fictional schematic is verified — no green anywhere.
+  await expect(page.locator(".reasoning-bypass-figure .status-pill-verified")).toHaveCount(0);
+
+  const replay = page.getByRole("button", { name: "Replay dependency trace" });
+  await expect(replay).toBeVisible();
+  await replay.focus();
+  await expect(replay).toBeFocused();
+  await replay.press("Enter");
+  await expect(replay).toBeFocused();
+  await expect(canvas).toHaveAttribute("data-motion", "playing");
+
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
+test("reasoning bypass figure renders its complete static end state with no replay control under prefers-reduced-motion", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  const canvas = page.locator(".rb-canvas");
+  await expect(canvas).toHaveAttribute("data-motion", "static");
+  await expect(page.getByRole("button", { name: "Replay dependency trace" })).toHaveCount(0);
+
+  // The complete argument is visible immediately — no scrolling into view,
+  // no waiting on timers.
+  await expect(page.getByText("Bypassed")).toHaveCount(3);
+  await expect(page.getByText("Causal model not formed")).toBeVisible();
+  await expect(
+    page.getByText("A working diff is an output. Debugging skill is the path that produced it."),
+  ).toBeVisible();
+
+  const before = await page.locator(".reasoning-bypass-figure").innerHTML();
+  await page.waitForTimeout(1_000);
+  const after = await page.locator(".reasoning-bypass-figure").innerHTML();
+  expect(after).toBe(before);
+
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(accessibility.violations).toEqual([]);
 });
