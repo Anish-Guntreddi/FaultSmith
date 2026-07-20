@@ -638,11 +638,11 @@ type PanelMode = "summary" | "create" | "login" | "reset";
 const inputClass =
   "evidence-well w-full rounded-xl px-3.5 py-2.5 text-sm text-zinc-200 outline-none placeholder:text-zinc-700";
 const primaryButtonClass =
-  "primary-action rounded-xl px-4 py-2.5 text-xs font-semibold focus-visible:outline-none disabled:opacity-40";
+  "focus-brackets primary-action rounded-xl px-4 py-2.5 text-xs font-semibold focus-visible:outline-none disabled:opacity-40";
 const secondaryButtonClass =
-  "secondary-action rounded-xl px-4 py-2.5 text-xs focus-visible:outline-none disabled:opacity-40";
+  "focus-brackets secondary-action rounded-xl px-4 py-2.5 text-xs focus-visible:outline-none disabled:opacity-40";
 const quietButtonClass =
-  "rounded-lg px-2 py-1 text-[11px] text-zinc-500 underline underline-offset-4 transition hover:text-zinc-200 focus-visible:outline-none";
+  "focus-brackets rounded-lg px-2 py-1 text-[11px] text-zinc-500 underline underline-offset-4 transition hover:text-zinc-200 focus-visible:outline-none";
 
 function PasswordField({
   id,
@@ -682,7 +682,7 @@ function PasswordField({
           aria-pressed={show}
           aria-label={show ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
           onClick={onToggleShow}
-          className="secondary-action shrink-0 rounded-xl px-3 text-[11px] focus-visible:outline-none"
+          className="focus-brackets secondary-action shrink-0 rounded-xl px-3 text-[11px] focus-visible:outline-none"
         >
           {show ? "Hide" : "Show"}
         </button>
@@ -1084,7 +1084,7 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
               <div className="mt-2 flex gap-2">
                 <button
                   type="button"
-                  className="rounded-xl bg-red-400/90 px-4 py-2.5 text-xs font-semibold text-[#1a0505] transition hover:bg-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-40"
+                  className="focus-brackets danger-action rounded-xl px-4 py-2.5 text-xs font-semibold focus-visible:outline-none disabled:opacity-40"
                   disabled={busy}
                   onClick={() => void run(() => sync.confirmDataDeletion())}
                 >
@@ -1108,7 +1108,7 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
               </p>
               <button
                 type="button"
-                className={`${secondaryButtonClass} mt-2`}
+                className="focus-brackets danger-action mt-2 rounded-xl px-4 py-2.5 text-xs font-semibold focus-visible:outline-none disabled:opacity-40"
                 disabled={busy || sync.accountDeletionState === "deleting"}
                 onClick={() => void run(() => sync.deleteAccount())}
               >

@@ -20,10 +20,28 @@ type GuidedRoadmapProps = {
   onStartStep: (step: LearningStep) => void;
 };
 
-function lessonStatus(progress: LearningProgress, step: LearningStep) {
+type LessonState = "Complete" | "Ready" | "Locked";
+
+function lessonStatus(progress: LearningProgress, step: LearningStep): LessonState {
   if (isLearningStepCompleted(progress, step.id)) return "Complete";
   if (isLearningStepUnlocked(progress, step.id)) return "Ready";
   return "Locked";
+}
+
+// Non-color state signal: a distinct glyph shape per state (square/inert,
+// triangle/actionable, check/done) so the state reads the same in
+// grayscale or under a color-vision deficiency, matching the "color never
+// the sole status signal" constraint. Paired with the visible status word.
+const stateGlyph: Record<LessonState, string> = { Locked: "▪", Ready: "▸", Complete: "✓" };
+
+// `ls -la`-flavored permission bits: a decorative (aria-hidden) echo of the
+// same state, in the terminal grammar. Locked reads as an inaccessible
+// directory (no rwx); Ready as execute-only; Complete as the full rwx a
+// finished, shareable artifact would carry.
+function permissionBits(state: LessonState): string {
+  if (state === "Locked") return "d---------";
+  if (state === "Ready") return "-r-x------";
+  return "-rwxr-xr-x";
 }
 
 export function GuidedRoadmap({
@@ -38,6 +56,7 @@ export function GuidedRoadmap({
   const completeCount = progress.completions.length;
   const selectedComplete = isLearningStepCompleted(progress, selected.id);
   const selectedUnlocked = isLearningStepUnlocked(progress, selected.id);
+  const selectedState = lessonStatus(progress, selected);
 
   return (
     <section aria-labelledby="guided-roadmap-heading" className="motion-rise">
@@ -48,8 +67,8 @@ export function GuidedRoadmap({
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">Nine validated labs build the habit of reading evidence, forming a hypothesis, and proving the smallest repair before asking AI for an answer.</p>
         </div>
         <div className="evidence-well min-w-56 rounded-xl px-4 py-3">
-          <div className="flex items-center justify-between text-xs"><span className="text-zinc-400">Roadmap progress</span><span className="font-semibold text-emerald-300">{completeCount}/9 verified</span></div>
-          <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/6"><div className="progress-fill h-full rounded-full bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" style={{ "--progress": completeCount / learningSteps.length } as CSSProperties} /></div>
+          <div className="flex items-center justify-between text-xs"><span className="text-zinc-400">Roadmap progress</span><span className="font-instrument tabular-nums font-semibold text-emerald-300">{completeCount}/9 verified</span></div>
+          <div className="block-meter mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/6"><div className="progress-fill h-full rounded-full bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" style={{ "--progress": completeCount / learningSteps.length } as CSSProperties} /></div>
         </div>
       </div>
 
@@ -73,15 +92,22 @@ export function GuidedRoadmap({
                       type="button"
                       aria-pressed={selectedLesson}
                       onClick={() => onSelectStep(step.id)}
-                      className={`min-h-32 rounded-xl border p-3 text-left transition duration-200 focus-visible:outline-none ${selectedLesson ? "border-amber-400/45 bg-[linear-gradient(145deg,rgba(242,184,75,0.09),rgba(255,255,255,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]" : "fine-hover-lift border-white/7 bg-black/15 hover:border-cyan-200/20 hover:bg-white/[0.025]"}`}
+                      className={`focus-brackets min-h-32 rounded-xl border p-3 text-left transition duration-200 focus-visible:outline-none ${selectedLesson ? "border-amber-400/45 bg-[linear-gradient(145deg,rgba(242,184,75,0.09),rgba(255,255,255,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]" : "fine-hover-lift border-white/7 bg-black/15 hover:border-cyan-200/20 hover:bg-white/[0.025]"}`}
                     >
                       <div className="font-instrument flex items-center justify-between gap-2 text-[9px] uppercase tracking-[0.12em]">
                         <span className="text-zinc-500">Lesson {step.order}</span>
-                        <span className={status === "Complete" ? "text-emerald-300" : status === "Ready" ? "text-amber-300" : "text-zinc-600"}>{status}</span>
+                        <span className={`inline-flex items-center gap-1 ${status === "Complete" ? "text-emerald-300" : status === "Ready" ? "text-amber-300" : "text-zinc-600"}`}>
+                          <span aria-hidden="true">{stateGlyph[status]}</span>{status}
+                        </span>
                       </div>
                       <div className="mt-3 text-sm font-medium leading-5 text-zinc-200">{step.title}</div>
-                      <div className="mt-2 text-[10px] leading-4 text-zinc-500">{step.targetSkill} · ~{step.estimatedMinutes} min</div>
-                      {recommended && <div className="font-instrument mt-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-amber-300">Recommended</div>}
+                      <div className="lesson-meta font-instrument mt-2.5 text-zinc-500">
+                        <span aria-hidden="true">{permissionBits(status)}</span>
+                        <span className="shrink-0 text-zinc-400">L{String(step.order).padStart(2, "0")}</span>
+                        <span className="lesson-meta-skill text-zinc-400">{step.targetSkill}</span>
+                        <span className="shrink-0">~{step.estimatedMinutes}m</span>
+                      </div>
+                      {recommended && <div className="font-instrument mt-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-amber-300"><span aria-hidden="true">→</span> Recommended</div>}
                     </button>
                   );
                 })}
@@ -93,7 +119,13 @@ export function GuidedRoadmap({
         <aside aria-label="Selected guided lesson" className="lab-panel-raised self-start rounded-2xl p-5 xl:sticky xl:top-24">
           <div className="flex items-center justify-between gap-3"><span className="instrument-label">Lesson {selected.order} of 9</span><span className="status-pill px-2.5 py-1">{selected.category}</span></div>
           <h3 className="mt-4 text-xl font-semibold tracking-[-0.025em] text-white">{selected.title}</h3>
-          <p className="mt-2 text-xs leading-5 text-zinc-500">{project?.title} · {selected.targetSkill} · {selected.difficulty.charAt(0).toUpperCase() + selected.difficulty.slice(1)}</p>
+          <div className="lesson-meta font-instrument mt-2 text-zinc-500">
+            <span aria-hidden="true">{permissionBits(selectedState)}</span>
+            <span className="shrink-0 text-zinc-400">L{String(selected.order).padStart(2, "0")}</span>
+            <span className="lesson-meta-skill text-zinc-400">{selected.targetSkill}</span>
+            <span className="shrink-0">~{selected.estimatedMinutes}m</span>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-zinc-500">{project?.title} · {selected.difficulty.charAt(0).toUpperCase() + selected.difficulty.slice(1)}</p>
 
           <div className="mt-5 rounded-xl border border-amber-400/12 bg-amber-400/[0.04] p-4">
             <div className="instrument-label text-amber-300">Concept guide</div>
@@ -114,7 +146,7 @@ export function GuidedRoadmap({
 
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-400/14 bg-emerald-400/[0.04] px-3 py-2.5 text-[11px] leading-4 text-emerald-200"><span aria-hidden="true">✓</span><span>Prevalidated lab · no API credits required</span></div>
           {!selectedUnlocked && <p className="mt-3 text-xs leading-5 text-zinc-500">Complete the previous lesson to unlock this lab. You can still preview its guide now.</p>}
-          <button type="button" disabled={!selectedUnlocked} onClick={() => onStartStep(selected)} className="primary-action mt-4 w-full rounded-xl px-4 py-3.5 text-sm font-semibold focus-visible:outline-none disabled:opacity-35">{selectedComplete ? "Practice lesson again" : "Start guided lab"} <span aria-hidden="true">→</span></button>
+          <button type="button" disabled={!selectedUnlocked} onClick={() => onStartStep(selected)} className="focus-brackets primary-action mt-4 w-full rounded-xl px-4 py-3.5 text-sm font-semibold focus-visible:outline-none disabled:opacity-35">{selectedComplete ? "Practice lesson again" : "Start guided lab"} <span aria-hidden="true">→</span></button>
           <p className="mt-3 text-center text-[10px] leading-4 text-zinc-500">{recommendation.reason}</p>
         </aside>
       </div>

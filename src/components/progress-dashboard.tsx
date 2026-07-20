@@ -30,7 +30,7 @@ type ProgressDashboardProps = {
 function EvidenceBar({ value, tone = "amber" }: { value: number; tone?: "amber" | "emerald" }) {
   const width = Math.max(0, Math.min(100, value));
   return (
-    <div aria-hidden="true" className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5">
+    <div aria-hidden="true" className="block-meter mt-2 h-1.5 overflow-hidden rounded-full bg-white/5">
       <div
         className={`progress-fill h-full rounded-full ${tone === "emerald" ? "bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" : "bg-gradient-to-r from-amber-300/80 to-amber-500/70"}`}
         style={{ "--progress": width / 100 } as CSSProperties}
@@ -124,7 +124,7 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
         <section aria-labelledby="progress-roadmap-heading" className="lab-panel rounded-2xl p-5">
           <h3 id="progress-roadmap-heading" className="instrument-label">Roadmap evidence</h3>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-4xl font-semibold text-white">{completedCount}</span>
+            <span className="font-instrument tabular-nums text-4xl font-semibold text-white">{completedCount}</span>
             <span className="text-sm text-zinc-500">/ {TOTAL_LESSON_COUNT} lessons verified</span>
           </div>
           <EvidenceBar value={(completedCount / TOTAL_LESSON_COUNT) * 100} tone="emerald" />
@@ -133,7 +133,7 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
               <li key={phase.phaseId} className="evidence-well rounded-xl p-3">
                 <div className="flex items-center justify-between gap-2 text-xs">
                   <span className="min-w-0 truncate text-zinc-300">{phase.order}. {phase.title}</span>
-                  <span className={phase.complete ? "shrink-0 font-semibold text-emerald-300" : "shrink-0 text-zinc-500"}>
+                  <span className={`font-instrument tabular-nums shrink-0 ${phase.complete ? "font-semibold text-emerald-300" : "text-zinc-500"}`}>
                     {phase.completedLessons}/{phase.totalLessons}{phase.complete ? " · Complete" : ""}
                   </span>
                 </div>
@@ -159,7 +159,7 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
                   <div key={label} className="evidence-well rounded-xl p-4">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs text-zinc-400">{label}</span>
-                      <span className="text-sm font-semibold text-zinc-100">{score}</span>
+                      <span className="font-instrument tabular-nums text-sm font-semibold text-zinc-100">{score}</span>
                     </div>
                     <EvidenceBar value={score} />
                   </div>
@@ -177,7 +177,7 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
               <h3 id="progress-independent-heading" className="instrument-label">Independent solves</h3>
               {independent ? (
                 <>
-                  <div className="mt-3 text-2xl font-semibold text-white">{independent.rate}%</div>
+                  <div className="font-instrument tabular-nums mt-3 text-2xl font-semibold text-white">{independent.rate}%</div>
                   <p className="mt-2 text-xs leading-5 text-zinc-500">
                     {independent.independentSolves} of {independent.verifiedAttempts} verified repair{independent.verifiedAttempts === 1 ? "" : "s"} used no hints.
                   </p>
@@ -192,7 +192,7 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
               <h3 id="progress-testruns-heading" className="instrument-label">Test-run process evidence</h3>
               {testRunEvidence ? (
                 <>
-                  <div className="mt-3 text-2xl font-semibold text-white">{testRunEvidence.totalTestRuns} runs</div>
+                  <div className="font-instrument tabular-nums mt-3 text-2xl font-semibold text-white">{testRunEvidence.totalTestRuns} runs</div>
                   <p className="mt-2 text-xs leading-5 text-zinc-500">
                     Average {testRunEvidence.averageTestRuns} per attempt across {testRunEvidence.attemptsWithEvidence} attempt{testRunEvidence.attemptsWithEvidence === 1 ? "" : "s"}.
                   </p>
@@ -240,7 +240,7 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
                   <li key={attempt.attemptId} className="evidence-well flex flex-wrap items-center justify-between gap-2 rounded-xl px-4 py-3">
                     <div className="min-w-0">
                       <div className="truncate text-xs font-medium text-zinc-200">{attemptTitle(attempt)}</div>
-                      <div className="mt-1 text-[10px] text-zinc-600">
+                      <div className="font-instrument mt-1 text-[10px] text-zinc-600">
                         {durationBucketLabels[attempt.durationBucket]} · {attempt.hintsUsed}/3 hints · {attempt.testRuns} test run{attempt.testRuns === 1 ? "" : "s"}
                       </div>
                     </div>
@@ -268,7 +268,7 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
               <button
                 type="button"
                 onClick={() => onStartStep(recommendedStep)}
-                className="primary-action mt-4 rounded-xl px-4 py-3 text-sm font-semibold focus-visible:outline-none"
+                className="focus-brackets primary-action mt-4 rounded-xl px-4 py-3 text-sm font-semibold focus-visible:outline-none"
               >
                 Start Lesson {recommendedStep.order}: {recommendedStep.title} <span aria-hidden="true">→</span>
               </button>
