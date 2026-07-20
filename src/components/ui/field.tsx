@@ -64,6 +64,7 @@ export function Field(props: FieldProps) {
       {as === "textarea" ? (
         <textarea
           id={id}
+          required={required}
           aria-describedby={describedBy}
           aria-invalid={error ? true : undefined}
           className={cn(inputClasses, "resize-none")}
@@ -72,6 +73,7 @@ export function Field(props: FieldProps) {
       ) : (
         <input
           id={id}
+          required={required}
           aria-describedby={describedBy}
           aria-invalid={error ? true : undefined}
           className={inputClasses}

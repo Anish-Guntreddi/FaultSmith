@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { TerminalFrame } from "@/components/terminal-frame";
+import { Badge, Button, Card, Field, StatDisplay, StatusDot } from "@/components/ui";
+
+import { StyleguideSegmentedDemo } from "./segmented-demo";
 
 export const metadata: Metadata = {
   title: "Styleguide — FaultSmith (dev only)",
@@ -279,6 +282,207 @@ export default function StyleguidePage() {
                 My Progress
               </button>
             </div>
+          </div>
+        </Section>
+
+        <h2 className="prompt-heading mt-24 text-2xl font-semibold tracking-tight">
+          Component primitive layer — src/components/ui/
+        </h2>
+        <p className="mt-3 max-w-[42rem] text-sm text-zinc-500">
+          Every primitive below is built on the tokens and surfaces above (never reinvented), with every
+          documented variant and state rendered as the canonical reference.
+        </p>
+
+        <Section title="Button">
+          <p className="instrument-label">Variant × size, default state</p>
+          <div className="sg-state-grid mt-3">
+            <Button variant="primary" size="sm">
+              Primary / sm
+            </Button>
+            <Button variant="primary" size="md">
+              Primary / md
+            </Button>
+            <Button variant="primary" size="lg">
+              Primary / lg
+            </Button>
+            <Button variant="secondary" size="md">
+              Secondary / md
+            </Button>
+            <Button variant="ghost" size="md">
+              Ghost / md
+            </Button>
+            <Button variant="danger" size="md">
+              Danger / md
+            </Button>
+          </div>
+
+          <p className="instrument-label mt-6">Loading and disabled</p>
+          <div className="sg-state-grid mt-3">
+            <Button variant="primary" loading loadingText="Verifying exact snapshot…">
+              Submit patch
+            </Button>
+            <Button variant="secondary" loading>
+              Run tests
+            </Button>
+            <Button variant="primary" disabled>
+              Primary / disabled
+            </Button>
+            <Button variant="secondary" disabled>
+              Secondary / disabled
+            </Button>
+            <Button variant="ghost" disabled>
+              Ghost / disabled
+            </Button>
+            <Button variant="danger" disabled>
+              Danger / disabled
+            </Button>
+          </div>
+
+          <p className="instrument-label mt-6">Renders as an anchor when href is passed</p>
+          <div className="sg-state-grid mt-3">
+            <Button variant="primary" href="#top">
+              Anchor / primary
+            </Button>
+            <Button variant="secondary" href="#top" disabled>
+              Anchor / disabled
+            </Button>
+          </div>
+          <p className="font-instrument mt-4 text-[0.62rem] text-zinc-500">
+            Tab through for .focus-brackets keyboard focus. Hover lifts on fine pointers; active scales to 0.97;
+            both use --dur-fast/--ease-out. Loading collapses its spinner to a static ring under
+            prefers-reduced-motion.
+          </p>
+        </Section>
+
+        <Section title="Card">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card variant="panel">
+              <p className="instrument-label">variant=&quot;panel&quot;</p>
+              <p className="mt-2 text-sm text-zinc-400">Primary work surface — .lab-panel + rounded-2xl.</p>
+            </Card>
+            <Card variant="raised">
+              <p className="instrument-label">variant=&quot;raised&quot;</p>
+              <p className="mt-2 text-sm text-zinc-400">Selected / important surface — .lab-panel-raised.</p>
+            </Card>
+            <Card variant="evidence-well">
+              <p className="instrument-label">variant=&quot;evidence-well&quot;</p>
+              <p className="mt-2 text-sm text-zinc-400">Recessed executed evidence — .evidence-well.</p>
+            </Card>
+            <Card variant="inset">
+              <p className="instrument-label">variant=&quot;inset&quot;</p>
+              <p className="mt-2 text-sm text-zinc-400">Nested well inside a panel — .ui-card-inset.</p>
+            </Card>
+          </div>
+          <div className="mt-4">
+            <Card
+              variant="panel"
+              padding="none"
+              header={<span className="instrument-label">Header slot</span>}
+              footer={
+                <Button variant="primary" size="sm">
+                  Footer action
+                </Button>
+              }
+            >
+              <p className="p-4 text-sm text-zinc-400">
+                Body slot, padding=&quot;none&quot; on the Card so the header/footer keep their own fixed px-4
+                py-3 while this paragraph controls its own spacing.
+              </p>
+            </Card>
+          </div>
+        </Section>
+
+        <Section title="Badge">
+          <p className="font-instrument mb-3 text-[0.62rem] text-zinc-500">
+            glyph is a required prop — status is never carried by color alone.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge variant="neutral" glyph="·">
+              Neutral
+            </Badge>
+            <Badge variant="investigation" glyph="▸">
+              Ready
+            </Badge>
+            <Badge variant="instrument" glyph="◆">
+              Instrumented
+            </Badge>
+            <Badge variant="verified" glyph="✓">
+              Verified
+            </Badge>
+            <Badge variant="failure" glyph="✕">
+              Not verified
+            </Badge>
+            <Badge variant="locked" glyph="▪">
+              Locked
+            </Badge>
+          </div>
+        </Section>
+
+        <Section title="Field">
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Field label="Hypothesis" placeholder="What do you think is causing the failure?" />
+            <Field
+              label="Root-cause explanation"
+              description="Explain the failure and why your patch is correct."
+              placeholder="It fails because…"
+            />
+            <Field
+              label="Skill"
+              error="Select a target skill before forging a challenge."
+              defaultValue=""
+              required
+            />
+            <Field label="Disabled field" defaultValue="Locked while a run is in progress" disabled />
+            <Field
+              as="textarea"
+              label="Investigation journal"
+              description="Notes only you can see."
+              rows={3}
+              placeholder="Record what the evidence shows…"
+              className="sm:col-span-2"
+            />
+          </div>
+          <p className="font-instrument mt-4 text-[0.62rem] text-zinc-500">
+            description and error each get their own id, both joined onto aria-describedby; aria-invalid follows
+            the error prop.
+          </p>
+        </Section>
+
+        <Section title="Segmented control">
+          <StyleguideSegmentedDemo />
+        </Section>
+
+        <Section title="Stat display">
+          <div className="sg-state-grid">
+            <StatDisplay label="Roadmap progress" value="4/9" tone="verified" size="lg" caption="verified lessons" />
+            <StatDisplay label="Independent solves" value="72%" tone="instrument" size="md" />
+            <StatDisplay label="Test runs" value="18" tone="investigation" size="md" caption="avg 2.6 / attempt" />
+            <StatDisplay label="Not verified" value="1" tone="failure" size="sm" />
+            <StatDisplay label="Hints used" value="0/3" tone="neutral" size="sm" />
+          </div>
+        </Section>
+
+        <Section title="Status dot">
+          <p className="font-instrument mb-3 text-[0.62rem] text-zinc-500">
+            Decorative only (aria-hidden) — always rendered next to caller text, never alone.
+          </p>
+          <div className="sg-state-grid">
+            {(["neutral", "investigation", "instrument", "verified", "failure", "locked"] as const).map((tone) => (
+              <div key={tone} className="flex items-center gap-4 text-xs text-zinc-400">
+                <span className="flex items-center gap-2">
+                  <StatusDot tone={tone} size="sm" />
+                  sm
+                </span>
+                <span className="flex items-center gap-2">
+                  <StatusDot tone={tone} size="md" />
+                  md · {tone}
+                </span>
+                <span className="flex items-center gap-2">
+                  <StatusDot tone={tone} size="lg" />
+                  lg
+                </span>
+              </div>
+            ))}
           </div>
         </Section>
       </div>
