@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { BrandLockup } from "@/components/brand-mark";
 import { DebuggingCaseFile } from "@/components/debugging-case-file";
@@ -55,6 +56,10 @@ const evidenceBoundaries = [
 function ArrowIcon() {
   return <span aria-hidden="true">→</span>;
 }
+
+/** Split (not hand-counted, so it can never drift from the copy) for the
+ * hero's word-by-word reveal — see .tw-word / --tw-i in globals.css. */
+const heroValuePropWords = "FaultSmith teaches you to prove it.".split(" ");
 
 const traceTickerEvents = [
   "OBSERVE · failing assertion captured",
@@ -136,6 +141,20 @@ export function LandingPage() {
             <a href="#learning-system" className="focus-brackets">Learning system</a>
             <a href="#evidence" className="focus-brackets">Evidence</a>
           </div>
+          {/* Below 1024px .landing-nav-links is hidden; this disclosure is
+              the only way to reach in-page sections from the header on
+              tablet/phone. Native <details>/<summary> keeps it keyboard-
+              and screen-reader-operable with no client-side JavaScript. */}
+          <details className="landing-nav-mobile">
+            <summary className="landing-nav-mobile-trigger focus-brackets rounded-xl" aria-label="Open navigation menu">
+              <span className="landing-nav-mobile-icon" aria-hidden="true" />
+            </summary>
+            <div className="landing-nav-mobile-panel">
+              <a href="#method" className="focus-brackets">Method</a>
+              <a href="#learning-system" className="focus-brackets">Learning system</a>
+              <a href="#evidence" className="focus-brackets">Evidence</a>
+            </div>
+          </details>
           <Link href="/learn" className="primary-action landing-nav-cta focus-brackets rounded-xl px-4 py-2.5 text-xs font-semibold">
             Open FaultSmith <ArrowIcon />
           </Link>
@@ -150,10 +169,26 @@ export function LandingPage() {
             </div>
             <h1 id="landing-hero-heading" className="prompt-heading prompt-heading-display">
               AI can write the patch.<br />
-              <span className="block-cursor">
-                <span className="typewriter-reveal" style={{ ["--tw-steps" as string]: "36" }}>
-                  FaultSmith teaches you to prove it.
-                </span>
+              <span className="typewriter-reveal block-cursor">
+                {heroValuePropWords.flatMap((word, index, words) => {
+                  const nodes: ReactNode[] = [
+                    <span
+                      key={`${word}-${index}`}
+                      className="tw-word"
+                      style={{ ["--tw-i" as string]: String(index) }}
+                    >
+                      {word}
+                    </span>,
+                  ];
+                  // The space is a sibling text node OUTSIDE the tw-word
+                  // inline-block, not inside it: a trailing space inside a
+                  // single-line inline-block sits at the end of that box's
+                  // own internal line box and gets collapsed away by CSS
+                  // white-space rules, which visually glues the words
+                  // together with no gap.
+                  if (index < words.length - 1) nodes.push(" ");
+                  return nodes;
+                })}
               </span>
             </h1>
             <p>

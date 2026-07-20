@@ -171,7 +171,7 @@ export function DebuggingCaseFile() {
               root.dataset.activeStage = String(stage);
               activeTimeline?.kill();
               activeTimeline = gsap.timeline({
-                defaults: { duration: 0.42, ease: "power3.out", overwrite: "auto" },
+                defaults: { duration: 0.42, ease: "cubic-bezier(0.23, 1, 0.32, 1)", overwrite: "auto" },
               });
               activeTimeline
                 .to(otherPanels, { opacity: 0, y: 8, duration: 0.18 }, 0)

@@ -238,15 +238,18 @@ button:disabled {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 14px 34px rgba(159, 98, 10, 0.22);
   }
 
-  .primary-action:active:not(:disabled) {
-    transform: scale(0.97);
-  }
-
   .fine-hover-lift:hover:not(:disabled) {
     transform: translateY(-2px);
     border-color: rgba(242, 184, 75, 0.28);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), var(--shadow-active);
   }
+}
+
+/* Press feedback must not be gated behind (hover: hover) and (pointer: fine)
+   — that gate is meant for :hover only. Touch devices report hover:none and
+   would otherwise get zero press feedback on the primary CTAs. */
+.primary-action:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .fine-hover-lift:active:not(:disabled) {
@@ -288,7 +291,7 @@ button:disabled {
 }
 
 .motion-rise {
-  animation: motion-rise 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: motion-rise var(--dur-slow) var(--ease-snap) both;
 }
 
 .workflow-rail {
@@ -758,6 +761,96 @@ input:-webkit-autofill:focus {
   gap: 0.55rem;
 }
 
+/* Mobile nav disclosure — hidden on desktop where .landing-nav-links
+   covers this. Shown only under the max-width: 1023px breakpoint below,
+   where .landing-nav-links is hidden and would otherwise leave no way to
+   reach in-page sections from the header. */
+.landing-nav-mobile {
+  display: none;
+  justify-self: end;
+}
+
+.landing-nav-mobile-trigger {
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  list-style: none;
+  transition: border-color var(--dur-base) var(--ease-out), background-color var(--dur-base) var(--ease-out);
+}
+
+.landing-nav-mobile-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.landing-nav-mobile[open] .landing-nav-mobile-trigger {
+  border-color: rgba(242, 184, 75, 0.3);
+  background: rgba(242, 184, 75, 0.06);
+}
+
+.landing-nav-mobile-icon,
+.landing-nav-mobile-icon::before,
+.landing-nav-mobile-icon::after {
+  display: block;
+  width: 1.05rem;
+  height: 2px;
+  border-radius: 1px;
+  background: #c8cbd0;
+}
+
+.landing-nav-mobile-icon {
+  position: relative;
+}
+
+.landing-nav-mobile-icon::before,
+.landing-nav-mobile-icon::after {
+  position: absolute;
+  left: 0;
+  content: "";
+}
+
+.landing-nav-mobile-icon::before {
+  top: -0.35rem;
+}
+
+.landing-nav-mobile-icon::after {
+  top: 0.35rem;
+}
+
+.landing-nav-mobile-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.6rem);
+  z-index: 60;
+  display: grid;
+  min-width: 12rem;
+  gap: 0.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  padding: 0.6rem;
+  background: rgba(9, 12, 16, 0.98);
+  box-shadow: var(--shadow-panel);
+}
+
+.landing-nav-mobile-panel a {
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.7rem;
+  color: #d7dbdd;
+  font-size: 0.85rem;
+  font-weight: 650;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.landing-nav-mobile-panel a:hover {
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+}
+
 .landing-hero {
   display: grid;
   width: min(100% - 2.5rem, 1480px);
@@ -1178,9 +1271,21 @@ input:-webkit-autofill:focus {
   pointer-events: none;
 }
 
-.landing-learning-card-amber::after { background: radial-gradient(circle, rgba(242, 184, 75, 0.11), transparent 66%); }
-.landing-learning-card-cyan::after { background: radial-gradient(circle, rgba(105, 208, 203, 0.1), transparent 66%); }
-.landing-learning-card-green::after { background: radial-gradient(circle, rgba(112, 214, 158, 0.09), transparent 66%); }
+.landing-learning-card-amber::after { background: radial-gradient(circle, rgba(242, 184, 75, 0.22), transparent 66%); }
+.landing-learning-card-cyan::after { background: radial-gradient(circle, rgba(105, 208, 203, 0.22), transparent 66%); }
+.landing-learning-card-green::after { background: radial-gradient(circle, rgba(112, 214, 158, 0.2), transparent 66%); }
+
+/* Tone-differentiated numeral + top keyline, matching how
+   .case-chapter-signal-* carries its tone in the sibling case-file
+   component — the corner glow alone reads as identical across all
+   three cards at normal viewing distance. */
+.landing-learning-card-amber { border-top-color: rgba(242, 184, 75, 0.35); }
+.landing-learning-card-cyan { border-top-color: rgba(105, 208, 203, 0.35); }
+.landing-learning-card-green { border-top-color: rgba(112, 214, 158, 0.3); }
+
+.landing-learning-card-amber .landing-card-number { color: var(--amber); }
+.landing-learning-card-cyan .landing-card-number { color: var(--cyan); }
+.landing-learning-card-green .landing-card-number { color: var(--green); }
 
 .landing-learning-card h3 {
   max-width: 18rem;
@@ -1196,7 +1301,7 @@ input:-webkit-autofill:focus {
   padding-top: 1rem;
   color: #959ea5;
   font-family: var(--font-instrument);
-  font-size: 0.58rem;
+  font-size: 0.66rem;
 }
 
 .landing-evidence {
@@ -1308,13 +1413,15 @@ input:-webkit-autofill:focus {
 }
 
 /* Block-cursor accent. CSS-only blink; fully static (solid, no animation)
-   under prefers-reduced-motion. */
+   under prefers-reduced-motion. Bounded to a handful of blinks and then
+   settles solid — continuous ambient motion is reserved for the bounded
+   challenge-validation state, not decoration a visitor sees indefinitely. */
 .block-cursor::after {
   content: "▮";
   content: "▮" / "";
   margin-left: 0.18em;
   color: var(--cursor-color);
-  animation: cursor-blink var(--dur-blink) step-end infinite;
+  animation: cursor-blink var(--dur-blink) step-end 6;
 }
 
 @keyframes cursor-blink {
@@ -1446,21 +1553,32 @@ input:-webkit-autofill:focus {
 }
 
 /* === Hero typewriter reveal + display-scale prompt grammar (Pass 2) ====
-   CSS steps() reveal of the value-prop line via clip-path (percentages
-   resolve against the element's own box, so no width/ch guesswork).
+   Word-by-word reveal, not a single clip-path over the whole (wrapping)
+   headline: a box-relative clip-path percentage resolves against the
+   *element's* bounding box, which spans both wrapped lines once the
+   heading wraps at hero scale — so the reveal rectangle does not track
+   reading order and a shorter second line can finish before a longer
+   first line clears. Animating each word's own opacity/transform instead
+   is immune to where the browser happens to wrap, because each word's
+   delay is tied to its position in reading order, not to box geometry.
    Instant and fully visible under prefers-reduced-motion. */
 .typewriter-reveal {
   display: inline-block;
   vertical-align: bottom;
-  animation: typewriter-reveal var(--dur-reveal) steps(var(--tw-steps, 36), end) 300ms 1 both;
 }
 
-@keyframes typewriter-reveal {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
+.tw-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.2em);
+  animation: tw-word-reveal var(--dur-base) var(--ease-out) both;
+  animation-delay: calc(300ms + (var(--tw-i, 0) * 80ms));
+}
+
+@keyframes tw-word-reveal {
   to {
-    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -1475,7 +1593,13 @@ input:-webkit-autofill:focus {
 
 /* The block-cursor glyph inherits its host's font-size; at hero display
    scale that renders an oversized bar that wraps onto its own line. Scale
-   it down to a legible accent that stays on the value-prop's line. */
+   it down to a legible accent that stays on the value-prop's line. The
+   cursor class now lives on .typewriter-reveal itself (see landing-page.tsx)
+   so its ::after glyph is the last inline child inside the *same*
+   inline-block that wraps the sentence — it participates in that element's
+   own internal line-wrap and always lands right after the final word,
+   instead of being appended after the whole (possibly multi-line) box from
+   the outside and overflowing onto an orphan line. */
 .landing-hero-copy h1 .block-cursor::after {
   margin-left: 0.08em;
   font-size: 0.4em;
@@ -1498,7 +1622,10 @@ input:-webkit-autofill:focus {
 .trace-ticker-track {
   display: flex;
   width: max-content;
-  animation: trace-ticker-scroll 24s linear infinite;
+  /* Bounded loop count, not infinite — the cycle boundary (translateX(-50%))
+     lands exactly on the start of the duplicated set, so the freeze frame
+     after the final iteration is visually seamless with the resting state. */
+  animation: trace-ticker-scroll 24s linear 6 forwards;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1545,9 +1672,10 @@ input:-webkit-autofill:focus {
     opacity: 1;
   }
 
-  .typewriter-reveal {
+  .tw-word {
     animation: none;
-    clip-path: none;
+    opacity: 1;
+    transform: none;
   }
 
   .trace-ticker-track {
@@ -1603,11 +1731,16 @@ input:-webkit-autofill:focus {
 
 @media (max-width: 1023px) {
   .landing-nav {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
   }
 
   .landing-nav-links {
     display: none;
+  }
+
+  .landing-nav-mobile {
+    position: relative;
+    display: block;
   }
 
   .landing-hero {
