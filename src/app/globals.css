@@ -213,7 +213,12 @@ button:disabled {
   opacity: 0.45;
 }
 
-.mode-tab[aria-pressed="true"] {
+/* aria-checked covers the SegmentedControl primitive (src/components/ui/),
+   which renders this same surface as a WAI-ARIA radiogroup/radio instead of
+   the toggle-button aria-pressed markup still used by faultsmith-app.tsx's
+   hand-written mode switcher — both selected-state looks stay identical. */
+.mode-tab[aria-pressed="true"],
+.mode-tab[aria-checked="true"] {
   border-color: rgba(242, 184, 75, 0.38);
   background: linear-gradient(180deg, rgba(242, 184, 75, 0.18), rgba(242, 184, 75, 0.09));
   color: #ffe3a4;
@@ -1974,6 +1979,220 @@ input:-webkit-autofill:focus {
 
 .danger-action:disabled {
   opacity: 0.4;
+}
+
+/* === Component primitive layer (src/components/ui/) =====================
+   Supporting CSS for the hand-rolled component library. Each primitive
+   composes existing surfaces (.lab-panel, .evidence-well, .status-pill,
+   .mode-switcher/.mode-tab, .primary-action family) rather than reinventing
+   them; the rules below fill the few gaps — a ghost button tone, badge/dot
+   tone variants, a field input, and nested-card chrome. */
+
+/* Button: ghost variant. Same state vocabulary (default/hover/active/
+   disabled) as .secondary-action/.instrument-action/.danger-action, but
+   with no resting border or fill — for tertiary controls that shouldn't
+   compete with a surrounding card's own border. */
+.ghost-action {
+  min-height: 2.55rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #a7adb3;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ghost-action:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.035);
+    color: var(--text);
+  }
+}
+
+.ghost-action:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.ghost-action:disabled {
+  opacity: 0.4;
+}
+
+/* Button: loading spinner. Recolors via currentColor so it matches
+   whichever variant hosts it. Treated as an activity indicator tied to a
+   real async operation (WCAG 2.2.2's "essential" exception) rather than
+   decorative motion; still collapses to a static ring under the global
+   prefers-reduced-motion override below. */
+.ui-btn-spinner {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  flex: 0 0 auto;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: 0.85;
+  animation: ui-btn-spin 0.6s linear infinite;
+}
+
+@keyframes ui-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Button: size modifiers. sm trades the base action classes' own
+   min-height (already ~40-42px, "md") for a shorter compact control; lg
+   goes taller for hero/landing CTAs. */
+.ui-btn-sm {
+  min-height: 2.25rem;
+}
+
+.ui-btn-lg {
+  min-height: 3rem;
+}
+
+/* Card: nested-well variant — the "Success signal" / "Release gate" style
+   inset box already repeated across guided-roadmap.tsx and
+   faultsmith-app.tsx as inline border-white/7 + bg-black/20. */
+.ui-card-inset {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Card: header/footer slot dividers. */
+.ui-card-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.ui-card-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Badge: tone variants layered onto the existing .status-pill base
+   (neutral). Colors match .case-chapter-signal-* exactly, so a badge and
+   a case-file chapter signal in the same tone always read identically. */
+.status-pill-investigation {
+  border-color: rgba(242, 184, 75, 0.28);
+  background: rgba(242, 184, 75, 0.07);
+  color: #f4ce85;
+}
+
+.status-pill-instrument {
+  border-color: rgba(105, 208, 203, 0.28);
+  background: rgba(105, 208, 203, 0.07);
+  color: #9be4e0;
+}
+
+.status-pill-verified {
+  border-color: rgba(112, 214, 158, 0.24);
+  background: rgba(112, 214, 158, 0.07);
+  color: #a6ecc3;
+}
+
+.status-pill-failure {
+  border-color: rgba(255, 122, 114, 0.24);
+  background: rgba(255, 122, 114, 0.07);
+  color: #ffaaa5;
+}
+
+.status-pill-locked {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.02);
+  color: #6b7480;
+}
+
+/* StatusDot: decorative-only indicator (see status-dot.tsx — always
+   aria-hidden, always paired with caller text). Tone colors reuse the
+   core token variables directly rather than the Tailwind default palette,
+   so new UI never drifts from the five documented core colors. */
+.status-dot {
+  display: inline-block;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.status-dot-sm {
+  width: 0.375rem;
+  height: 0.375rem;
+}
+
+.status-dot-md {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+.status-dot-lg {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+.status-dot-neutral {
+  background: var(--muted-dim);
+}
+
+.status-dot-investigation {
+  background: var(--amber);
+  box-shadow: 0 0 0 4px rgba(242, 184, 75, 0.08);
+}
+
+.status-dot-instrument {
+  background: var(--cyan);
+  box-shadow: 0 0 0 4px rgba(105, 208, 203, 0.08);
+}
+
+.status-dot-verified {
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgba(112, 214, 158, 0.08);
+}
+
+.status-dot-failure {
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgba(255, 122, 114, 0.08);
+}
+
+.status-dot-locked {
+  background: var(--muted-dim);
+  opacity: 0.6;
+}
+
+/* Field: canonical text input/textarea surface (default/hover/focus-visible
+   via the existing global :focus-visible rule/disabled/invalid), replacing
+   the border-white/10 + bg-black/30 pattern repeated at each input call
+   site. */
+.field-input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text);
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.field-input::placeholder {
+  color: #71767d;
+}
+
+.field-input:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.field-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.field-input[aria-invalid="true"] {
+  border-color: rgba(255, 122, 114, 0.45);
+  background: rgba(255, 122, 114, 0.035);
+}
+
+.field-input[aria-invalid="true"]:focus-visible {
+  outline-color: var(--red);
 }
 
 @media (prefers-reduced-motion: reduce) {
