@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
+import { TerminalFrame } from "@/components/terminal-frame";
+
 const chapters = [
   {
     number: "01",
@@ -45,12 +47,11 @@ function CaseMonitor() {
   return (
     <div className="case-monitor-scene" aria-hidden="true">
       <div className="case-monitor-shell" data-case-monitor>
-        <div className="case-monitor-bar">
-          <span className="case-monitor-lights"><i /><i /><i /></span>
-          <span>retry_policy.py · controlled case</span>
-          <span>FS-017</span>
-        </div>
-        <div className="case-monitor-screen">
+        <TerminalFrame
+          label="retry_policy.py · controlled case"
+          meta="FS-017"
+          bodyClassName="case-monitor-screen"
+        >
           <div className="case-visual-stage" data-case-visual-stage="0">
             <div className="case-terminal-label" data-case-line>OBSERVE / TEST EVIDENCE</div>
             <div className="case-code-line text-zinc-300" data-case-line><span className="text-zinc-600">$</span> pytest -q</div>
@@ -102,7 +103,7 @@ function CaseMonitor() {
             </div>
             <div className="case-evidence-strip case-evidence-green" data-case-line><span />Executed evidence sealed</div>
           </div>
-        </div>
+        </TerminalFrame>
       </div>
       <div className="case-monitor-neck" />
       <div className="case-monitor-base" />
@@ -255,7 +256,7 @@ export function DebuggingCaseFile() {
       <header className="case-file-heading">
         <div>
           <div className="instrument-label text-cyan-200">A debugging case file · four evidence gates</div>
-          <h2 id="debugging-case-file-heading" className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
+          <h2 id="debugging-case-file-heading" className="prompt-heading mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
             See the investigation, not just the answer.
           </h2>
         </div>

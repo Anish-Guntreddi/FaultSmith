@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { BrandLockup } from "@/components/brand-mark";
 import { DebuggingCaseFile } from "@/components/debugging-case-file";
+import { TerminalFrame } from "@/components/terminal-frame";
 
 const learningModes = [
   {
@@ -55,15 +56,44 @@ function ArrowIcon() {
   return <span aria-hidden="true">→</span>;
 }
 
+const traceTickerEvents = [
+  "OBSERVE · failing assertion captured",
+  "HYPOTHESIZE · causal branch isolated",
+  "REPAIR · minimal diff applied",
+  "VERIFY · full suite executed",
+] as const;
+
+/** CSS-only marquee of evidence-loop events. Purely decorative ambient
+ * detail — content is fully hidden from assistive tech and carries no
+ * information not already stated elsewhere on the page. Pausable on
+ * hover/focus; collapses to a single static row under reduced motion. */
+function TraceTicker() {
+  return (
+    <div className="trace-ticker" aria-hidden="true">
+      <div className="trace-ticker-track">
+        <span className="trace-ticker-set">
+          {traceTickerEvents.map((event) => (
+            <em key={`a-${event}`}>{event}</em>
+          ))}
+        </span>
+        <span className="trace-ticker-set">
+          {traceTickerEvents.map((event) => (
+            <em key={`b-${event}`}>{event}</em>
+          ))}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function HeroConsole() {
   return (
     <div className="landing-console" aria-label="Example FaultSmith evidence sequence">
-      <div className="landing-console-bar">
-        <span className="landing-console-lights" aria-hidden="true"><i /><i /><i /></span>
-        <span>record_buffer.py · demonstration trace</span>
-        <span>DEMO-024</span>
-      </div>
-      <div className="landing-console-body">
+      <TerminalFrame
+        label="record_buffer.py · demonstration trace"
+        meta="DEMO-024"
+        bodyClassName="landing-console-body"
+      >
         <div className="landing-console-command">
           <span className="text-zinc-500">$</span> pytest -q
           <strong className="text-red-300">5 passed · 1 failed</strong>
@@ -82,7 +112,7 @@ function HeroConsole() {
           <li><span>03</span><div><strong>Repair</strong><small>One causal branch changed</small></div><i>minimal</i></li>
           <li className="is-verified"><span>04</span><div><strong>Verify</strong><small>Full focused suite passes</small></div><i>sealed</i></li>
         </ol>
-      </div>
+      </TerminalFrame>
       <div className="landing-console-footer">
         <span><i className="bg-emerald-400" /> Repair verified</span>
         <span>6 passed · 0 failed · 47ms</span>
@@ -98,15 +128,15 @@ export function LandingPage() {
 
       <header className="landing-nav-shell">
         <nav aria-label="Primary navigation" className="landing-nav">
-          <Link href="/" aria-label="FaultSmith home" className="rounded-xl">
+          <Link href="/" aria-label="FaultSmith home" className="focus-brackets rounded-xl">
             <BrandLockup />
           </Link>
           <div className="landing-nav-links">
-            <a href="#method">Method</a>
-            <a href="#learning-system">Learning system</a>
-            <a href="#evidence">Evidence</a>
+            <a href="#method" className="focus-brackets">Method</a>
+            <a href="#learning-system" className="focus-brackets">Learning system</a>
+            <a href="#evidence" className="focus-brackets">Evidence</a>
           </div>
-          <Link href="/learn" className="primary-action landing-nav-cta rounded-xl px-4 py-2.5 text-xs font-semibold">
+          <Link href="/learn" className="primary-action landing-nav-cta focus-brackets rounded-xl px-4 py-2.5 text-xs font-semibold">
             Open FaultSmith <ArrowIcon />
           </Link>
         </nav>
@@ -118,18 +148,22 @@ export function LandingPage() {
             <div className="instrument-label flex items-center gap-2 text-amber-300">
               <span className="h-px w-9 bg-amber-300/65" />OpenAI Build Week · Education
             </div>
-            <h1 id="landing-hero-heading">
+            <h1 id="landing-hero-heading" className="prompt-heading prompt-heading-display">
               AI can write the patch.<br />
-              <span>FaultSmith teaches you to prove it.</span>
+              <span className="block-cursor">
+                <span className="typewriter-reveal" style={{ ["--tw-steps" as string]: "36" }}>
+                  FaultSmith teaches you to prove it.
+                </span>
+              </span>
             </h1>
             <p>
               A deliberate debugging lab for students and engineers who want to understand unfamiliar code—not just accept the first generated fix.
             </p>
             <div className="landing-hero-actions">
-              <Link href="/learn" className="primary-action rounded-xl px-5 py-3.5 text-sm font-semibold">
+              <Link href="/learn" className="primary-action focus-brackets rounded-xl px-5 py-3.5 text-sm font-semibold">
                 Start a guided lab <ArrowIcon />
               </Link>
-              <a href="#method" className="secondary-action rounded-xl px-5 py-3.5 text-sm font-semibold">
+              <a href="#method" className="secondary-action focus-brackets rounded-xl px-5 py-3.5 text-sm font-semibold">
                 Watch the investigation
               </a>
             </div>
@@ -138,6 +172,7 @@ export function LandingPage() {
               <li><span />No API key required for guided labs</li>
               <li><span />Verified progress evidence</li>
             </ul>
+            <TraceTicker />
           </div>
           <div className="landing-hero-visual motion-rise">
             <div className="landing-orbit landing-orbit-amber" aria-hidden="true" />
@@ -149,23 +184,23 @@ export function LandingPage() {
         <section aria-labelledby="problem-heading" className="landing-section landing-problem">
           <div className="landing-section-heading">
             <div className="instrument-label text-red-300">The skill gap</div>
-            <h2 id="problem-heading">The shortcut becomes the dependency.</h2>
+            <h2 id="problem-heading" className="prompt-heading prompt-heading-display">The shortcut becomes the dependency.</h2>
             <p>
               When every failure goes straight into an AI prompt, learners can receive working code without building the reasoning needed to maintain it.
             </p>
           </div>
           <div className="landing-problem-grid">
-            <article className="lab-panel rounded-2xl p-5">
+            <article className="lab-panel fine-hover-lift rounded-2xl p-5">
               <span className="landing-card-number">01</span>
               <h3>Symptoms replace evidence</h3>
               <p>The visible error gets patched before the failing boundary or causal branch is understood.</p>
             </article>
-            <article className="lab-panel rounded-2xl p-5">
+            <article className="lab-panel fine-hover-lift rounded-2xl p-5">
               <span className="landing-card-number">02</span>
               <h3>Confidence replaces proof</h3>
               <p>A plausible answer feels finished even when the exact submitted snapshot was never tested.</p>
             </article>
-            <article className="lab-panel rounded-2xl p-5">
+            <article className="lab-panel fine-hover-lift rounded-2xl p-5">
               <span className="landing-card-number">03</span>
               <h3>Velocity creates maintenance debt</h3>
               <p>Code ships faster, but the engineer responsible for it cannot explain or safely extend the behavior.</p>
@@ -185,7 +220,7 @@ export function LandingPage() {
           <div className="landing-section-heading landing-section-heading-wide">
             <div>
               <div className="instrument-label text-cyan-200">One product · two levels of guidance</div>
-              <h2 id="learning-system-heading">Ground beginners. Stretch advanced learners.</h2>
+              <h2 id="learning-system-heading" className="prompt-heading prompt-heading-display">Ground beginners. Stretch advanced learners.</h2>
             </div>
             <p>
               Curated curriculum carries the fundamentals. Dynamic generation is reserved for the cases where more range creates more value.
@@ -193,7 +228,7 @@ export function LandingPage() {
           </div>
           <div className="landing-learning-grid">
             {learningModes.map((mode) => (
-              <article key={mode.number} className={`landing-learning-card landing-learning-card-${mode.tone}`}>
+              <article key={mode.number} className={`landing-learning-card fine-hover-lift landing-learning-card-${mode.tone}`}>
                 <div className="flex items-center justify-between gap-4">
                   <span className="landing-card-number">{mode.number}</span>
                   <span className="instrument-label">{mode.eyebrow}</span>
@@ -209,17 +244,17 @@ export function LandingPage() {
         <section id="evidence" aria-labelledby="evidence-heading" className="landing-section landing-evidence">
           <div className="landing-evidence-intro">
             <div className="instrument-label text-emerald-300">Designed to fail safely</div>
-            <h2 id="evidence-heading">The AI proposes. The evidence decides.</h2>
+            <h2 id="evidence-heading" className="prompt-heading prompt-heading-display">The AI proposes. The evidence decides.</h2>
             <p>
               FaultSmith keeps generation, execution, assessment, and persistence behind explicit boundaries so the learning loop stays honest when providers or credentials are unavailable.
             </p>
-            <Link href="/learn" className="secondary-action mt-7 inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">
+            <Link href="/learn" className="secondary-action focus-brackets mt-7 inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">
               Explore the learning system <ArrowIcon />
             </Link>
           </div>
           <div className="landing-evidence-stack">
             {evidenceBoundaries.map((boundary, index) => (
-              <article key={boundary.title} className="evidence-well rounded-2xl p-5">
+              <article key={boundary.title} className="evidence-well fine-hover-lift rounded-2xl p-5">
                 <div className="flex gap-4">
                   <span className="font-instrument text-[10px] text-amber-300">0{index + 1}</span>
                   <div>
@@ -236,10 +271,10 @@ export function LandingPage() {
         <section aria-labelledby="final-cta-heading" className="landing-final-cta">
           <div>
             <div className="instrument-label text-amber-300">Your first case is ready</div>
-            <h2 id="final-cta-heading">Stop guessing at code. Start investigating it.</h2>
+            <h2 id="final-cta-heading" className="prompt-heading prompt-heading-display">Stop guessing at code. Start investigating it.</h2>
             <p>Begin with a prevalidated guided fault. No account, API key, or setup ceremony required.</p>
           </div>
-          <Link href="/learn" className="primary-action shrink-0 rounded-xl px-6 py-4 text-sm font-semibold">
+          <Link href="/learn" className="primary-action focus-brackets shrink-0 rounded-xl px-6 py-4 text-sm font-semibold">
             Open the debugging lab <ArrowIcon />
           </Link>
         </section>
@@ -248,7 +283,7 @@ export function LandingPage() {
       <footer className="landing-footer">
         <BrandLockup compact />
         <p>Built for deliberate practice. Verified by evidence.</p>
-        <Link href="/learn">Launch application <ArrowIcon /></Link>
+        <Link href="/learn" className="focus-brackets">Launch application <ArrowIcon /></Link>
       </footer>
     </div>
   );

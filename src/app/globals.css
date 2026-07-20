@@ -224,6 +224,13 @@ button:disabled {
     box-shadow var(--duration-ui) var(--ease-out);
 }
 
+.fine-hover-lift {
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .primary-action:hover:not(:disabled) {
     transform: translateY(-1px);
@@ -237,7 +244,13 @@ button:disabled {
 
   .fine-hover-lift:hover:not(:disabled) {
     transform: translateY(-2px);
+    border-color: rgba(242, 184, 75, 0.28);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), var(--shadow-active);
   }
+}
+
+.fine-hover-lift:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .progress-fill {
@@ -367,59 +380,17 @@ input:-webkit-autofill:focus {
   will-change: transform, opacity;
 }
 
-.case-monitor-bar {
-  display: grid;
-  grid-template-columns: 4.5rem 1fr auto;
-  align-items: center;
-  gap: 0.75rem;
-  min-height: 2.35rem;
-  padding-inline: 0.6rem;
-  color: #8e98a2;
-  font-family: var(--font-instrument);
-  font-size: 0.56rem;
-  letter-spacing: 0.06em;
-}
+/* The case-file monitor and hero console render their titlebar + screen via
+   the shared TerminalFrame primitive (dots + mono session label); the bezel
+   here supplies only the outer hardware frame, so the nested frame's own
+   border/background/shadow are suppressed — see "TerminalFrame nested
+   inside hardware bezels" below. */
 
-.case-monitor-bar > span:nth-child(2) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.case-monitor-lights,
-.landing-console-lights {
-  display: flex;
-  gap: 0.32rem;
-}
-
-.case-monitor-lights i,
-.landing-console-lights i {
-  display: block;
-  width: 0.48rem;
-  height: 0.48rem;
-  border-radius: 50%;
-  background: #4b535c;
-}
-
-.case-monitor-lights i:first-child,
-.landing-console-lights i:first-child {
-  background: rgba(255, 122, 114, 0.72);
-}
-
-.case-monitor-lights i:nth-child(2),
-.landing-console-lights i:nth-child(2) {
-  background: rgba(242, 184, 75, 0.68);
-}
-
-.case-monitor-lights i:last-child,
-.landing-console-lights i:last-child {
-  background: rgba(112, 214, 158, 0.62);
-}
-
-.case-monitor-screen {
+.terminal-frame-body.case-monitor-screen {
   position: relative;
   min-height: 25rem;
   overflow: hidden;
+  padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.065);
   border-radius: 0.9rem;
   background:
@@ -799,6 +770,10 @@ input:-webkit-autofill:focus {
 }
 
 .landing-hero-copy {
+  /* Grid item: resets the automatic min-width so intrinsically wide
+     descendants (the trace ticker's max-content marquee track) never
+     blow out the hero column past the viewport. */
+  min-width: 0;
   max-width: 50rem;
 }
 
@@ -918,21 +893,7 @@ input:-webkit-autofill:focus {
   background: linear-gradient(135deg, rgba(242, 184, 75, 0.035), transparent 30%, transparent 72%, rgba(105, 208, 203, 0.035));
 }
 
-.landing-console-bar {
-  position: relative;
-  display: grid;
-  min-height: 2.5rem;
-  grid-template-columns: 4.5rem 1fr auto;
-  align-items: center;
-  gap: 0.8rem;
-  padding-inline: 0.7rem;
-  color: #949da5;
-  font-family: var(--font-instrument);
-  font-size: 0.56rem;
-  letter-spacing: 0.05em;
-}
-
-.landing-console-body {
+.terminal-frame-body.landing-console-body {
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.065);
   border-radius: 1rem;
@@ -1467,10 +1428,135 @@ input:-webkit-autofill:focus {
   padding: 1rem;
 }
 
+/* TerminalFrame nested inside hardware bezels (Pass 2): the hero console
+   and case-file monitor draw their own metal bezel (border, gradient,
+   shadow, 3D transform). The TerminalFrame they contain should contribute
+   only its titlebar (dots + mono label) and content slot, not a second
+   competing card outline. */
+.landing-console > .terminal-frame,
+.case-monitor-shell > .terminal-frame {
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.landing-console > .terminal-frame > .terminal-frame-bar,
+.case-monitor-shell > .terminal-frame > .terminal-frame-bar {
+  padding-inline: 0.7rem;
+}
+
+/* === Hero typewriter reveal + display-scale prompt grammar (Pass 2) ====
+   CSS steps() reveal of the value-prop line via clip-path (percentages
+   resolve against the element's own box, so no width/ch guesswork).
+   Instant and fully visible under prefers-reduced-motion. */
+.typewriter-reveal {
+  display: inline-block;
+  vertical-align: bottom;
+  animation: typewriter-reveal var(--dur-reveal) steps(var(--tw-steps, 36), end) 300ms 1 both;
+}
+
+@keyframes typewriter-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Scales the prompt-heading glyph down for display-size headings so a
+   giant ">" doesn't overpower hero/section type; default .prompt-heading
+   sizing (used at body/heading-3 scale) is left untouched. */
+.prompt-heading-display::before {
+  margin-right: 0.16em;
+  font-size: 0.42em;
+  vertical-align: 0.1em;
+}
+
+/* The block-cursor glyph inherits its host's font-size; at hero display
+   scale that renders an oversized bar that wraps onto its own line. Scale
+   it down to a legible accent that stays on the value-prop's line. */
+.landing-hero-copy h1 .block-cursor::after {
+  margin-left: 0.08em;
+  font-size: 0.4em;
+  vertical-align: -0.02em;
+}
+
+/* === Trace ticker (Pass 2) ==============================================
+   CSS-only marquee of evidence-loop events; decorative ambient detail,
+   fully hidden from assistive tech. Pausable on hover; the duplicated
+   second set collapses under reduced motion, leaving one static row. */
+.trace-ticker {
+  overflow: hidden;
+  margin-top: 1.7rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 1rem;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.trace-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: trace-ticker-scroll 24s linear infinite;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .trace-ticker:hover .trace-ticker-track {
+    animation-play-state: paused;
+  }
+}
+
+.trace-ticker-set {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2.5rem;
+  padding-right: 2.5rem;
+  white-space: nowrap;
+}
+
+.trace-ticker-set em {
+  color: #6d7a86;
+  font-family: var(--font-instrument);
+  font-size: 0.6rem;
+  font-style: normal;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.trace-ticker-set em::before {
+  margin-right: 0.6ch;
+  color: var(--amber);
+  content: "//";
+}
+
+@keyframes trace-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .block-cursor::after {
     animation: none;
     opacity: 1;
+  }
+
+  .typewriter-reveal {
+    animation: none;
+    clip-path: none;
+  }
+
+  .trace-ticker-track {
+    animation: none;
+    transform: none;
+  }
+
+  .trace-ticker-set:nth-child(2) {
+    display: none;
   }
 }
 
@@ -1655,15 +1741,11 @@ input:-webkit-autofill:focus {
     display: grid;
   }
 
-  .landing-console-bar {
-    grid-template-columns: 3rem minmax(0, 1fr);
-  }
-
-  .landing-console-bar > span:last-child {
+  .landing-console .terminal-frame-meta {
     display: none;
   }
 
-  .landing-console-body {
+  .terminal-frame-body.landing-console-body {
     padding: 1rem;
   }
 
@@ -1762,15 +1844,11 @@ input:-webkit-autofill:focus {
     gap: 1rem;
   }
 
-  .case-monitor-screen {
+  .terminal-frame-body.case-monitor-screen {
     min-height: 20rem;
   }
 
-  .case-monitor-bar {
-    grid-template-columns: 3rem minmax(0, 1fr);
-  }
-
-  .case-monitor-bar > span:last-child {
+  .case-monitor-shell .terminal-frame-meta {
     display: none;
   }
 
