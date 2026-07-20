@@ -205,6 +205,14 @@ button:disabled {
   color: var(--text);
 }
 
+/* Guards against a stuck/slow client-hydration flag (localProgressReady)
+   leaving the tabs looking normal and clickable while silently doing
+   nothing — a real disabled treatment makes that state visibly distinct. */
+.mode-tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .mode-tab[aria-pressed="true"] {
   border-color: rgba(242, 184, 75, 0.38);
   background: linear-gradient(180deg, rgba(242, 184, 75, 0.18), rgba(242, 184, 75, 0.09));
@@ -1501,6 +1509,26 @@ input:-webkit-autofill:focus {
   background-repeat: no-repeat;
 }
 
+/* .primary-action sits on a warm amber gradient fill, the same family as
+   --focus-ring (--amber-bright): the brackets this rule draws for keyboard
+   users blend into the button's own fill on the highest-traffic CTAs
+   (guided-roadmap "Start guided lab", My Progress "Start Lesson N", the
+   landing page's primary links). Override to a dark, high-contrast bracket
+   color on amber surfaces specifically, leaving every other .focus-brackets
+   host on the default --focus-ring. */
+.primary-action.focus-brackets:focus-visible::after {
+  background:
+    linear-gradient(#211506, #211506) left 0 top 0 / 0.7rem 2px,
+    linear-gradient(#211506, #211506) left 0 top 0 / 2px 0.7rem,
+    linear-gradient(#211506, #211506) right 0 top 0 / 0.7rem 2px,
+    linear-gradient(#211506, #211506) right 0 top 0 / 2px 0.7rem,
+    linear-gradient(#211506, #211506) left 0 bottom 0 / 0.7rem 2px,
+    linear-gradient(#211506, #211506) left 0 bottom 0 / 2px 0.7rem,
+    linear-gradient(#211506, #211506) right 0 bottom 0 / 0.7rem 2px,
+    linear-gradient(#211506, #211506) right 0 bottom 0 / 2px 0.7rem;
+  background-repeat: no-repeat;
+}
+
 /* === Terminal titlebar frame (Pass 1) ==================================
    Themed terminal window chrome for evidence wells and the case-file
    monitor. Rendered by src/components/terminal-frame.tsx. */
@@ -1837,6 +1865,43 @@ input:-webkit-autofill:focus {
    small primitives: an `ls -la`-flavored metadata row (permission bits +
    lesson id + skill + duration, monospace, decorative glyph aria-hidden)
    and a block-segment progress meter. */
+
+/* Lesson card (Pass 4 fix): a dedicated class instead of reusing
+   .fine-hover-lift on the roadmap cards. .fine-hover-lift's :hover sets
+   border-color as unlayered author CSS, which — per the CSS cascade-layers
+   spec — always wins over Tailwind v4's hover:border-cyan and hover:bg-white
+   utilities (emitted inside @layer utilities) regardless of source order or
+   specificity. That silently replaced the intended cyan hover with the
+   pre-existing amber .fine-hover-lift hover border on every unselected card,
+   which reads as "this is now selected." Splitting the concerns fixes it:
+   .lesson-card owns only transform/box-shadow lift here, leaving
+   border-color/background hover fully owned by the Tailwind utilities in the
+   button's className.
+   It also supplies one explicit, bounded transition list shared by *both*
+   the selected and unselected card states. Previously only the unselected
+   branch carried .fine-hover-lift's token-correct transition; the selected
+   branch fell through to the bare Tailwind `transition duration-200`
+   utility — an unbounded ~22-property transition on Tailwind's built-in
+   easing, not this project's --ease-out token — so the same button used two
+   different curves depending on selection state. */
+.lesson-card {
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lesson-card:hover:not(:disabled):not([aria-pressed="true"]) {
+    transform: translateY(-2px);
+  }
+}
+
+.lesson-card:active:not(:disabled) {
+  transform: translateY(0);
+}
+
 .lesson-meta {
   display: flex;
   align-items: center;

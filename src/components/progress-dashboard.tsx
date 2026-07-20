@@ -60,6 +60,19 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
   const recommendedStep = recommendation.step;
   const isEmpty = completedCount === 0 && profile.attempts.length === 0;
   const roadmapComplete = completedCount === TOTAL_LESSON_COUNT;
+  // Completions (LEARNING_PROGRESS_KEY) and attempt history
+  // (ATTEMPT_HISTORY_KEY) are two independently-written, independently-gated
+  // local records — the attempt-history write is explicit best-effort
+  // evidence and can be skipped or lost while a completion still lands. When
+  // that happens, "Roadmap evidence" already shows verified lessons while
+  // the attempt-derived cards below would otherwise fall back to the
+  // generic "appears after your first verified repair" copy — a direct,
+  // visible contradiction next to a completed-lesson count. Use a specific
+  // explanatory state instead whenever completions exist without matching
+  // attempt evidence.
+  const hasUnexplainedCompletions = completedCount > 0;
+  const missingAttemptEvidenceCopy =
+    "Some evidence details aren't available for earlier attempts — this device has verified lesson completions, but no matching attempt-history record for them.";
 
   const scoreCards = averages
     ? ([
@@ -167,7 +180,9 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
               </div>
             ) : (
               <p className="mt-4 text-xs leading-5 text-zinc-500">
-                Verified score averages appear after your first verified repair. Failing attempts stay visible below as process evidence only.
+                {hasUnexplainedCompletions
+                  ? missingAttemptEvidenceCopy
+                  : "Verified score averages appear after your first verified repair. Failing attempts stay visible below as process evidence only."}
               </p>
             )}
           </section>
@@ -184,7 +199,9 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
                   <EvidenceBar value={independent.rate} tone="emerald" />
                 </>
               ) : (
-                <p className="mt-3 text-xs leading-5 text-zinc-500">Appears after your first verified repair.</p>
+                <p className="mt-3 text-xs leading-5 text-zinc-500">
+                  {hasUnexplainedCompletions ? missingAttemptEvidenceCopy : "Appears after your first verified repair."}
+                </p>
               )}
             </section>
 
@@ -215,7 +232,9 @@ export function ProgressDashboard({ profile, onStartStep, sync }: ProgressDashbo
                   </p>
                 </>
               ) : (
-                <p className="mt-3 text-xs leading-5 text-zinc-500">Appears after your first verified repair.</p>
+                <p className="mt-3 text-xs leading-5 text-zinc-500">
+                  {hasUnexplainedCompletions ? missingAttemptEvidenceCopy : "Appears after your first verified repair."}
+                </p>
               )}
             </section>
 

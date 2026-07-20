@@ -86,13 +86,27 @@ export function GuidedRoadmap({
                   const status = lessonStatus(progress, step);
                   const selectedLesson = selected.id === step.id;
                   const recommended = recommendation.step?.id === step.id;
+                  // The amber gradient/keyline elsewhere in this system means
+                  // "this is the one to act on." Reusing it for a selected-but-
+                  // Locked preview (inert, unstartable) would dilute that
+                  // signal, so locked selections get a neutral/desaturated
+                  // ring instead and the amber treatment is reserved for
+                  // selections that are actually startable (Ready or Complete).
+                  const isLockedSelection = selectedLesson && status === "Locked";
+                  const isActiveSelection = selectedLesson && !isLockedSelection;
                   return (
                     <button
                       key={step.id}
                       type="button"
                       aria-pressed={selectedLesson}
                       onClick={() => onSelectStep(step.id)}
-                      className={`focus-brackets min-h-32 rounded-xl border p-3 text-left transition duration-200 focus-visible:outline-none ${selectedLesson ? "border-amber-400/45 bg-[linear-gradient(145deg,rgba(242,184,75,0.09),rgba(255,255,255,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]" : "fine-hover-lift border-white/7 bg-black/15 hover:border-cyan-200/20 hover:bg-white/[0.025]"}`}
+                      className={`lesson-card focus-brackets min-h-32 rounded-xl border p-3 text-left focus-visible:outline-none ${
+                        isActiveSelection
+                          ? "border-amber-400/45 bg-[linear-gradient(145deg,rgba(242,184,75,0.09),rgba(255,255,255,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]"
+                          : isLockedSelection
+                            ? "border-white/30 bg-white/[0.035] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                            : "border-white/7 bg-black/15 hover:border-cyan-200/20 hover:bg-white/[0.025]"
+                      }`}
                     >
                       <div className="font-instrument flex items-center justify-between gap-2 text-[9px] uppercase tracking-[0.12em]">
                         <span className="text-zinc-500">Lesson {step.order}</span>
