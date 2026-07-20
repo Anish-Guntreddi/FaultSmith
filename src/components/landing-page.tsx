@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { BrandLockup } from "@/components/brand-mark";
 import { DebuggingCaseFile } from "@/components/debugging-case-file";
 import { TerminalFrame } from "@/components/terminal-frame";
+import { Card } from "@/components/ui";
 
 const learningModes = [
   {
@@ -225,21 +226,21 @@ export function LandingPage() {
             </p>
           </div>
           <div className="landing-problem-grid">
-            <article className="lab-panel fine-hover-lift rounded-2xl p-5">
+            <Card as="article" variant="panel" padding="lg" className="fine-hover-lift">
               <span className="landing-card-number">01</span>
               <h3>Symptoms replace evidence</h3>
               <p>The visible error gets patched before the failing boundary or causal branch is understood.</p>
-            </article>
-            <article className="lab-panel fine-hover-lift rounded-2xl p-5">
+            </Card>
+            <Card as="article" variant="panel" padding="lg" className="fine-hover-lift">
               <span className="landing-card-number">02</span>
               <h3>Confidence replaces proof</h3>
               <p>A plausible answer feels finished even when the exact submitted snapshot was never tested.</p>
-            </article>
-            <article className="lab-panel fine-hover-lift rounded-2xl p-5">
+            </Card>
+            <Card as="article" variant="panel" padding="lg" className="fine-hover-lift">
               <span className="landing-card-number">03</span>
               <h3>Velocity creates maintenance debt</h3>
               <p>Code ships faster, but the engineer responsible for it cannot explain or safely extend the behavior.</p>
-            </article>
+            </Card>
           </div>
           <div className="landing-thesis lab-panel-raised">
             <div className="instrument-label text-amber-300">FaultSmith&apos;s intervention</div>
@@ -289,7 +290,7 @@ export function LandingPage() {
           </div>
           <div className="landing-evidence-stack">
             {evidenceBoundaries.map((boundary, index) => (
-              <article key={boundary.title} className="evidence-well fine-hover-lift rounded-2xl p-5">
+              <Card key={boundary.title} as="article" variant="evidence-well" padding="lg" className="fine-hover-lift">
                 <div className="flex gap-4">
                   <span className="font-instrument text-[10px] text-amber-300">0{index + 1}</span>
                   <div>
@@ -298,7 +299,7 @@ export function LandingPage() {
                     <div className="landing-evidence-signal"><span />{boundary.signal}</div>
                   </div>
                 </div>
-              </article>
+              </Card>
             ))}
           </div>
         </section>
