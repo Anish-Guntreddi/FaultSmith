@@ -26,6 +26,7 @@ import {
   type CloudUserSnapshot,
   type FirebaseAuthAdapter,
 } from "@/client/firebase-auth";
+import { Button, Card, Field, StatusDot } from "@/components/ui";
 import {
   emptyLearnerProfile,
   progressSnapshotSchema,
@@ -635,15 +636,6 @@ export function useCloudProgressSync(
 
 type PanelMode = "summary" | "create" | "login" | "reset";
 
-const inputClass =
-  "evidence-well w-full rounded-xl px-3.5 py-2.5 text-sm text-zinc-200 outline-none placeholder:text-zinc-700";
-const primaryButtonClass =
-  "focus-brackets primary-action rounded-xl px-4 py-2.5 text-xs font-semibold focus-visible:outline-none disabled:opacity-40";
-const secondaryButtonClass =
-  "focus-brackets secondary-action rounded-xl px-4 py-2.5 text-xs focus-visible:outline-none disabled:opacity-40";
-const quietButtonClass =
-  "focus-brackets rounded-lg px-2 py-1 text-[11px] text-zinc-500 underline underline-offset-4 transition hover:text-zinc-200 focus-visible:outline-none";
-
 function PasswordField({
   id,
   label,
@@ -675,17 +667,19 @@ function PasswordField({
           required
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className={inputClass}
+          className="field-input w-full px-4 py-2.5 text-sm"
         />
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           aria-pressed={show}
           aria-label={show ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
           onClick={onToggleShow}
-          className="focus-brackets secondary-action shrink-0 rounded-xl px-3 text-[11px] focus-visible:outline-none"
+          className="shrink-0 px-3"
         >
           {show ? "Hide" : "Show"}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -720,10 +714,7 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
 
   if (sync.configStatus !== "ready") {
     return (
-      <section
-        aria-labelledby="progress-sync-heading"
-        className="lab-panel mb-4 rounded-2xl p-4"
-      >
+      <Card as="section" aria-labelledby="progress-sync-heading" variant="panel" padding="md" className="mb-4">
         <h3 id="progress-sync-heading" className="instrument-label">
           Progress storage
         </h3>
@@ -731,7 +722,7 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
           Progress is saved on this device. Optional account sync is not configured in this
           deployment, and nothing about your practice leaves the browser.
         </p>
-      </section>
+      </Card>
     );
   }
 
@@ -748,24 +739,15 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
   );
 
   return (
-    <section
-      aria-labelledby="progress-sync-heading"
-      className="lab-panel mb-4 rounded-2xl p-4"
-    >
+    <Card as="section" aria-labelledby="progress-sync-heading" variant="panel" padding="md" className="mb-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 id="progress-sync-heading" className="instrument-label">
           Optional account sync
         </h3>
         <span className="status-pill px-2.5 py-1">
-          <span
-            aria-hidden="true"
-            className={`inline-block h-1.5 w-1.5 rounded-full ${
-              sync.phase === "synced"
-                ? "bg-emerald-400"
-                : sync.phase === "degraded"
-                  ? "bg-red-400"
-                  : "bg-amber-400"
-            }`}
+          <StatusDot
+            tone={sync.phase === "synced" ? "verified" : sync.phase === "degraded" ? "failure" : "investigation"}
+            size="sm"
           />
           Account sync · {sync.storageLabel}
         </span>
@@ -780,9 +762,10 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
 
           {mode === "summary" && (
             <div className="mt-3 flex flex-wrap gap-2">
-              <button
+              <Button
                 type="button"
-                className={secondaryButtonClass}
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   resetForms();
                   setMode("summary");
@@ -790,31 +773,22 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
                 }}
               >
                 Continue as guest
-              </button>
-              <button
-                type="button"
-                className={secondaryButtonClass}
-                disabled={busy}
-                onClick={() => setMode("create")}
-              >
+              </Button>
+              <Button type="button" variant="secondary" size="sm" disabled={busy} onClick={() => setMode("create")}>
                 Create account
-              </button>
-              <button
-                type="button"
-                className={secondaryButtonClass}
-                disabled={busy}
-                onClick={() => setMode("login")}
-              >
+              </Button>
+              <Button type="button" variant="secondary" size="sm" disabled={busy} onClick={() => setMode("login")}>
                 Log in
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                className={secondaryButtonClass}
+                variant="secondary"
+                size="sm"
                 disabled={busy}
                 onClick={() => void run(() => sync.signInGoogle())}
               >
                 Continue with Google
-              </button>
+              </Button>
             </div>
           )}
 
@@ -826,21 +800,16 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
                 void run(() => sync.createAccount(email, password, confirmPassword));
               }}
             >
-              <div>
-                <label htmlFor="sync-create-email" className="mb-1.5 block text-xs font-medium text-zinc-400">
-                  Email
-                </label>
-                <input
-                  id="sync-create-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  className={inputClass}
-                />
-              </div>
+              <Field
+                id="sync-create-email"
+                name="email"
+                label="Email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
               <PasswordField
                 id="sync-create-password"
                 label="Password"
@@ -865,12 +834,12 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
                 verify their email before cloud sync starts.
               </p>
               <div className="flex gap-2">
-                <button type="submit" className={primaryButtonClass} disabled={busy}>
+                <Button type="submit" variant="primary" size="sm" disabled={busy}>
                   {busy ? "Creating…" : "Create account"}
-                </button>
-                <button type="button" className={secondaryButtonClass} onClick={() => setMode("summary")}>
+                </Button>
+                <Button type="button" variant="secondary" size="sm" onClick={() => setMode("summary")}>
                   Back
-                </button>
+                </Button>
               </div>
             </form>
           )}
@@ -883,21 +852,16 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
                 void run(() => sync.signInEmail(email, password));
               }}
             >
-              <div>
-                <label htmlFor="sync-login-email" className="mb-1.5 block text-xs font-medium text-zinc-400">
-                  Email
-                </label>
-                <input
-                  id="sync-login-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  className={inputClass}
-                />
-              </div>
+              <Field
+                id="sync-login-email"
+                name="email"
+                label="Email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
               <PasswordField
                 id="sync-login-password"
                 label="Password"
@@ -908,15 +872,21 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
                 onToggleShow={() => setShowPassword((value) => !value)}
               />
               <div className="flex flex-wrap items-center gap-2">
-                <button type="submit" className={primaryButtonClass} disabled={busy}>
+                <Button type="submit" variant="primary" size="sm" disabled={busy}>
                   {busy ? "Signing in…" : "Log in"}
-                </button>
-                <button type="button" className={secondaryButtonClass} onClick={() => setMode("summary")}>
+                </Button>
+                <Button type="button" variant="secondary" size="sm" onClick={() => setMode("summary")}>
                   Back
-                </button>
-                <button type="button" className={quietButtonClass} onClick={() => setMode("reset")}>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setMode("reset")}
+                  className="px-2 text-[11px] text-zinc-500 underline underline-offset-4 hover:text-zinc-200"
+                >
                   Forgot password?
-                </button>
+                </Button>
               </div>
             </form>
           )}
@@ -929,28 +899,23 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
                 void run(() => sync.sendReset(email));
               }}
             >
-              <div>
-                <label htmlFor="sync-reset-email" className="mb-1.5 block text-xs font-medium text-zinc-400">
-                  Email
-                </label>
-                <input
-                  id="sync-reset-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  className={inputClass}
-                />
-              </div>
+              <Field
+                id="sync-reset-email"
+                name="email"
+                label="Email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
               <div className="flex gap-2">
-                <button type="submit" className={primaryButtonClass} disabled={busy}>
+                <Button type="submit" variant="primary" size="sm" disabled={busy}>
                   Send reset email
-                </button>
-                <button type="button" className={secondaryButtonClass} onClick={() => setMode("login")}>
+                </Button>
+                <Button type="button" variant="secondary" size="sm" onClick={() => setMode("login")}>
                   Back to log in
-                </button>
+                </Button>
               </div>
             </form>
           )}
@@ -971,30 +936,15 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
             device and nothing is lost.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={primaryButtonClass}
-              disabled={busy}
-              onClick={() => void run(() => sync.checkVerification())}
-            >
+            <Button type="button" variant="primary" size="sm" disabled={busy} onClick={() => void run(() => sync.checkVerification())}>
               I verified my email
-            </button>
-            <button
-              type="button"
-              className={secondaryButtonClass}
-              disabled={busy}
-              onClick={() => void run(() => sync.resendVerification())}
-            >
+            </Button>
+            <Button type="button" variant="secondary" size="sm" disabled={busy} onClick={() => void run(() => sync.resendVerification())}>
               Resend verification email
-            </button>
-            <button
-              type="button"
-              className={secondaryButtonClass}
-              disabled={busy}
-              onClick={() => void run(() => sync.signOut())}
-            >
+            </Button>
+            <Button type="button" variant="secondary" size="sm" disabled={busy} onClick={() => void run(() => sync.signOut())}>
               Sign out
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -1016,17 +966,12 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
                 labeled as an import and can happen only once for this account.
               </p>
               <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  className={primaryButtonClass}
-                  disabled={busy}
-                  onClick={() => void run(() => sync.acceptImport())}
-                >
+                <Button type="button" variant="primary" size="sm" disabled={busy} onClick={() => void run(() => sync.acceptImport())}>
                   Import local progress
-                </button>
-                <button type="button" className={secondaryButtonClass} onClick={() => sync.declineImport()}>
+                </Button>
+                <Button type="button" variant="secondary" size="sm" onClick={() => sync.declineImport()}>
                   Not now
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -1036,42 +981,22 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
 
           <div className="mt-3 flex flex-wrap gap-2">
             {sync.phase === "degraded" && (
-              <button
-                type="button"
-                className={primaryButtonClass}
-                disabled={busy}
-                onClick={() => void run(() => sync.retrySync())}
-              >
+              <Button type="button" variant="primary" size="sm" disabled={busy} onClick={() => void run(() => sync.retrySync())}>
                 Retry sync
-              </button>
+              </Button>
             )}
-            <button
-              type="button"
-              className={secondaryButtonClass}
-              disabled={busy}
-              onClick={() => void run(() => sync.signOut())}
-            >
+            <Button type="button" variant="secondary" size="sm" disabled={busy} onClick={() => void run(() => sync.signOut())}>
               Sign out
-            </button>
+            </Button>
             {sync.linkingSupported && sync.auth.hasPasswordProvider && !sync.auth.hasGoogleProvider && (
-              <button
-                type="button"
-                className={secondaryButtonClass}
-                disabled={busy}
-                onClick={() => void run(() => sync.linkGoogle())}
-              >
+              <Button type="button" variant="secondary" size="sm" disabled={busy} onClick={() => void run(() => sync.linkGoogle())}>
                 Link Google to this account
-              </button>
+              </Button>
             )}
             {sync.deletionState !== "confirming" && sync.deletionState !== "deleting" && (
-              <button
-                type="button"
-                className={secondaryButtonClass}
-                disabled={busy}
-                onClick={() => sync.requestDataDeletion()}
-              >
+              <Button type="button" variant="secondary" size="sm" disabled={busy} onClick={() => sync.requestDataDeletion()}>
                 Delete cloud data
-              </button>
+              </Button>
             )}
           </div>
 
@@ -1082,17 +1007,12 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
                 not affected. This cannot be undone.
               </p>
               <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  className="focus-brackets danger-action rounded-xl px-4 py-2.5 text-xs font-semibold focus-visible:outline-none disabled:opacity-40"
-                  disabled={busy}
-                  onClick={() => void run(() => sync.confirmDataDeletion())}
-                >
+                <Button type="button" variant="danger" size="sm" disabled={busy} onClick={() => void run(() => sync.confirmDataDeletion())}>
                   Yes, delete cloud data
-                </button>
-                <button type="button" className={secondaryButtonClass} onClick={() => sync.cancelDataDeletion()}>
+                </Button>
+                <Button type="button" variant="secondary" size="sm" onClick={() => sync.cancelDataDeletion()}>
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -1106,14 +1026,16 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
                 Cloud data is deleted. You can now delete the account itself. This requires a
                 recent sign-in.
               </p>
-              <button
+              <Button
                 type="button"
-                className="focus-brackets danger-action mt-2 rounded-xl px-4 py-2.5 text-xs font-semibold focus-visible:outline-none disabled:opacity-40"
+                variant="danger"
+                size="sm"
                 disabled={busy || sync.accountDeletionState === "deleting"}
                 onClick={() => void run(() => sync.deleteAccount())}
+                className="mt-2"
               >
                 {sync.accountDeletionState === "deleting" ? "Deleting account…" : "Delete account"}
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -1121,6 +1043,6 @@ export function ProgressSyncPanel({ sync }: { sync: CloudProgressSync }) {
 
       {statusLine}
       {errorLine}
-    </section>
+    </Card>
   );
 }
