@@ -8,6 +8,7 @@ import { DebuggingCaseFile } from "@/components/debugging-case-file";
 import { GuidedRoadmap } from "@/components/guided-roadmap";
 import { ProgressDashboard } from "@/components/progress-dashboard";
 import { useCloudProgressSync, type CloudProgressSync } from "@/components/progress-sync";
+import { TerminalFrame } from "@/components/terminal-frame";
 import { projects } from "@/lib/catalog";
 import {
   appendAnonymousAttemptEvent,
@@ -923,6 +924,18 @@ function WorkspaceView(props: WorkspaceProps) {
     { label: "Repair", note: hasPatch ? "Source snapshot changed" : "Edit the smallest surface", complete: hasPatch },
     { label: "Verify", note: props.testResult?.status === "passed" ? "Tests passing" : "Run the exact snapshot", complete: props.testResult?.status === "passed" },
   ];
+  // Status-line active stage: the first unfinished stage, or Verify once the
+  // whole loop is complete. Purely derived from existing step state above —
+  // no new state.
+  const firstIncompleteStageIndex = investigationSteps.findIndex((step) => !step.complete);
+  const activeStageIndex = firstIncompleteStageIndex === -1 ? investigationSteps.length - 1 : firstIncompleteStageIndex;
+  const evidenceText = props.testResult?.sanitizedOutput ?? "Run the suite to collect evidence.";
+  const evidenceLines = evidenceText.split("\n");
+  // Remounts the evidence stream on genuinely new output so the streaming
+  // line-reveal replays only when fresh evidence actually arrives.
+  const evidenceStreamKey = props.testResult
+    ? `${props.testResult.status}:${props.testResult.passedCount}:${props.testResult.failedCount}:${props.testResult.durationMs}:${evidenceText.length}`
+    : "empty";
 
   function updateCode(value: string) {
     if (!editable) return;
@@ -931,7 +944,7 @@ function WorkspaceView(props: WorkspaceProps) {
 
   return (
     <div className="grid-texture motion-rise mx-auto min-h-[calc(100vh-4.5rem)] max-w-[1680px] p-3 sm:p-5">
-      <div className="lab-panel mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3"><div className="flex flex-wrap items-center gap-3"><span className="font-instrument rounded-lg border border-red-400/20 bg-red-400/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-red-300">1 validated fault</span><div><h1 className="text-sm font-semibold text-zinc-100">{props.challenge.title}</h1><div className="font-instrument text-[10px] text-zinc-500">{props.challenge.targetSkill} · {difficultyLabel(props.challenge.difficulty)}</div></div><span className="status-pill px-2.5 py-1">{sourceLabel(props.challenge)}</span></div><div className="flex items-center gap-2"><button type="button" onClick={props.onReset} className="secondary-action rounded-lg px-3 py-2 text-xs">Reset lab</button><button type="button" disabled={props.requestState === "running"} onClick={props.onRunTests} className="fine-hover-lift rounded-lg bg-zinc-100 px-4 py-2 text-xs font-semibold text-zinc-950 transition hover:bg-white disabled:opacity-50">{props.requestState === "running" ? "Running in isolation…" : "Run tests"}</button></div></div>
+      <div className="lab-panel mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3"><div className="flex flex-wrap items-center gap-3"><span className="font-instrument rounded-lg border border-red-400/20 bg-red-400/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-red-300">1 validated fault</span><div><h1 className="text-sm font-semibold text-zinc-100">{props.challenge.title}</h1><div className="font-instrument text-[10px] text-zinc-500">{props.challenge.targetSkill} · {difficultyLabel(props.challenge.difficulty)}</div></div><span className="status-pill px-2.5 py-1">{sourceLabel(props.challenge)}</span></div><div className="flex items-center gap-2"><button type="button" onClick={props.onReset} className="focus-brackets secondary-action rounded-lg px-3 py-2 text-xs">Reset lab</button><button type="button" disabled={props.requestState === "running"} aria-busy={props.requestState === "running"} onClick={props.onRunTests} className={`focus-brackets instrument-action rounded-lg px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${props.requestState === "running" ? "forge-pulse" : ""}`}>{props.requestState === "running" ? "Running in isolation…" : "Run tests"}</button></div></div>
       {(props.message || props.error) && <div role={props.error ? "alert" : "status"} className={`mb-3 rounded-xl border px-4 py-2.5 text-xs leading-5 ${props.error ? "border-red-400/15 bg-red-400/[0.05] text-red-300" : "border-amber-400/15 bg-amber-400/[0.04] text-amber-200"}`}>{props.error || props.message}</div>}
       <ol aria-label="Investigation workflow" className="workflow-rail mb-3 grid gap-px overflow-hidden rounded-xl sm:grid-cols-4">
         {investigationSteps.map((step, index) => (
@@ -943,7 +956,30 @@ function WorkspaceView(props: WorkspaceProps) {
       </ol>
       <div className="grid gap-3 xl:grid-cols-[260px_minmax(0,1fr)_370px]">
         <aside aria-label="Challenge overview" className="lab-panel overflow-hidden rounded-xl"><div className="instrument-label border-b border-white/7 px-4 py-3">Challenge brief</div><div className="p-4"><h2 className="text-sm font-semibold leading-5 text-zinc-100">{props.challenge.title}</h2><p className="mt-3 text-xs leading-5 text-zinc-500">{props.challenge.learnerBrief}</p><div className="evidence-well mt-5 rounded-lg p-3"><div className="instrument-label">Learning objective</div><div className="mt-1 text-xs leading-5 text-zinc-300">{props.challenge.learningObjective}</div></div></div><div className="instrument-label border-y border-white/7 px-4 py-3">Project files</div><div className="font-instrument p-2 text-xs">{props.challenge.files.map((file) => <button key={file.path} type="button" onClick={() => props.setActiveFile(file.path)} className={`mt-1 block w-full rounded-lg px-3 py-2 text-left transition ${file.path === selected?.path ? "bg-amber-400/[0.085] text-amber-200" : "text-zinc-600 hover:bg-white/[0.03] hover:text-zinc-300"}`}><span className="mr-2">{file.editable ? "◆" : "◇"}</span>{file.path}<span className="ml-2 text-[9px] uppercase text-zinc-400">{file.editable ? "editable" : "read only"}</span></button>)}</div></aside>
-        <section className="lab-panel min-w-0 overflow-hidden rounded-xl"><div className="flex items-center justify-between border-b border-white/7 bg-[#0e1318] px-4 py-2.5"><div className="font-instrument flex items-center gap-2 text-[10px] text-zinc-400"><span className={editable ? "text-amber-300" : "text-zinc-600"}>●</span>{selected?.path}<span className="text-zinc-700">{editable ? "editable" : "read only"}</span></div><div className="font-instrument text-[9px] text-cyan-200/65">Python 3.12</div></div><textarea aria-label={editable ? "Python code editor" : `Read-only ${selected?.path}`} value={content} readOnly={!editable} onChange={(event) => updateCode(event.target.value)} spellCheck={false} className={`font-instrument h-[390px] w-full resize-none border-0 bg-[#080c10] p-5 text-[13px] leading-6 outline-none ${editable ? "text-zinc-300 focus:ring-2 focus:ring-inset focus:ring-amber-400/30" : "text-zinc-500"}`} /><div className="border-t border-white/7 bg-[#070a0d]"><div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/7 px-4 py-2.5"><div className="instrument-label">{evidenceLabel}</div>{props.testResult && <div className={`font-instrument text-[9px] ${statusTone}`}><span className="font-semibold uppercase">{props.testResult.status}</span> · {props.testResult.passedCount} passed · {props.testResult.failedCount} failed · {props.testResult.durationMs}ms</div>}</div><pre aria-label="Sanitized test output" className="font-instrument h-[220px] overflow-auto whitespace-pre-wrap p-4 text-[11px] leading-5 text-zinc-500">{props.testResult?.sanitizedOutput ?? "Run the suite to collect evidence."}</pre></div></section>
+        <section className="lab-panel min-w-0 overflow-hidden rounded-xl">
+          <div className="flex items-center justify-between border-b border-white/7 bg-[#0e1318] px-4 py-2.5"><div className="font-instrument flex items-center gap-2 text-[10px] text-zinc-400"><span className={editable ? "text-amber-300" : "text-zinc-600"}>●</span>{selected?.path}<span className="text-zinc-700">{editable ? "editable" : "read only"}</span></div><div className="font-instrument text-[9px] text-cyan-200/65">Python 3.12</div></div>
+          <textarea aria-label={editable ? "Python code editor" : `Read-only ${selected?.path}`} value={content} readOnly={!editable} onChange={(event) => updateCode(event.target.value)} spellCheck={false} className={`font-instrument h-[390px] w-full resize-none border-0 bg-[#080c10] p-5 text-[13px] leading-6 outline-none ${editable ? "text-zinc-300 focus:ring-2 focus:ring-inset focus:ring-amber-400/30" : "text-zinc-500"}`} />
+          <TerminalFrame
+            className="workspace-evidence-frame"
+            bodyClassName="workspace-evidence-body"
+            label={evidenceLabel}
+            meta={
+              props.testResult ? (
+                <span className={`font-instrument text-[9px] ${statusTone}`}>
+                  <span className="font-semibold uppercase">{props.testResult.status}</span> · {props.testResult.passedCount} passed · {props.testResult.failedCount} failed · {props.testResult.durationMs}ms
+                </span>
+              ) : undefined
+            }
+          >
+            <pre key={evidenceStreamKey} aria-label="Sanitized test output" className="font-instrument evidence-stream h-[220px] overflow-auto whitespace-pre-wrap p-4 text-[11px] leading-5 text-zinc-500">
+              {evidenceLines.map((line, index) => (
+                <span key={index} className="evidence-line" style={{ animationDelay: `${Math.min(index, 24) * 26}ms` }}>
+                  {line.length > 0 ? line : " "}
+                </span>
+              ))}
+            </pre>
+          </TerminalFrame>
+        </section>
         <aside aria-label="Investigation journal" className="lab-panel overflow-hidden rounded-xl">
           <div className="border-b border-white/7 px-4 py-3">
             <div className="instrument-label">Investigation log</div>
@@ -974,14 +1010,34 @@ function WorkspaceView(props: WorkspaceProps) {
             <div>
               <div className="mb-2 flex items-center justify-between"><span className="text-xs font-medium text-zinc-300">Progressive hints</span><span className="text-[10px] text-zinc-600">{props.revealedHints.length}/3 used</span></div>
               <div className="space-y-2">{props.revealedHints.map((hint, index) => <div key={hint} className="rounded-xl border border-amber-400/12 bg-amber-400/[0.04] p-3 text-xs leading-5 text-zinc-400"><span className="mr-2 text-[10px] font-semibold text-amber-300">0{index + 1}</span>{hint}</div>)}</div>
-              {props.revealedHints.length < props.challenge.availableHintCount && <button type="button" disabled={props.hypothesis.trim().length < 12 || props.requestState === "running"} onClick={props.revealHint} className="mt-2 w-full rounded-xl border border-white/8 px-3 py-2.5 text-xs text-zinc-400 transition hover:border-amber-400/25 hover:text-amber-200 disabled:opacity-35">{props.requestState === "running" ? "Requesting hint…" : `Reveal hint ${props.revealedHints.length + 1}`}</button>}
+              {props.revealedHints.length < props.challenge.availableHintCount && <button type="button" disabled={props.hypothesis.trim().length < 12 || props.requestState === "running"} aria-busy={props.requestState === "running"} onClick={props.revealHint} className="focus-brackets mt-2 w-full rounded-xl border border-white/8 px-3 py-2.5 text-xs text-zinc-400 transition hover:border-amber-400/25 hover:text-amber-200 disabled:cursor-not-allowed disabled:opacity-35">{props.requestState === "running" ? "Requesting hint…" : `Reveal hint ${props.revealedHints.length + 1}`}</button>}
             </div>
             <label className="block"><span className="mb-2 block text-xs font-medium text-zinc-300">Root-cause explanation</span><textarea value={props.explanation} onChange={(event) => props.setExplanation(event.target.value)} placeholder="Explain the failure and why your patch is correct." className="evidence-well h-24 w-full resize-none rounded-xl p-3 text-xs leading-5 text-zinc-300 outline-none placeholder:text-zinc-700" /></label>
-            <button type="button" disabled={props.requestState === "running"} onClick={props.onSubmit} className="primary-action w-full rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-50">{props.requestState === "running" ? "Verifying exact snapshot…" : "Submit patch + reasoning"}</button>
+            <button type="button" disabled={props.requestState === "running"} aria-busy={props.requestState === "running"} onClick={props.onSubmit} className={`focus-brackets primary-action w-full rounded-xl px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${props.requestState === "running" ? "forge-pulse" : ""}`}>{props.requestState === "running" ? "Verifying exact snapshot…" : "Submit patch + reasoning"}</button>
             <p className="text-[10px] leading-4 text-zinc-600">Submission reruns tests against this exact source snapshot. Model feedback cannot override failing evidence.</p>
           </div>
         </aside>
       </div>
+      <footer aria-label="Investigation status" className="workspace-status-line mt-3">
+        <ol className="workspace-status-line-stages">
+          {investigationSteps.map((step, index) => (
+            <li
+              key={step.label}
+              aria-current={index === activeStageIndex ? "step" : undefined}
+              className={index === activeStageIndex ? "is-active" : step.complete ? "is-complete" : undefined}
+            >
+              <span aria-hidden="true">{step.complete ? "✓" : String(index + 1).padStart(2, "0")}</span>
+              {step.label}
+            </li>
+          ))}
+        </ol>
+        <div className="workspace-status-line-lesson">
+          <span className="workspace-status-line-lesson-key">lesson</span>
+          <span>{props.challenge.projectId}/{props.challenge.targetSkill}</span>
+          <span aria-hidden="true">·</span>
+          <span>{difficultyLabel(props.challenge.difficulty)}</span>
+        </div>
+      </footer>
     </div>
   );
 }
