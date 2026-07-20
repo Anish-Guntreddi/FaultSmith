@@ -9,6 +9,7 @@ import { GuidedRoadmap } from "@/components/guided-roadmap";
 import { ProgressDashboard } from "@/components/progress-dashboard";
 import { useCloudProgressSync, type CloudProgressSync } from "@/components/progress-sync";
 import { TerminalFrame } from "@/components/terminal-frame";
+import { Badge, Button, Card, StatusDot as StatusDotPrimitive } from "@/components/ui";
 import { projects } from "@/lib/catalog";
 import {
   appendAnonymousAttemptEvent,
@@ -63,11 +64,6 @@ const difficultyOptions: Array<{ value: Difficulty; label: string }> = [
   { value: "advanced", label: "Advanced" },
 ];
 
-function StatusDot({ tone = "amber" }: { tone?: "amber" | "green" | "red" }) {
-  const color = tone === "green" ? "bg-emerald-400" : tone === "red" ? "bg-red-400" : "bg-amber-400";
-  return <span aria-hidden="true" className={`inline-block h-1.5 w-1.5 rounded-full ${color}`} />;
-}
-
 function AppHeader({ stage, verified }: { stage: Stage; verified: boolean }) {
   const status =
     stage === "configure"
@@ -88,7 +84,10 @@ function AppHeader({ stage, verified }: { stage: Stage; verified: boolean }) {
         </Link>
         <div className="hidden items-center gap-2.5 text-xs text-zinc-400 sm:flex">
           <span className="status-pill px-3 py-1.5">
-            <StatusDot tone={stage === "report" ? (verified ? "green" : "red") : "amber"} />
+            <StatusDotPrimitive
+              tone={stage === "report" ? (verified ? "verified" : "failure") : "investigation"}
+              size="sm"
+            />
             <span className="ml-2">{status}</span>
           </span>
           <span className="status-pill px-3 py-1.5 text-zinc-500">Build Week MVP</span>
@@ -819,11 +818,11 @@ function ConfigureView(props: ConfigureProps) {
                 ["03", "Repair", "Change the smallest surface"],
                 ["04", "Verify", "Prove the exact snapshot"],
               ].map(([number, title, note]) => (
-                <li key={number} className="evidence-well rounded-xl p-3">
+                <Card as="li" key={number} variant="evidence-well" padding="sm">
                   <div className="font-instrument text-[9px] tracking-[0.14em] text-amber-300">{number}</div>
                   <div className="mt-2 text-xs font-semibold text-zinc-200">{title}</div>
                   <div className="mt-1 text-[10px] leading-4 text-zinc-500">{note}</div>
-                </li>
+                </Card>
               ))}
             </ol>
           </aside>
@@ -869,18 +868,23 @@ function ConfigureView(props: ConfigureProps) {
               })}
             </div>
           </section>
-          <aside className="lab-panel self-start rounded-2xl p-5 xl:sticky xl:top-24">
+          <Card as="aside" variant="panel" padding="lg" className="self-start xl:sticky xl:top-24">
             <div className="instrument-label">Step 02 · Configure validation</div><h2 className="mt-1.5 text-xl font-semibold tracking-[-0.02em] text-white">Forge the challenge</h2>
             <div className="mt-7 space-y-6">
               <label className="block"><span className="mb-2 block text-xs font-medium text-zinc-400">Target skill</span><select value={props.skill} onChange={(event) => props.setSkill(event.target.value)} className="evidence-well w-full rounded-xl px-3.5 py-3 text-sm text-zinc-200 outline-none"><option value="">Select a skill</option>{selected.skills.map((item) => <option key={item}>{item}</option>)}</select></label>
               <fieldset><legend className="mb-2 text-xs font-medium text-zinc-400">Practice level</legend><div className="grid grid-cols-3 gap-2">{difficultyOptions.map((option) => <button key={option.value} type="button" aria-pressed={props.difficulty === option.value} onClick={() => props.setDifficulty(option.value)} className={`rounded-xl border px-2 py-2.5 text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${props.difficulty === option.value ? "border-amber-400/40 bg-amber-400/10 text-amber-200" : "border-white/8 bg-black/10 text-zinc-500 hover:text-zinc-300"}`}>{option.label}</button>)}</div><p className="mt-2 text-[10px] leading-4 text-zinc-600">Labels this attempt; the curated fault is selected by system and skill.</p></fieldset>
               <fieldset><legend className="mb-2 text-xs font-medium text-zinc-400">Validation mode</legend><div className="grid grid-cols-2 gap-2"><button type="button" aria-pressed={props.preferLive} onClick={() => props.setPreferLive(true)} className={`rounded-xl border px-3 py-3 text-left text-xs ${props.preferLive ? "border-amber-400/35 bg-amber-400/[0.07] text-amber-200" : "border-white/8 text-zinc-500"}`}><span className="block font-medium">Live + fallback</span><span className="mt-1 block text-[10px] opacity-70">GPT-5.6 when configured</span></button><button type="button" aria-pressed={!props.preferLive} onClick={() => props.setPreferLive(false)} className={`rounded-xl border px-3 py-3 text-left text-xs ${!props.preferLive ? "border-emerald-400/30 bg-emerald-400/[0.06] text-emerald-200" : "border-white/8 text-zinc-500"}`}><span className="block font-medium">Prevalidated</span><span className="mt-1 block text-[10px] opacity-70">Reliable demo fixture</span></button></div></fieldset>
-              <div className="rounded-xl border border-white/7 bg-black/20 p-4"><div className="flex items-center justify-between text-xs"><span className="text-zinc-500">Release gate</span><span className="text-emerald-300">Original pass → Mutant fail</span></div><div className="mt-3 h-1 overflow-hidden rounded-full bg-white/5"><div className="h-full w-full bg-gradient-to-r from-amber-500/60 to-emerald-400/70" /></div></div>
+              <Card variant="inset" padding="md">
+                <div className="flex items-center justify-between text-xs"><span className="text-zinc-500">Release gate</span><span className="text-emerald-300">Original pass → Mutant fail</span></div>
+                <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/5"><div className="h-full w-full bg-gradient-to-r from-amber-500/60 to-emerald-400/70" /></div>
+              </Card>
               {props.error && <div role="alert" className="rounded-xl border border-red-400/15 bg-red-400/[0.05] p-3 text-xs leading-5 text-red-300">{props.error}<button type="button" disabled={!ready} onClick={props.onFallback} className="mt-2 block font-semibold underline disabled:opacity-40">Load the prevalidated challenge</button></div>}
-              <button type="button" disabled={!ready} onClick={props.onForge} className="primary-action flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold focus-visible:outline-none disabled:opacity-35">Forge debugging lab <span aria-hidden="true">→</span></button>
+              <Button variant="primary" size="lg" disabled={!ready} onClick={props.onForge} className="w-full disabled:opacity-35">
+                Forge debugging lab <span aria-hidden="true">→</span>
+              </Button>
               <p className="text-center text-[11px] leading-5 text-zinc-600">Live mode asks GPT-5.6 to emit the approved bounded contract. Executed evidence decides whether it ships.</p>
             </div>
-          </aside>
+          </Card>
         </div>
         )}
         <DebuggingCaseFile />
@@ -944,7 +948,7 @@ function WorkspaceView(props: WorkspaceProps) {
 
   return (
     <div className="grid-texture motion-rise mx-auto min-h-[calc(100vh-4.5rem)] max-w-[1680px] p-3 sm:p-5">
-      <div className="lab-panel mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3"><div className="flex flex-wrap items-center gap-3"><span className="font-instrument rounded-lg border border-red-400/20 bg-red-400/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-red-300">1 validated fault</span><div><h1 className="text-sm font-semibold text-zinc-100">{props.challenge.title}</h1><div className="font-instrument text-[10px] text-zinc-500">{props.challenge.targetSkill} · {difficultyLabel(props.challenge.difficulty)}</div></div><span className="status-pill px-2.5 py-1">{sourceLabel(props.challenge)}</span></div><div className="flex items-center gap-2"><button type="button" onClick={props.onReset} className="focus-brackets secondary-action rounded-lg px-3 py-2 text-xs">Reset lab</button><button type="button" disabled={props.requestState === "running"} aria-busy={props.requestState === "running"} onClick={props.onRunTests} className={`focus-brackets instrument-action rounded-lg px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${props.requestState === "running" ? "forge-pulse" : ""}`}>{props.requestState === "running" ? "Running in isolation…" : "Run tests"}</button></div></div>
+      <div className="lab-panel mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3"><div className="flex flex-wrap items-center gap-3"><span className="font-instrument rounded-lg border border-red-400/20 bg-red-400/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-red-300">1 validated fault</span><div><h1 className="text-sm font-semibold text-zinc-100">{props.challenge.title}</h1><div className="font-instrument text-[10px] text-zinc-500">{props.challenge.targetSkill} · {difficultyLabel(props.challenge.difficulty)}</div></div><span className="status-pill px-2.5 py-1">{sourceLabel(props.challenge)}</span></div><div className="flex items-center gap-2"><Button type="button" variant="secondary" size="sm" onClick={props.onReset} className="px-3 py-2">Reset lab</Button><button type="button" disabled={props.requestState === "running"} aria-busy={props.requestState === "running"} onClick={props.onRunTests} className={`focus-brackets instrument-action rounded-lg px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${props.requestState === "running" ? "forge-pulse" : ""}`}>{props.requestState === "running" ? "Running in isolation…" : "Run tests"}</button></div></div>
       {(props.message || props.error) && <div role={props.error ? "alert" : "status"} className={`mb-3 rounded-xl border px-4 py-2.5 text-xs leading-5 ${props.error ? "border-red-400/15 bg-red-400/[0.05] text-red-300" : "border-amber-400/15 bg-amber-400/[0.04] text-amber-200"}`}>{props.error || props.message}</div>}
       <ol aria-label="Investigation workflow" className="workflow-rail mb-3 grid gap-px overflow-hidden rounded-xl sm:grid-cols-4">
         {investigationSteps.map((step, index) => (
@@ -1017,7 +1021,17 @@ function WorkspaceView(props: WorkspaceProps) {
               {props.revealedHints.length < props.challenge.availableHintCount && <button type="button" disabled={props.hypothesis.trim().length < 12 || props.requestState === "running"} aria-busy={props.requestState === "running"} onClick={props.revealHint} className="focus-brackets mt-2 w-full rounded-xl border border-white/8 px-3 py-2.5 text-xs text-zinc-400 transition hover:border-amber-400/25 hover:text-amber-200 disabled:cursor-not-allowed disabled:opacity-35">{props.requestState === "running" ? "Requesting hint…" : `Reveal hint ${props.revealedHints.length + 1}`}</button>}
             </div>
             <label className="block"><span className="mb-2 block text-xs font-medium text-zinc-300">Root-cause explanation</span><textarea value={props.explanation} onChange={(event) => props.setExplanation(event.target.value)} placeholder="Explain the failure and why your patch is correct." className="evidence-well h-24 w-full resize-none rounded-xl p-3 text-xs leading-5 text-zinc-300 outline-none placeholder:text-zinc-700" /></label>
-            <button type="button" disabled={props.requestState === "running"} aria-busy={props.requestState === "running"} onClick={props.onSubmit} className={`focus-brackets primary-action w-full rounded-xl px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${props.requestState === "running" ? "forge-pulse" : ""}`}>{props.requestState === "running" ? "Verifying exact snapshot…" : "Submit patch + reasoning"}</button>
+            <Button
+              type="button"
+              variant="primary"
+              size="md"
+              loading={props.requestState === "running"}
+              loadingText="Verifying exact snapshot…"
+              onClick={props.onSubmit}
+              className="w-full"
+            >
+              Submit patch + reasoning
+            </Button>
             <p className="text-[10px] leading-4 text-zinc-600">Submission reruns tests against this exact source snapshot. Model feedback cannot override failing evidence.</p>
           </div>
         </aside>
@@ -1073,42 +1087,52 @@ function ReportView({
           <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-zinc-500">{result.evidenceSummary}</p>
         </div>
         <div className="mt-9 grid gap-4 lg:grid-cols-[280px_1fr]">
-          <section className="lab-panel rounded-2xl p-6 text-center">
-            <div className="instrument-label">Skill evidence — not a certification</div>
-            <div className={`mx-auto mt-5 grid h-36 w-36 place-items-center rounded-full border-[10px] ${verified ? "border-emerald-400/15 bg-emerald-400/[0.04]" : "border-red-400/15 bg-red-400/[0.04]"}`}>
-              <div><div className="text-4xl font-semibold text-white">{overall}</div><div className={`text-[10px] uppercase tracking-wider ${verified ? "text-emerald-300" : "text-red-300"}`}>{verified ? "Verified" : "Not verified"}</div></div>
+          <Card variant="panel" padding="none" className="text-center">
+            <div className="p-6">
+              <div className="instrument-label">Skill evidence — not a certification</div>
+              <div className={`mx-auto mt-5 grid h-36 w-36 place-items-center rounded-full border-[10px] ${verified ? "border-emerald-400/15 bg-emerald-400/[0.04]" : "border-red-400/15 bg-red-400/[0.04]"}`}>
+                <div><div className="text-4xl font-semibold text-white">{overall}</div><div className={`text-[10px] uppercase tracking-wider ${verified ? "text-emerald-300" : "text-red-300"}`}>{verified ? "Verified" : "Not verified"}</div></div>
+              </div>
+              <div className="mt-5 text-sm font-medium text-zinc-200">{challenge.targetSkill}</div>
+              <div className="mt-1 text-xs text-zinc-600">{difficultyLabel(challenge.difficulty)} · {sourceLabel(challenge)}</div>
             </div>
-            <div className="mt-5 text-sm font-medium text-zinc-200">{challenge.targetSkill}</div>
-            <div className="mt-1 text-xs text-zinc-600">{difficultyLabel(challenge.difficulty)} · {sourceLabel(challenge)}</div>
-          </section>
-          <section className="lab-panel rounded-2xl p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div><div className="instrument-label">Evidence breakdown</div><h2 className="mt-1 text-lg font-semibold tracking-[-0.02em] text-white">Deterministic proof and reasoning assessment</h2></div>
-              <span className="status-pill border-emerald-400/20 bg-emerald-400/[0.055] px-3 py-1.5 text-emerald-300">Tests authoritative</span>
+          </Card>
+          <Card variant="panel" padding="none">
+            <div className="p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div><div className="instrument-label">Evidence breakdown</div><h2 className="mt-1 text-lg font-semibold tracking-[-0.02em] text-white">Deterministic proof and reasoning assessment</h2></div>
+                <Badge variant="verified" glyph="✓">Tests authoritative</Badge>
+              </div>
+              <Card variant="evidence-well" padding="md" className="mt-5">
+                <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-medium text-zinc-300">{prevalidatedEvidence ? "Prevalidated fixture gate" : "Executed Code Interpreter tests"}</span><span className={response.testResult.status === "passed" ? "text-xs font-semibold text-emerald-300" : "text-xs font-semibold text-red-300"}>{response.testResult.status.toUpperCase()} · {response.testResult.passedCount} passed · {response.testResult.failedCount} failed</span></div>
+                <p className="mt-2 text-[11px] text-zinc-600">{prevalidatedEvidence ? "Server-side comparison with the approved repair snapshot; no learner Python ran on the application host." : "Isolated Code Interpreter execution evidence. It cannot be overridden by narrative assessment."}</p>
+              </Card>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {cards.map(([label, score, note]) => (
+                  <Card key={label} variant="evidence-well" padding="md">
+                    <div className="flex items-center justify-between"><span className="text-xs text-zinc-400">{label}</span><span className="font-instrument text-sm font-semibold text-zinc-100">{score}</span></div>
+                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5"><div className={`h-full rounded-full ${verified ? "bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" : "bg-gradient-to-r from-amber-300/80 to-amber-500/70"}`} style={{ width: `${score}%` }} /></div>
+                    <div className="font-instrument mt-2 text-[9px] text-zinc-600">{note}</div>
+                  </Card>
+                ))}
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-emerald-400/12 bg-emerald-400/[0.04] p-4"><div className="text-[10px] uppercase tracking-wider text-emerald-300">Key strength</div><p className="mt-2 text-xs leading-5 text-zinc-400">{result.strengths[0]}</p></div>
+                <div className="rounded-xl border border-amber-400/12 bg-amber-400/[0.04] p-4"><div className="text-[10px] uppercase tracking-wider text-amber-300">Primary improvement</div><p className="mt-2 text-xs leading-5 text-zinc-400">{result.improvementAreas[0]}</p></div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2 text-[10px] text-zinc-600">
+                <span className="rounded-full border border-white/7 px-2.5 py-1">Assessment: {response.assessmentSource === "gpt-5.6" ? "GPT-5.6 scores · server-owned feedback" : "Deterministic fallback rubric"}</span>
+                <span className="rounded-full border border-white/7 px-2.5 py-1">Hints: {response.hintsUsed}/3</span>
+                <span className="rounded-full border border-white/7 px-2.5 py-1">Test runs: {response.testRuns}</span>
+                <span className="rounded-full border border-white/7 px-2.5 py-1">Files changed: {response.changedFiles.length > 0 ? response.changedFiles.join(", ") : "none"}</span>
+                <span className="rounded-full border border-white/7 px-2.5 py-1">Time: {elapsedLabel(response.elapsedSeconds)}</span>
+                <span className="rounded-full border border-white/7 px-2.5 py-1">Hypothesis revisions: {response.hypothesisRevisions}</span>
+              </div>
             </div>
-            <div className="evidence-well mt-5 rounded-xl p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-medium text-zinc-300">{prevalidatedEvidence ? "Prevalidated fixture gate" : "Executed Code Interpreter tests"}</span><span className={response.testResult.status === "passed" ? "text-xs font-semibold text-emerald-300" : "text-xs font-semibold text-red-300"}>{response.testResult.status.toUpperCase()} · {response.testResult.passedCount} passed · {response.testResult.failedCount} failed</span></div>
-              <p className="mt-2 text-[11px] text-zinc-600">{prevalidatedEvidence ? "Server-side comparison with the approved repair snapshot; no learner Python ran on the application host." : "Isolated Code Interpreter execution evidence. It cannot be overridden by narrative assessment."}</p>
-            </div>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {cards.map(([label, score, note]) => <div key={label} className="evidence-well rounded-xl p-4"><div className="flex items-center justify-between"><span className="text-xs text-zinc-400">{label}</span><span className="font-instrument text-sm font-semibold text-zinc-100">{score}</span></div><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5"><div className={`h-full rounded-full ${verified ? "bg-gradient-to-r from-cyan-300/70 to-emerald-400/80" : "bg-gradient-to-r from-amber-300/80 to-amber-500/70"}`} style={{ width: `${score}%` }} /></div><div className="font-instrument mt-2 text-[9px] text-zinc-600">{note}</div></div>)}
-            </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-emerald-400/12 bg-emerald-400/[0.04] p-4"><div className="text-[10px] uppercase tracking-wider text-emerald-300">Key strength</div><p className="mt-2 text-xs leading-5 text-zinc-400">{result.strengths[0]}</p></div>
-              <div className="rounded-xl border border-amber-400/12 bg-amber-400/[0.04] p-4"><div className="text-[10px] uppercase tracking-wider text-amber-300">Primary improvement</div><p className="mt-2 text-xs leading-5 text-zinc-400">{result.improvementAreas[0]}</p></div>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2 text-[10px] text-zinc-600">
-              <span className="rounded-full border border-white/7 px-2.5 py-1">Assessment: {response.assessmentSource === "gpt-5.6" ? "GPT-5.6 scores · server-owned feedback" : "Deterministic fallback rubric"}</span>
-              <span className="rounded-full border border-white/7 px-2.5 py-1">Hints: {response.hintsUsed}/3</span>
-              <span className="rounded-full border border-white/7 px-2.5 py-1">Test runs: {response.testRuns}</span>
-              <span className="rounded-full border border-white/7 px-2.5 py-1">Files changed: {response.changedFiles.length > 0 ? response.changedFiles.join(", ") : "none"}</span>
-              <span className="rounded-full border border-white/7 px-2.5 py-1">Time: {elapsedLabel(response.elapsedSeconds)}</span>
-              <span className="rounded-full border border-white/7 px-2.5 py-1">Hypothesis revisions: {response.hypothesisRevisions}</span>
-            </div>
-          </section>
+          </Card>
         </div>
         {guidedStep && (
-          <section aria-label="Guided roadmap result" className={`lab-panel mt-5 rounded-xl p-4 ${verified ? "border-emerald-400/15" : "border-amber-400/15"}`}>
+          <Card as="section" aria-label="Guided roadmap result" variant="panel" padding="md" className={`mt-5 ${verified ? "border-emerald-400/15" : "border-amber-400/15"}`}>
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div>
                 <div className={`instrument-label ${verified ? "text-emerald-300" : "text-amber-300"}`}>{verified ? "Guided roadmap updated" : "Lesson remains incomplete"}</div>
@@ -1117,10 +1141,13 @@ function ReportView({
               </div>
               {roadmapRecommendation.step && verified && <span className="shrink-0 rounded-full border border-white/8 px-3 py-1.5 text-[10px] text-zinc-300">Next: Lesson {roadmapRecommendation.step.order}</span>}
             </div>
-          </section>
+          </Card>
         )}
-        <div className="lab-panel mt-5 rounded-xl p-4 text-center text-xs text-zinc-500"><span className="font-medium text-zinc-300">Practice next:</span> {result.nextPracticeRecommendation}</div>
-        <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row"><button type="button" onClick={onPracticeAgain} className="secondary-action rounded-xl px-5 py-3 text-sm">Practice this lab again</button><button type="button" onClick={onNewLab} className="primary-action rounded-xl px-5 py-3 text-sm font-semibold">{guidedStep ? "Continue guided roadmap" : "Choose another system"}</button></div>
+        <Card variant="panel" padding="md" className="mt-5 text-center text-xs text-zinc-500"><span className="font-medium text-zinc-300">Practice next:</span> {result.nextPracticeRecommendation}</Card>
+        <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+          <Button variant="secondary" size="md" onClick={onPracticeAgain}>Practice this lab again</Button>
+          <Button variant="primary" size="md" onClick={onNewLab}>{guidedStep ? "Continue guided roadmap" : "Choose another system"}</Button>
+        </div>
       </div>
     </div>
   );
