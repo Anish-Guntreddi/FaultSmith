@@ -24,7 +24,36 @@
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --duration-press: 140ms;
   --duration-ui: 240ms;
+
+  /* Forensic Terminal motion vocabulary (Pass 1).
+     Nothing animates outside these tokens:
+     - --dur-fast   press/tap feedback and hover states
+     - --dur-base   standard UI state transitions (the default)
+     - --dur-slow   explanatory transitions and continuity moves
+     - --dur-reveal stepped/typewriter reveals (CSS steps())
+     - --dur-blink  block-cursor blink period
+     Easings:
+     - --ease-out    default; anything responding to the user
+     - --ease-in-out on-screen elements moving A to B
+     - --ease-snap   strong ease-out for entrance rise-and-fade
+     (--duration-press/--duration-ui are the legacy aliases of
+     --dur-fast/--dur-base and are kept for existing rules.) */
+  --dur-fast: 140ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+  --dur-reveal: 900ms;
+  --dur-blink: 1.2s;
+  --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Terminal grammar semantics. */
+  --prompt-color: var(--amber);
+  --cursor-color: var(--amber-bright);
+  --focus-ring: var(--amber-bright);
 }
+
+/* Spacing rhythm: all spacing sits on the 4px (0.25rem) base grid —
+   4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96. Tailwind's spacing scale
+   already follows it; avoid ad-hoc pixel values outside the grid. */
 
 * {
   box-sizing: border-box;
@@ -260,7 +289,7 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--amber-bright);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -1292,6 +1321,157 @@ input:-webkit-autofill:focus {
 
 .landing-footer > a {
   justify-self: end;
+}
+
+/* === Forensic Terminal prompt grammar (Pass 1) ========================= */
+
+/* Heading prompt prefixes. The glyph is decorative: the alt-text form of
+   `content` hides it from assistive tech; the plain form is the fallback
+   for engines that predate the alt-text syntax. */
+.prompt-heading::before,
+.prompt-heading-cmd::before {
+  margin-right: 0.55ch;
+  color: var(--prompt-color);
+  font-family: var(--font-instrument);
+  font-weight: 700;
+}
+
+.prompt-heading::before {
+  content: ">";
+  content: ">" / "";
+}
+
+.prompt-heading-cmd::before {
+  content: "$";
+  content: "$" / "";
+}
+
+/* Block-cursor accent. CSS-only blink; fully static (solid, no animation)
+   under prefers-reduced-motion. */
+.block-cursor::after {
+  content: "▮";
+  content: "▮" / "";
+  margin-left: 0.18em;
+  color: var(--cursor-color);
+  animation: cursor-blink var(--dur-blink) step-end infinite;
+}
+
+@keyframes cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Amber bracket-corner focus treatment for buttons, cards, and inputs.
+   Opt-in: it replaces the default focus ring with four corner brackets
+   drawn on ::after, so do not apply it to elements that already use their
+   own ::after (they keep the default outline instead). The transparent
+   outline stays so forced-colors modes still draw a visible ring. */
+.focus-brackets {
+  position: relative;
+}
+
+.focus-brackets:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 4px;
+}
+
+.focus-brackets:focus-visible::after {
+  position: absolute;
+  inset: -0.4rem;
+  content: "";
+  pointer-events: none;
+  background:
+    linear-gradient(var(--focus-ring), var(--focus-ring)) left 0 top 0 / 0.7rem 2px,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) left 0 top 0 / 2px 0.7rem,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) right 0 top 0 / 0.7rem 2px,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) right 0 top 0 / 2px 0.7rem,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) left 0 bottom 0 / 0.7rem 2px,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) left 0 bottom 0 / 2px 0.7rem,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) right 0 bottom 0 / 0.7rem 2px,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) right 0 bottom 0 / 2px 0.7rem;
+  background-repeat: no-repeat;
+}
+
+/* === Terminal titlebar frame (Pass 1) ==================================
+   Themed terminal window chrome for evidence wells and the case-file
+   monitor. Rendered by src/components/terminal-frame.tsx. */
+.terminal-frame {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 32%),
+    rgba(9, 12, 16, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 50px rgba(0, 0, 0, 0.3);
+}
+
+.terminal-frame-bar {
+  display: flex;
+  min-height: 2.35rem;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-inline: 0.75rem;
+  background: rgba(255, 255, 255, 0.014);
+  color: #8e98a2;
+  font-family: var(--font-instrument);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+}
+
+.terminal-frame-lights {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.32rem;
+}
+
+.terminal-frame-lights i {
+  display: block;
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: #4b535c;
+}
+
+.terminal-frame-lights i:first-child {
+  background: rgba(255, 122, 114, 0.72);
+}
+
+.terminal-frame-lights i:nth-child(2) {
+  background: rgba(242, 184, 75, 0.68);
+}
+
+.terminal-frame-lights i:last-child {
+  background: rgba(112, 214, 158, 0.62);
+}
+
+.terminal-frame-label {
+  overflow: hidden;
+  min-width: 0;
+  flex: 1 1 auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.terminal-frame-meta {
+  flex: 0 0 auto;
+  color: #69737d;
+}
+
+.terminal-frame-body {
+  padding: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block-cursor::after {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 /* Muted laboratory labels still meet WCAG AA on every dark surface. */
