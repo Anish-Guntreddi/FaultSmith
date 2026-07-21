@@ -155,6 +155,16 @@ button:disabled {
   text-transform: uppercase;
 }
 
+/* Box-drawing rule/marker glyphs flanking a SectionMark-wrapped eyebrow —
+   see src/components/ui/section-mark.tsx. Deliberately more muted than the
+   tone-colored label text beside it, so the ornament reads as a terminal
+   comment framing the label rather than competing with it. */
+.section-mark-glyph {
+  color: rgba(255, 255, 255, 0.28);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
 .lab-panel {
   border: 1px solid rgba(255, 255, 255, 0.085);
   background:
@@ -1098,11 +1108,17 @@ input:-webkit-autofill:focus {
   gap: 1.8rem;
 }
 
+/* Mono-forward, minimal: nav and footer links join the mono display system
+   (see .landing-hero-copy h1 / .instrument-label above) instead of reading
+   as a generic sans-serif marketing nav bolted onto a terminal-styled page. */
 .landing-nav-links a,
 .landing-footer > a {
   color: #aeb4ba;
-  font-size: 0.72rem;
-  font-weight: 650;
+  font-family: var(--font-instrument);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   transition: color var(--duration-ui) var(--ease-out);
 }
 
@@ -1630,10 +1646,14 @@ input:-webkit-autofill:focus {
   }
 }
 
+/* Art Direction rebuild: each screenful should read as one dominant moment,
+   not a slow generic-SaaS scroll — clamp(3.5rem, 7vw, 6.5rem) (versus the
+   old clamp(5rem, 10vw, 9rem)) keeps sections close enough together that
+   the next section's heading is already in view as the current one leaves. */
 .landing-section {
   width: min(100% - 2.5rem, 1320px);
   margin-inline: auto;
-  padding-block: clamp(5rem, 10vw, 9rem);
+  padding-block: clamp(3.5rem, 7vw, 6.5rem);
 }
 
 .landing-section-heading {
@@ -2167,11 +2187,21 @@ input:-webkit-autofill:focus {
   gap: clamp(2rem, 7vw, 7rem);
 }
 
+/* One large + two stacked — deliberately not the equal-thirds card grid a
+   generic pricing/feature section defaults to. The guided-foundations track
+   (mode 01, the beginner entry point) gets the tall primary cell; adaptive
+   practice and the evidence dashboard stack beside it as a secondary pair,
+   so the hierarchy reads visually, not just in reading order. */
 .landing-learning-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   margin-top: 3.5rem;
+}
+
+.landing-learning-dossier-primary {
+  grid-row: 1 / span 2;
 }
 
 .landing-learning-card {
@@ -2266,7 +2296,7 @@ input:-webkit-autofill:focus {
 .landing-final-cta {
   display: flex;
   width: min(100% - 2.5rem, 1320px);
-  margin: 2rem auto 7rem;
+  margin: 2rem auto 5rem;
   align-items: center;
   justify-content: space-between;
   gap: 3rem;
@@ -2835,16 +2865,31 @@ input:-webkit-autofill:focus {
 
 /* Forensic dossier applications -------------------------------------------- */
 .landing-learning-dossier {
-  min-height: 24rem;
   transition:
     transform var(--dur-fast) var(--ease-out),
     border-color var(--dur-base) var(--ease-out),
     box-shadow var(--dur-base) var(--ease-out);
 }
 
+.landing-learning-dossier-primary {
+  min-height: 24rem;
+}
+
+.landing-learning-dossier-secondary {
+  min-height: 11.25rem;
+}
+
 .landing-learning-dossier .ui-dossier-body {
   display: flex;
   flex-direction: column;
+}
+
+/* Compound selector (both classes on one element) outranks the shared
+   `.landing-learning-dossier h3` rule below regardless of source order —
+   the secondary cards are much shorter than the primary cell, so they need
+   the header pulled up instead of inheriting the primary's 3.75rem gap. */
+.landing-learning-dossier.landing-learning-dossier-secondary h3 {
+  margin-top: 1.4rem;
 }
 
 .landing-dossier-header {
@@ -3706,6 +3751,19 @@ input:-webkit-autofill:focus {
 
   .landing-learning-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
+  .landing-learning-dossier-primary {
+    grid-row: auto;
+  }
+
+  .landing-learning-dossier-secondary {
+    min-height: 0;
+  }
+
+  .landing-learning-dossier.landing-learning-dossier-secondary h3 {
+    margin-top: 3.75rem;
   }
 
   .landing-learning-card {

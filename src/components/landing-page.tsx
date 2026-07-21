@@ -6,7 +6,7 @@ import { DebuggingCaseFile } from "@/components/debugging-case-file";
 import { DebuggingDemo } from "@/components/debugging-demo";
 import { LandingMobileNav } from "@/components/landing-mobile-nav";
 import { ReasoningBypassFigure } from "@/components/reasoning-bypass-figure";
-import { Dossier, EvidenceLedger } from "@/components/ui";
+import { Dossier, EvidenceLedger, SectionMark } from "@/components/ui";
 
 const learningModes = [
   {
@@ -178,7 +178,9 @@ export function LandingPage() {
         <section id="problem" aria-labelledby="problem-heading" className="landing-section landing-problem">
           <div className="landing-problem-layout">
             <div className="landing-problem-copy">
-              <div className="instrument-label text-amber-300">Problem / reasoning bypass</div>
+              <div className="instrument-label text-amber-300">
+                <SectionMark index="01">Problem / reasoning bypass</SectionMark>
+              </div>
               <h2 id="problem-heading" className="prompt-heading prompt-heading-display">
                 A patch can pass before the engineer understands why.
               </h2>
@@ -206,7 +208,9 @@ export function LandingPage() {
         <section id="learning-system" aria-labelledby="learning-system-heading" className="landing-section">
           <div className="landing-section-heading landing-section-heading-wide">
             <div>
-              <div className="instrument-label text-cyan-200">One product · two levels of guidance</div>
+              <div className="instrument-label text-cyan-200">
+                <SectionMark index="03">One product · two levels of guidance</SectionMark>
+              </div>
               <h2 id="learning-system-heading" className="prompt-heading prompt-heading-display">Ground beginners. Stretch advanced learners.</h2>
             </div>
             <p>
@@ -214,8 +218,15 @@ export function LandingPage() {
             </p>
           </div>
           <div className="landing-learning-grid">
-            {learningModes.map((mode) => (
-              <Dossier key={mode.number} index={mode.number} tone={mode.tone} className="landing-learning-dossier fine-hover-lift">
+            {learningModes.map((mode, modeIndex) => (
+              <Dossier
+                key={mode.number}
+                index={mode.number}
+                tone={mode.tone}
+                className={`landing-learning-dossier fine-hover-lift ${
+                  modeIndex === 0 ? "landing-learning-dossier-primary" : "landing-learning-dossier-secondary"
+                }`}
+              >
                 <div className="landing-dossier-header">
                   <span className="instrument-label">{mode.eyebrow}</span>
                   <span aria-hidden="true" className="landing-dossier-code">TRACK/{mode.number}</span>
@@ -230,7 +241,9 @@ export function LandingPage() {
 
         <section id="evidence" aria-labelledby="evidence-heading" className="landing-section landing-evidence">
           <div className="landing-evidence-intro">
-            <div className="instrument-label text-emerald-300">Designed to fail safely</div>
+            <div className="instrument-label text-emerald-300">
+              <SectionMark index="04">Designed to fail safely</SectionMark>
+            </div>
             <h2 id="evidence-heading" className="prompt-heading prompt-heading-display">The AI proposes. The evidence decides.</h2>
             <p>
               FaultSmith keeps generation, execution, assessment, and persistence behind explicit boundaries so the learning loop stays honest when providers or credentials are unavailable.
@@ -244,7 +257,9 @@ export function LandingPage() {
 
         <section aria-labelledby="final-cta-heading" className="landing-final-cta">
           <div>
-            <div className="instrument-label text-amber-300">Your first case is ready</div>
+            <div className="instrument-label text-amber-300">
+              <SectionMark index="EOF">Your first case is ready</SectionMark>
+            </div>
             <h2 id="final-cta-heading" className="prompt-heading prompt-heading-display">Stop guessing at code. Start investigating it.</h2>
             <p>Begin with a prevalidated guided fault. No account, API key, or setup ceremony required.</p>
           </div>

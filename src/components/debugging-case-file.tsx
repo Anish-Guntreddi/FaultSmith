@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { TerminalFrame } from "@/components/terminal-frame";
+import { SectionMark } from "@/components/ui";
 
 const chapters = [
   {
@@ -255,7 +256,9 @@ export function DebuggingCaseFile() {
     >
       <header className="case-file-heading">
         <div>
-          <div className="instrument-label text-cyan-200">A debugging case file · four evidence gates</div>
+          <div className="instrument-label text-cyan-200">
+            <SectionMark index="02">A debugging case file · four evidence gates</SectionMark>
+          </div>
           <h2 id="debugging-case-file-heading" className="prompt-heading font-instrument mt-2 text-3xl font-semibold tracking-[-0.02em] text-white sm:text-4xl">
             See the investigation, not just the answer.
           </h2>

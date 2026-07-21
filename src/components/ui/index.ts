@@ -9,3 +9,4 @@ export * from "./status-dot";
 export * from "./dossier";
 export * from "./evidence-ledger";
 export * from "./process-rail";
+export * from "./section-mark";
