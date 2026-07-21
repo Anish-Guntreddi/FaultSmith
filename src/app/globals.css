@@ -187,6 +187,26 @@ button:disabled {
   font-family: var(--font-instrument);
 }
 
+/* Deliberate JetBrains Mono feature enablement (Pass 5) — contextual
+   alternates plus the ss02 zero style — scoped to the code/instrument
+   surfaces named in DESIGN_SYSTEM.md's typography section (code, paths,
+   test output, timing, counters, instrument labels, hero/section-head
+   display type), not applied blanket-wide to every mono usage in the file. */
+.font-instrument,
+.instrument-label,
+.terminal-frame-bar,
+.case-code-line,
+.case-code-block,
+.case-diff,
+.debug-demo-command,
+.landing-hero-copy h1,
+.landing-section-heading h2,
+.landing-problem-copy h2,
+.landing-evidence-intro h2,
+.landing-final-cta h2 {
+  font-feature-settings: "calt" 1, "ss02" 1;
+}
+
 .instrument-label {
   color: #8e98a2;
   font-family: var(--font-instrument);
@@ -3995,6 +4015,19 @@ input:-webkit-autofill:focus {
   .landing-final-cta,
   .landing-footer {
     width: min(100% - 1.5rem, 1480px);
+  }
+
+  /* Optical tracking adjustment for mobile (Pass 5): at small viewport
+     widths the mono display headings render at the lower end of their
+     clamp(), where the same negative tracking used at desktop scale reads
+     visibly tighter. Loosening it slightly keeps glyphs from crowding
+     without touching the clamp()/size values themselves. */
+  .landing-hero-copy h1,
+  .landing-section-heading h2,
+  .landing-problem-copy h2,
+  .landing-evidence-intro h2,
+  .landing-final-cta h2 {
+    letter-spacing: -0.012em;
   }
 
   .landing-hero {
