@@ -259,6 +259,26 @@ test("with Firebase unset the experience stays local-only with no sign-in surfac
   expect(firebaseRequests).toEqual([]);
 });
 
+test("a network failure starting a guided lab shows a visible, legible error banner", async ({ page }) => {
+  await openSeeded(page);
+  await page.route("**/api/challenges/generate", (route) => route.abort());
+  await page.getByRole("button", { name: "Start guided lab", exact: false }).click();
+
+  const banner = page.getByRole("alert").filter({ hasText: "Could not reach the server" });
+  await expect(banner).toBeVisible();
+  await expect(banner).toContainText("Could not reach the server");
+  await expect(banner).not.toContainText("Failed to fetch");
+  await expect(banner.getByRole("button", { name: "Load the prevalidated challenge" })).toBeVisible();
+
+  // The learner is still on the roadmap with the lesson launch intact — no
+  // silent, unchanged-looking page.
+  await expect(page.getByRole("button", { name: "Start guided lab", exact: false })).toBeVisible();
+
+  await page.unroute("**/api/challenges/generate");
+  await banner.getByRole("button", { name: "Load the prevalidated challenge" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "The missing exact-threshold approval" })).toBeVisible();
+});
+
 test("dashboard layouts at 1440x900 and 390x844 have no horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openSeeded(page, { [PROGRESS_KEY]: v1ProgressSeed, [HISTORY_KEY]: [verifiedSeedAttempt] });

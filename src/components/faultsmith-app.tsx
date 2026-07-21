@@ -101,13 +101,27 @@ function AppHeader({ stage, verified }: { stage: Stage; verified: boolean }) {
 }
 
 async function postJson(path: string, body: unknown, extraHeaders?: Record<string, string>) {
-  const response = await fetch(path, {
-    method: "POST",
-    headers: { "content-type": "application/json", ...extraHeaders },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(35_000),
-  });
-  const data = (await response.json()) as { error?: string };
+  let response: Response;
+  try {
+    response = await fetch(path, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...extraHeaders },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(35_000),
+    });
+  } catch {
+    // Raw fetch()-level rejections (network abort, offline, DNS failure,
+    // timeout) surface browser-internal strings like "Failed to fetch" that
+    // are meaningless to a learner. Replace with a labeled fallback so every
+    // caller's error UI has something legible to render.
+    throw new Error("Could not reach the server. Check your connection and try again.");
+  }
+  let data: { error?: string };
+  try {
+    data = (await response.json()) as { error?: string };
+  } catch {
+    throw new Error("Could not reach the server. Check your connection and try again.");
+  }
   if (!response.ok) throw new Error(data.error || "The request could not be completed.");
   return data;
 }
@@ -835,6 +849,12 @@ function ConfigureView(props: ConfigureProps) {
         </div>
         {props.learningMode === "guided" ? (
           <div className="mt-10">
+            {props.error && (
+              <div role="alert" className="mb-6 rounded-xl border border-red-400/15 bg-red-400/[0.05] p-4 text-sm leading-6 text-red-300">
+                {props.error}
+                <button type="button" disabled={!ready} onClick={props.onFallback} className="mt-2 block font-semibold underline disabled:opacity-40">Load the prevalidated challenge</button>
+              </div>
+            )}
             <GuidedRoadmap
               progress={props.learningProgress}
               selectedStepId={props.selectedLearningStepId}
