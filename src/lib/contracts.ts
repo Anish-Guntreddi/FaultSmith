@@ -180,6 +180,54 @@ export const assessRequestSchema = executeRequestSchema
   );
 export type AssessRequest = z.infer<typeof assessRequestSchema>;
 
+export const hypothesisRequestSchema = z
+  .object({
+    challengeId: z.string().min(1).max(100),
+    hypothesis: z.string().trim().min(1).max(2_000),
+    hypothesisHistory: z.array(z.string().trim().min(1).max(2_000)).max(10),
+  })
+  .strict();
+export type HypothesisRequest = z.infer<typeof hypothesisRequestSchema>;
+
+export const hypothesisAxisStatusSchema = z.enum(["aligned", "partial", "off", "unstated"]);
+export type HypothesisAxisStatus = z.infer<typeof hypothesisAxisStatusSchema>;
+
+/**
+ * Learner-facing free text. Bans code fences and diff markers so a repair
+ * cannot be smuggled to the learner through the coaching response — see
+ * design spec section 3.4.
+ */
+function learnerFacingTextSchema(maxLength: number) {
+  return z
+    .string()
+    .min(1)
+    .max(maxLength)
+    .refine((value) => !value.includes("```") && !value.includes("~~~"), {
+      message: "Learner-facing text cannot contain code fences.",
+    })
+    .refine((value) => !/^[+-][ \t]/m.test(value), {
+      message: "Learner-facing text cannot contain diff markers.",
+    });
+}
+
+export const hypothesisResponseSchema = z
+  .object({
+    source: z.enum(["gpt-5.6", "deterministic_fallback"]),
+    axes: z
+      .object({
+        locus: hypothesisAxisStatusSchema,
+        mechanism: hypothesisAxisStatusSchema,
+        trigger: hypothesisAxisStatusSchema,
+      })
+      .strict(),
+    weakestAxis: z.enum(["locus", "mechanism", "trigger", "none"]),
+    observation: learnerFacingTextSchema(400),
+    question: learnerFacingTextSchema(200),
+    movement: z.enum(["narrowed", "restated", "first"]),
+  })
+  .strict();
+export type HypothesisResponse = z.infer<typeof hypothesisResponseSchema>;
+
 export const safeErrorSchema = z
   .object({
     error: z.string().min(1).max(240),

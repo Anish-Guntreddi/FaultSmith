@@ -11,8 +11,15 @@ import {
   hintResponseSchema,
   type HintRequest,
   type HintResponse,
+  hypothesisResponseSchema,
+  type HypothesisRequest,
+  type HypothesisResponse,
   type PublicChallenge,
 } from "@/lib/contracts";
+import { assertNoLeak } from "@/server/hypothesis-containment";
+import { buildCoachContext } from "@/server/hypothesis-context";
+import { buildDeterministicFallbackResponse } from "@/server/hypothesis-fallback";
+import { recordContainmentRejection } from "@/server/hypothesis-health";
 import type { MutationPlan } from "@/server/mutation-contract";
 import {
   OpenAIGateway,
@@ -24,6 +31,9 @@ import { getPrevalidatedChallenge, toPublicChallenge } from "./challenge-service
 import { countChangedLines, runFixtureTests, validateSubmittedFiles } from "./fixture-runner";
 import { getFixture, selectFixture, withRequestedDifficulty, type ChallengeFixture } from "./fixtures";
 import { RequestError } from "./request-guard";
+
+/** Design spec section 3.4: one regeneration on a rejected candidate, then fall back. */
+const MAX_COACH_ATTEMPTS = 2;
 
 type LiveOptions = {
   gateway?: AIGateway;
@@ -392,4 +402,111 @@ export async function assessChallengeWorkflow(
     elapsedSeconds: request.elapsedSeconds,
     hypothesisRevisions: request.hypothesisHistory.length,
   });
+}
+
+/**
+ * Section 3.6's "observation and question ... both pass assertNoLeak"
+ * invariant applies to every response source, not just the live model
+ * path. The deterministic fallback's templates are hand-written and
+ * grounded only in already-visible evidence (see
+ * `hypothesis-fallback.test.ts`), so this should never actually trip — but
+ * nothing previously enforced that in code, so a future template edit
+ * could silently reproduce protected text with no test to catch it. Fail
+ * to a fixed, hard-coded emergency response rather than risk a leak.
+ */
+function ensureFallbackSafe(
+  response: HypothesisResponse,
+  fixture: ChallengeFixture,
+): HypothesisResponse {
+  const jointText = `${response.observation} ${response.question}`;
+  const safe =
+    assertNoLeak(response.observation, fixture).passed &&
+    assertNoLeak(response.question, fixture).passed &&
+    assertNoLeak(jointText, fixture).passed;
+  if (safe) return response;
+
+  recordContainmentRejection();
+  return hypothesisResponseSchema.parse({
+    source: "deterministic_fallback",
+    axes: { locus: "unstated", mechanism: "unstated", trigger: "unstated" },
+    weakestAxis: "none",
+    observation:
+      "Structural coaching is temporarily unavailable for this hypothesis. Re-run the tests and compare the failing case with the closest passing ones.",
+    question: "Which single input value distinguishes the failing test from the passing ones?",
+    movement: "first",
+  });
+}
+
+/**
+ * AI hypothesis coach (design spec section 3, phase 2). Additive and
+ * strictly advisory: it never writes progress or completion, which remain
+ * owned by the deterministic tests in `assessChallengeWorkflow`.
+ *
+ * Containment is an output filter, not a prompt-input restriction (spec
+ * 3.4). The model only ever sees the answer-blind `CoachContext` built by
+ * `buildCoachContext`; its candidate response is then checked with
+ * `assertNoLeak` — on the observation and question individually *and* on
+ * their concatenation, so a leak split across the two fields can't pass
+ * each field's individual check — and, when the gateway implements it, a
+ * semantic second-layer classifier grounded in the fixture's hidden answer
+ * key. A rejected candidate gets exactly one regeneration under a stricter
+ * instruction; a provider error, timeout, or unparsable response instead
+ * routes straight to the deterministic fallback (spec 3.5) rather than
+ * spending that regeneration budget on a failure that was never a leak. No
+ * provider failure ever produces a 5xx for the learner, and a leak — once
+ * detected by either layer — never reaches the learner.
+ */
+export async function evaluateHypothesisWorkflow(
+  request: HypothesisRequest,
+  options?: LiveOptions,
+): Promise<HypothesisResponse> {
+  const fixture = getFixture(request.challengeId);
+  if (!fixture) {
+    throw new RequestError("The challenge identifier is invalid.", "INVALID_CHALLENGE", 404);
+  }
+
+  const context = buildCoachContext(fixture, request);
+  const live = resolveLiveOptions(options);
+
+  if (live.liveAvailable && live.gateway) {
+    const gateway = live.gateway;
+    for (let attempt = 0; attempt < MAX_COACH_ATTEMPTS; attempt += 1) {
+      let candidate;
+      try {
+        candidate = await gateway.coachHypothesis(context, attempt > 0);
+      } catch {
+        // Provider error, timeout, or an unparsable response was never a
+        // leak: degrade straight to the deterministic fallback instead of
+        // consuming the containment-retry budget on it (spec 3.5).
+        break;
+      }
+
+      const jointCandidate = `${candidate.observation} ${candidate.question}`;
+      const denylistSafe =
+        assertNoLeak(candidate.observation, fixture).passed &&
+        assertNoLeak(candidate.question, fixture).passed &&
+        assertNoLeak(jointCandidate, fixture).passed;
+      if (!denylistSafe) {
+        recordContainmentRejection();
+        continue;
+      }
+
+      try {
+        const semanticLeak = await gateway.classifyHypothesisLeak?.(candidate, fixture);
+        if (semanticLeak) {
+          recordContainmentRejection();
+          continue;
+        }
+      } catch {
+        // The classifier itself failed: fail closed and treat the
+        // candidate as unverified rather than trusting it.
+        recordContainmentRejection();
+        continue;
+      }
+
+      return hypothesisResponseSchema.parse({ ...candidate, source: "gpt-5.6" });
+    }
+  }
+
+  return ensureFallbackSafe(buildDeterministicFallbackResponse(context), fixture);
 }
