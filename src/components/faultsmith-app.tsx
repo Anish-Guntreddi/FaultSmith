@@ -960,6 +960,10 @@ function HypothesisCoachPanel({
     } catch (requestError) {
       // Errors degrade quietly to an inline message; they never block the
       // learner or touch the submit path (spec 3.7 / hard constraints).
+      // Clear any prior result first — otherwise a failed re-check after an
+      // edited hypothesis would leave stale axes/observation/question
+      // rendered underneath the new error as if they answered this request.
+      setResult(null);
       setCoachError(
         requestError instanceof Error ? requestError.message : "Coaching is unavailable right now.",
       );

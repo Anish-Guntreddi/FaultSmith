@@ -150,4 +150,89 @@ describe("assertNoLeak", () => {
       expect(result.rule).toBe("root_cause_span");
     });
   });
+
+  describe("operator-only mutation collision (security remediation)", () => {
+    // expense-boundary-v1's fixedSnippet ("if expense.amount >= 500:") and
+    // brokenSnippet ("if expense.amount > 500:") previously normalized to
+    // the identical string once comparison operators were stripped to
+    // whitespace, so a candidate that quoted one side verbatim could
+    // collide with the wrong rule, and — more importantly — nothing
+    // distinguished the two operators at all once stripped. Confirms both
+    // sides are still independently and correctly detected, and that a
+    // live-model response stating the fix via raw operator symbols or
+    // their spelled-out names (the two concrete exploit shapes reported by
+    // security review) is rejected even though it never reproduces a
+    // contiguous run of protected code or root-cause text.
+
+    it("still distinguishes the fixed and broken sides after normalization", () => {
+      const fixedResult = assertNoLeak(`Try: ${fixture.fixedSnippet}`, fixture);
+      expect(fixedResult).toEqual({ passed: false, rule: "mutation_patch_fixed" });
+
+      const brokenResult = assertNoLeak(`Currently: ${fixture.brokenSnippet}`, fixture);
+      expect(brokenResult).toEqual({ passed: false, rule: "mutation_patch_broken" });
+    });
+
+    it("catches a prose leak that states the fix via raw operator symbols", () => {
+      const candidate =
+        "Use >= instead of >, so an amount of exactly 500 should be approved.";
+      const result = assertNoLeak(candidate, fixture);
+
+      expect(result.passed).toBe(false);
+      expect(result.rule).toBe("operator_disclosure");
+    });
+
+    it("catches a prose leak that names the corrected operator without symbols", () => {
+      const candidate =
+        "The check should use greater-than-or-equal instead of strict greater-than against the boundary value.";
+      const result = assertNoLeak(candidate, fixture);
+
+      expect(result.passed).toBe(false);
+      expect(result.rule).toBe("operator_disclosure");
+    });
+
+    it("does not fire the operator-disclosure rule for a fixture whose two sides share the same operators", () => {
+      // expense-authorization-v1 differs by connector ("and" vs "or"), not
+      // by operator — both sides use == and <, so naming those operators
+      // isn't itself a leak for this fixture.
+      const authorization = challengeFixtures[1];
+      const candidate =
+        "Both the role check (equal to finance) and the amount check (less than 500) need to hold together.";
+      const result = assertNoLeak(candidate, authorization);
+
+      expect(result).toEqual({ passed: true, rule: null });
+    });
+  });
+
+  describe("diff-marker false positives (security remediation)", () => {
+    // inventory-quantity-v1's failure mode is literally about negative
+    // numbers, so a legitimate coaching sentence starting a line with a
+    // signed number must not be misclassified as a unified-diff hunk.
+    const quantityFixture = challengeFixtures.find(
+      (item) => item.challengeId === "inventory-validation-v1",
+    );
+
+    it("does not treat a leading signed number as a diff marker", () => {
+      expect(quantityFixture).toBeDefined();
+      const candidate = "-5 is not a valid quantity here, and neither is 0 under the current check.";
+      const result = assertNoLeak(candidate, quantityFixture!);
+
+      expect(result.passed).toBe(true);
+    });
+
+    it("still catches a real unified diff even with no space before the marker's own leading column", () => {
+      const candidate = "-\tif expense.amount > 500:\n+\tif expense.amount >= 500:";
+      const result = assertNoLeak(candidate, fixture);
+
+      expect(result.passed).toBe(false);
+      expect(result.rule).toBe("diff_marker");
+    });
+  });
+
+  it("catches a tilde code fence in addition to backtick fences", () => {
+    const candidate = "Try this:\n~~~python\nif expense.amount >= 500:\n~~~";
+    const result = assertNoLeak(candidate, fixture);
+
+    expect(result.passed).toBe(false);
+    expect(result.rule).toBe("code_fence");
+  });
 });

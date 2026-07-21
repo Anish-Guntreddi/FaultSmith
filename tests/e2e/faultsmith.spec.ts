@@ -163,6 +163,33 @@ test("hypothesis coach degrades quietly on a server error without blocking submi
   await expect(page.getByRole("button", { name: "Submit patch + reasoning" })).toBeEnabled();
 });
 
+test("hypothesis coach clears a stale result when a re-check fails, instead of showing it beside the new error", async ({ page }) => {
+  await openPrimaryFixture(page);
+
+  const hypothesisField = page.getByRole("textbox", { name: "Current hypothesis" });
+  await hypothesisField.fill("I have a vague feeling about this.");
+  await page.getByRole("button", { name: "Check my reasoning" }).click();
+  await expect(page.getByText("Reduced fidelity · deterministic fallback coaching")).toBeVisible();
+  await expect(page.getByText(
+    "Which exact line or identifier in the mutated source do you believe is responsible?",
+  )).toBeVisible();
+
+  // Revise the hypothesis and force the re-check to fail.
+  await page.route("**/api/challenges/hypothesis", (route) =>
+    route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ error: "Coaching is temporarily unavailable." }) }),
+  );
+  await hypothesisField.fill("A revised, different guess about the boundary.");
+  await page.getByRole("button", { name: "Check my reasoning" }).click();
+
+  await expect(page.getByText("Coaching is temporarily unavailable.")).toBeVisible();
+  // The prior result must not linger under the new error — it answered a
+  // different, now-edited hypothesis.
+  await expect(page.getByText("Reduced fidelity · deterministic fallback coaching")).toHaveCount(0);
+  await expect(page.getByText(
+    "Which exact line or identifier in the mutated source do you believe is responsible?",
+  )).toHaveCount(0);
+});
+
 test("guided roadmap records only verified progress and restores the next lesson", async ({ page }) => {
   await openClean(page);
   await expect(page.getByText("0/9 verified")).toBeVisible();

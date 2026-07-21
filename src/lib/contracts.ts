@@ -202,10 +202,10 @@ function learnerFacingTextSchema(maxLength: number) {
     .string()
     .min(1)
     .max(maxLength)
-    .refine((value) => !value.includes("```"), {
+    .refine((value) => !value.includes("```") && !value.includes("~~~"), {
       message: "Learner-facing text cannot contain code fences.",
     })
-    .refine((value) => !/^[+-]/m.test(value), {
+    .refine((value) => !/^[+-][ \t]/m.test(value), {
       message: "Learner-facing text cannot contain diff markers.",
     });
 }

@@ -66,8 +66,11 @@ class MockGateway implements AIGateway {
       validationInterpretation?: ValidationInterpretation;
       coachFail?: boolean;
       coachResponse?: ModelHypothesisCoachResponse;
+      classifyLeak?: boolean;
     } = {},
   ) {}
+
+  classifyLeakCalls = 0;
 
   async planMutation(fixture: ChallengeFixture, request: GenerateChallengeRequest) {
     this.planCalls += 1;
@@ -131,6 +134,16 @@ class MockGateway implements AIGateway {
         movement: "first" as const,
       }
     );
+  }
+
+  async classifyHypothesisLeak(
+    candidate: { observation: string; question: string },
+    fixture: ChallengeFixture,
+  ) {
+    void candidate;
+    void fixture;
+    this.classifyLeakCalls += 1;
+    return this.behavior.classifyLeak ?? false;
   }
 }
 
@@ -604,5 +617,148 @@ describe("evaluateHypothesisWorkflow", () => {
     const serialized = JSON.stringify(response);
     expect(serialized).not.toContain(fixture.hiddenRootCause);
     expect(serialized).not.toContain(fixture.hiddenReferenceSolution);
+  });
+
+  it("catches a leak split across the observation and question fields (security remediation)", async () => {
+    // inventory-idempotency-v1's fixedSnippet ("return stock") has no
+    // operators and is short enough to split cleanly: "return" in the
+    // observation and "stock" in the question each individually pass
+    // assertNoLeak (neither reproduces the full protected line, and
+    // neither has enough non-trivial tokens to trip the reference-solution
+    // rule on its own), but concatenated with the single space the UI
+    // renders them with, they reconstruct the exact protected line.
+    const fixture = challengeFixtures.find(
+      (item) => item.challengeId === "inventory-idempotency-v1",
+    );
+    expect(fixture).toBeDefined();
+    expect(fixture!.fixedSnippet.trim()).toBe("return stock");
+
+    const gateway = new MockGateway();
+    gateway.coachHypothesis = async (_context, stricter) => {
+      if (!stricter) {
+        return {
+          axes: { locus: "aligned", mechanism: "unstated", trigger: "unstated" },
+          weakestAxis: "mechanism",
+          observation: "Consider what the branch should do: return",
+          question: "stock — does that match your hypothesis?",
+          movement: "first",
+        };
+      }
+      return {
+        axes: { locus: "aligned", mechanism: "partial", trigger: "unstated" },
+        weakestAxis: "trigger",
+        observation: "The second call with the same request ID still changes the count.",
+        question: "What should happen on a repeated request ID?",
+        movement: "first",
+      };
+    };
+
+    const response = await evaluateHypothesisWorkflow(hypothesisRequest(fixture!), {
+      liveAvailable: true,
+      gateway,
+    });
+
+    // If the split bypass were still open, this would return the leaked
+    // first-attempt candidate as a live "gpt-5.6" response; instead the
+    // joint check rejects it and the stricter regeneration takes over.
+    expect(response.source).toBe("gpt-5.6");
+    const serialized = JSON.stringify(response);
+    expect(serialized).not.toContain("Consider what the branch should do");
+  });
+
+  it("consults the gateway's semantic leak classifier when the substring denylist passes, and regenerates on a flagged leak", async () => {
+    const fixture = challengeFixtures[0];
+    const gateway = new MockGateway({ classifyLeak: true });
+    gateway.coachHypothesis = async (_context, stricter) => ({
+      axes: { locus: "aligned", mechanism: "partial", trigger: "unstated" },
+      weakestAxis: "trigger" as const,
+      observation: stricter
+        ? "The failing test rejects the exact boundary value."
+        : "A paraphrase that survives the denylist but the classifier still flags.",
+      question: "Which input value sits right at that boundary?",
+      movement: "first" as const,
+    });
+
+    const response = await evaluateHypothesisWorkflow(hypothesisRequest(fixture), {
+      liveAvailable: true,
+      gateway,
+    });
+
+    // The classifier keeps flagging every attempt in this test, so the
+    // workflow exhausts MAX_COACH_ATTEMPTS and degrades to the fallback —
+    // proving the classifier's "leaks" verdict is actually honored rather
+    // than only the denylist mattering.
+    expect(gateway.classifyLeakCalls).toBeGreaterThan(0);
+    expect(response.source).toBe("deterministic_fallback");
+  });
+
+  it("does not call the classifier when the denylist already rejected the candidate", async () => {
+    const fixture = challengeFixtures[0];
+    const gateway = new MockGateway({ classifyLeak: false });
+    gateway.coachHypothesis = async () => ({
+      axes: { locus: "aligned", mechanism: "unstated", trigger: "unstated" },
+      weakestAxis: "mechanism" as const,
+      observation: `The repair is: ${fixture.fixedSnippet}`,
+      question: "Does that match your hypothesis?",
+      movement: "first" as const,
+    });
+
+    await evaluateHypothesisWorkflow(hypothesisRequest(fixture), {
+      liveAvailable: true,
+      gateway,
+    });
+
+    expect(gateway.classifyLeakCalls).toBe(0);
+  });
+
+  it("fails closed and regenerates when the semantic classifier itself errors", async () => {
+    const fixture = challengeFixtures[0];
+    const gateway = new MockGateway();
+    let classifyCalls = 0;
+    gateway.classifyHypothesisLeak = async () => {
+      classifyCalls += 1;
+      throw new Error("classifier provider unavailable");
+    };
+    gateway.coachHypothesis = async (_context, stricter) => ({
+      axes: { locus: "aligned", mechanism: "partial", trigger: "unstated" },
+      weakestAxis: "trigger" as const,
+      observation: stricter
+        ? "The failing test rejects the exact boundary value."
+        : "An otherwise clean observation the classifier never got to verify.",
+      question: "Which input value sits right at that boundary?",
+      movement: "first" as const,
+    });
+
+    const response = await evaluateHypothesisWorkflow(hypothesisRequest(fixture), {
+      liveAvailable: true,
+      gateway,
+    });
+
+    // A classifier failure must never be treated as an implicit pass —
+    // it should fail closed exactly like a detected leak, not like an
+    // unrelated provider error that skips straight to the fallback.
+    expect(classifyCalls).toBeGreaterThan(0);
+    expect(response.source).toBe("deterministic_fallback");
+  });
+
+  it("degrades to the fallback immediately on a provider error without spending the containment-retry budget", async () => {
+    const fixture = challengeFixtures[0];
+    const gateway = new MockGateway({ coachFail: true });
+    let calls = 0;
+    const originalCoach = gateway.coachHypothesis.bind(gateway);
+    gateway.coachHypothesis = async (context, stricter) => {
+      calls += 1;
+      return originalCoach(context, stricter);
+    };
+
+    const response = await evaluateHypothesisWorkflow(hypothesisRequest(fixture), {
+      liveAvailable: true,
+      gateway,
+    });
+
+    expect(response.source).toBe("deterministic_fallback");
+    // A provider error was never a leak, so it should not consume the
+    // stricter-regeneration attempt — the gateway is called exactly once.
+    expect(calls).toBe(1);
   });
 });

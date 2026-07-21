@@ -40,6 +40,15 @@ vi.mock("@/server/ai-gateway", async (importOriginal) => {
         movement: "first",
       };
     }
+
+    // Override rather than inherit `OpenAIGateway`'s real implementation,
+    // which would otherwise make a live network call in this route test.
+    // This route-level test suite exercises the substring denylist and the
+    // provider-error/retry contract; the semantic classifier layer itself
+    // is covered directly in workflows.test.ts.
+    async classifyHypothesisLeak() {
+      return false;
+    }
   }
 
   return { ...actual, OpenAIGateway: FakeGateway };
@@ -139,5 +148,41 @@ describe("POST /api/challenges/hypothesis", () => {
     expect(body.source).toBe("deterministic_fallback");
     expect(JSON.stringify(body)).not.toContain("if expense.amount >= 500");
     expect(JSON.stringify(body)).not.toContain(LEAKED_FIX);
+  });
+
+  it("rejects a cross-origin request with a safe 403 (security remediation)", async () => {
+    const response = await hypothesis(
+      new Request("http://localhost/api/challenges/hypothesis", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-forwarded-for": "198.51.100.47",
+          origin: "https://evil.example",
+          host: "localhost",
+        },
+        body: JSON.stringify(validBody),
+      }),
+    );
+    expect(response.status).toBe(403);
+    expect((await response.json()).code).toBe("CROSS_ORIGIN");
+  });
+
+  it("keeps working for a same-origin browser request and an origin-less client", async () => {
+    const sameOrigin = await hypothesis(
+      new Request("http://localhost/api/challenges/hypothesis", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-forwarded-for": "198.51.100.48",
+          origin: "http://localhost",
+          host: "localhost",
+        },
+        body: JSON.stringify(validBody),
+      }),
+    );
+    expect(sameOrigin.status).toBe(200);
+
+    const originLess = await hypothesis(jsonRequest(validBody, "198.51.100.49"));
+    expect(originLess.status).toBe(200);
   });
 });

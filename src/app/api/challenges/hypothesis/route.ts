@@ -1,5 +1,6 @@
 import { hypothesisRequestSchema, hypothesisResponseSchema } from "@/lib/contracts";
 import {
+  assertSameOrigin,
   checkRateLimit,
   readJsonBody,
   RequestError,
@@ -11,6 +12,10 @@ export const maxDuration = 30;
 
 export async function POST(request: Request) {
   try {
+    // This endpoint drives up to two paid model calls per request
+    // (MAX_COACH_ATTEMPTS); restrict it to same-origin requests like the
+    // other state-changing/cost-bearing routes added alongside it.
+    assertSameOrigin(request);
     if (checkRateLimit(request, "hypothesis")) {
       throw new RequestError(
         "Too many hypothesis coaching requests. Try again shortly.",
