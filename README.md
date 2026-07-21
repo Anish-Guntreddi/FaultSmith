@@ -3,11 +3,37 @@
 [![CI](https://github.com/Anish-Guntreddi/FaultSmith/actions/workflows/ci.yml/badge.svg)](https://github.com/Anish-Guntreddi/FaultSmith/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-FaultSmith turns working Python projects into validated debugging labs. A guided nine-lesson roadmap helps students build evidence-first debugging habits before they rely on open-ended AI, while the direct skill catalog preserves optional constrained GPT-5.6 validation and scoring for advanced learners. FaultSmith introduces one controlled root cause, proves the failure with tests, coaches the learner without revealing the answer, and evaluates both the repaired code and the learner's reasoning.
+**Live app:** [faultsmith.netlify.app](https://faultsmith.netlify.app) — no account or API key required, works immediately in guest mode.
+
+FaultSmith turns working Python projects into validated debugging labs instead of another AI code-fixer. A learner picks a project, skill, and difficulty; the app introduces one controlled root cause, proves with pytest that the original passes and the mutation fails, and then makes the learner do the work: read the evidence, write a hypothesis, request bounded hints, edit only the allowlisted files, and explain the root cause before a patch can be verified. A guided nine-lesson roadmap builds this evidence-first habit for beginners; the direct skill catalog and an optional live GPT-5.6 path serve advanced learners. Deterministic test execution — never the model — decides whether a lesson is complete.
 
 > AI that breaks your code on purpose so you learn how to fix it.
 
 FaultSmith is an Education-track OpenAI Build Week project. The primary demonstration is the Expense Approval boundary-condition lab; Inventory Service and Notification Preferences provide six additional prevalidated scenarios, for nine challenge fixtures across three projects.
+
+## Quickstart
+
+```bash
+npm ci
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). No account, no API key, and no Firebase configuration are required — the app boots straight into the guest-first learning loop. See [Run locally](#run-locally) below for the full environment-variable reference.
+
+## Testing this submission
+
+The fastest path to seeing the whole loop is the live guest deployment; nothing below requires a login or an OpenAI key.
+
+1. Open [faultsmith.netlify.app](https://faultsmith.netlify.app) and click into the app (`/learn`). No sign-in prompt should ever block you.
+2. Pick **Guided Roadmap → Lesson 1** (or any card in **Practice by skill**). This loads a real, prevalidated challenge fixture — not a mock — at zero OpenAI cost. `/api/health` reports `fixtureFallback: "ready"`; the UI visibly labels prevalidated evidence as such.
+3. **Observe:** read the failing pytest evidence in the workspace evidence well.
+4. **Hypothesize:** write an initial hypothesis in the journal, then try **Check my reasoning** — the new hypothesis-coaching feature (see below) gives three-axis feedback (locus / mechanism / trigger) without ever revealing the fix.
+5. **Repair:** edit only the allowlisted source file(s) and rerun tests.
+6. **Verify:** submit the patch with a root-cause explanation. A failing test can never produce a `verified` report, regardless of what the explanation says.
+7. Optional: open **My Progress** to see the guest-mode dashboard (local-only, no account) — completion by phase, score dimensions, and a deterministic next-lesson recommendation with its reason shown.
+8. Optional: **Create account / Continue with Google** in My Progress to see cross-device sync; this is entirely optional and never gates the core loop.
+
+If you have a funded `OPENAI_API_KEY`, setting it server-side (never `NEXT_PUBLIC_`) switches Practice-by-skill generation to the live GPT-5.6 + Code Interpreter path; everything above still works identically without one.
 
 ## Learning loop
 
@@ -42,8 +68,15 @@ Real Firebase project configuration is a private operator step described in [doc
 - **GPT-5.6:** separate Responses API prompts/schemas emit the exact approved mutation contract, interpret validation evidence, deliver one approved progressive hint at a time, and return only bounded rubric scores after tests execute. Learner-facing feedback prose remains server-owned.
 - **Code Interpreter:** in live mode, original, mutated, and learner Python snapshots execute in an ephemeral OpenAI Code Interpreter container. The client cannot supply commands or container identifiers.
 - **Fixture fallback:** a deterministic, prevalidated evaluator keeps the full learning loop demonstrable when the key or live service is unavailable. The UI labels this mode.
+- **Hypothesis coaching (`/api/challenges/hypothesis`):** an optional, additive GPT-5.6 coach that scores a learner's hypothesis on three independent axes — locus (which code?), mechanism (why does it misbehave?), trigger (which input exposes it?) — and asks one Socratic question at the weakest axis. It never gates completion or touches the assess contract; deterministic tests remain the sole authority. See "Hypothesis coaching containment" below.
 
 Learner Python is never executed by the Next.js host. Hidden root causes and reference fixes remain in server-only modules and are stripped from every public DTO.
+
+### Hypothesis coaching containment
+
+The coach's prompt receives only observed evidence (mutated source, test source, the expected failure signature, and the learner's hypothesis history) — never the hidden root cause, reference solution, mutation patch, or hints. A typed projection (`buildCoachContext`) enforces that strip, and a unit test asserts the forbidden fields are absent from its output.
+
+Answer-blindness alone is not treated as sufficient containment, because a capable model can often derive a root cause from buggy source plus a failing test. The actual containment mechanism is an **output denylist filter**: every candidate response is checked against the fixture's hidden answer (`assertNoLeak`) before it can reach the learner. A response containing a near-verbatim line from the reference solution, either side of the mutation diff, or a long contiguous span of the hidden root cause is rejected — one regeneration is attempted under a stricter instruction, and a second rejection degrades to a deterministic, evidence-grounded fallback response labeled `deterministic_fallback`. A leak is designed to never reach the learner. See `docs/superpowers/specs/2026-07-21-hypothesis-coaching-design.md` for the full design.
 
 ## Requirements
 
@@ -113,11 +146,25 @@ See [docs/TESTING.md](docs/TESTING.md) for the QA matrix and manual procedures, 
 
 Residual risks and verification evidence are documented in [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 
-## Build Week provenance
+## Built with Codex — how we collaborated with Codex
 
-Codex is the primary implementation environment and this task is the primary build record. Codex implemented the application, API integration, fixtures, validation, security hardening, tests, browser review, and documentation. GPT-5.6 is substantive optional runtime functionality for constrained contract emission, validation interpretation, approved hint delivery, and bounded explanation scoring; Code Interpreter is the live Python execution boundary.
+FaultSmith's roughly 99 commits span four days (July 18–21, 2026). Codex was the primary implementation environment for essentially the whole product: the Next.js/TypeScript application, the nine-fixture challenge domain, the strict Zod contract layer, the GPT-5.6 + Code Interpreter gateway, every route guard and security hardening pass, the automated test suites, and the optional Firebase accounts/cloud-progress boundary. `docs/BUILD_LOG.md` is the day-by-day provenance record, and `.planning/phases/` holds the GSD execution plans plus independent product/QA/security review reports that back it up.
 
-No secondary Claude Code review was performed. That absence is recorded rather than represented as completed. The fixture fallback is a reliability feature, not a claim that live verification occurred without a credential.
+### Where Codex accelerated the workflow
+
+- **Day one, the full secure domain.** On July 18 Codex built the entire secure challenge domain in one day — strict Zod contracts, nine single-root-cause fixtures across three projects, server-only hidden-field modules, and the GPT-5.6 + Code Interpreter gateway with retry/fallback — then hardened it with adversarial tests for prompt injection, path traversal, arbitrary command/container-ID fields, and rate-limit-key abuse.
+- **Self-directed audits that found real defects.** The July 18 "requirement-level completion audit" logged in `docs/BUILD_LOG.md` is representative: Codex reread every functional, AI, and security requirement against the running code and found — then fixed and regression-tested — a high-severity fallback-verification gap (a comment or syntactically invalid file containing the approved repair snippet could be misreported as a passing patch), a fixture transcript/evidence mismatch, missing prompt separation for hint delivery and validation interpretation, and a rate-limiter key-exhaustion path. None of these were filed as human bug reports; Codex surfaced them by auditing its own prior work against the PRD.
+- **Independent review rounds, not self-grading.** Using a GSD (get-stuff-done) execution framework, Codex ran separate product-completeness, QA/accessibility, and security/adversarial review passes against frozen commit SHAs at the close of Phase 1 and Phase 01.1 (see `.planning/phases/01-*/01-04-SECURITY-REVIEW.md` and `01.1-05-SECURITY-REVIEW.md`). The Phase 1 security review found a high-severity issue — live assessment input included hidden fixture knowledge — repaired by excluding hidden answers from model input, constraining the model to three bounded numeric scores, and keeping completion authority, evidence, and learner-facing prose entirely server-owned.
+- **Phase 01.1 accounts/cloud progress across three implementation waves.** Codex built the entire optional Firebase Authentication + Cloud Firestore boundary — versioned local-progress migration, a lazy browser Auth adapter, a server-only Admin gateway, a transactional Firestore repository with SHA-256 idempotency and 50-record retention, default-deny security rules, and 23 Firebase-emulator integration tests plus 16 emulator-mode Playwright/axe scenarios — while keeping the guest/local path the unconditional default and free of any Firebase network request.
+- **Objective, repeated gate evidence.** Every phase closed on the same green bar: lint/typecheck clean, the full Vitest suite (325 tests at the latest presentation checkpoint), Firebase emulator integration, a production build, a client-bundle leakage scan for hidden fixture answers, the Playwright/axe suite at desktop and mobile viewports, and a zero-vulnerability dependency audit. Exact per-checkpoint numbers are in `docs/TESTING.md`.
+
+### Decisions the human made
+
+Product scope, track, and risk posture were human calls that Codex then executed inside: locking to three curated Python/pytest projects instead of arbitrary-repository ingestion (`docs/PRD.md` §5.3, §21); making the prevalidated-fixture fallback a first-class, permanently supported mode rather than a demo crutch, so the whole product works at zero API cost; keeping guest mode the unconditional default and never gating the core loop behind sign-in, even after optional Firebase accounts shipped (`docs/PERSONALIZED_LEARNING_PRD.md` §1); and, on submission day, replacing the fixture-mode hypothesis scorer — originally keyword/substring matching, which was gameable ("boolean and condition because" scored like a deep explanation) and brittle — with an AI hypothesis coach that is explicitly additive, cannot affect completion, and is contained by an output-denylist filter rather than by prompt omission alone (`docs/superpowers/specs/2026-07-21-hypothesis-coaching-design.md`). The Forensic Workbench visual system and its later typography/motion refinement were a human-directed design pass, executed with a secondary AI design collaborator working alongside Codex and reviewed and hardened by Codex before shipping (see the July 19–20 entries in `docs/BUILD_LOG.md`).
+
+### How GPT-5.6 and Codex contributed to the final result
+
+Codex is the build tool: it wrote the application, the tests, the security hardening, and most of the documentation, and ran the review loops that caught the defects described above before they shipped. GPT-5.6 is the runtime AI inside the shipped product, used in four deliberately separated, schema-constrained roles rather than one monolithic prompt: emitting the exact approved mutation contract for a challenge, interpreting validation evidence, delivering one progressive hint at a time, and returning three bounded 0–100 rubric scores after tests have already executed. In every one of those roles, GPT-5.6's output is checked against deterministic evidence or an exact server-approved contract before it can affect what the learner sees — a failing test result can never be overridden into a `verified` report by model output, in either the live or fixture-fallback path. Today's hypothesis-coaching feature extends that same pattern: an answer-blind prompt (`buildCoachContext`) strips the hidden root cause, reference solution, mutation patch, and hints before the model ever sees them, and a hard output-denylist filter (`assertNoLeak`) checks every candidate response against the fixture's actual hidden answer before it can reach the learner. That lets GPT-5.6 reason freely over buggy source and a failing test — the exact capability that makes grey-area feedback like "you found the right function but misidentified the mechanism" possible — while making a leaked answer structurally unreachable rather than merely unlikely.
 
 ## Documentation
 
