@@ -11,8 +11,14 @@ import {
   hintResponseSchema,
   type HintRequest,
   type HintResponse,
+  hypothesisResponseSchema,
+  type HypothesisRequest,
+  type HypothesisResponse,
   type PublicChallenge,
 } from "@/lib/contracts";
+import { assertNoLeak } from "@/server/hypothesis-containment";
+import { buildCoachContext } from "@/server/hypothesis-context";
+import { buildDeterministicFallbackResponse } from "@/server/hypothesis-fallback";
 import type { MutationPlan } from "@/server/mutation-contract";
 import {
   OpenAIGateway,
@@ -24,6 +30,9 @@ import { getPrevalidatedChallenge, toPublicChallenge } from "./challenge-service
 import { countChangedLines, runFixtureTests, validateSubmittedFiles } from "./fixture-runner";
 import { getFixture, selectFixture, withRequestedDifficulty, type ChallengeFixture } from "./fixtures";
 import { RequestError } from "./request-guard";
+
+/** Design spec section 3.4: one regeneration on a rejected candidate, then fall back. */
+const MAX_COACH_ATTEMPTS = 2;
 
 type LiveOptions = {
   gateway?: AIGateway;
@@ -392,4 +401,50 @@ export async function assessChallengeWorkflow(
     elapsedSeconds: request.elapsedSeconds,
     hypothesisRevisions: request.hypothesisHistory.length,
   });
+}
+
+/**
+ * AI hypothesis coach (design spec section 3, phase 2). Additive and
+ * strictly advisory: it never writes progress or completion, which remain
+ * owned by the deterministic tests in `assessChallengeWorkflow`.
+ *
+ * Containment is an output filter, not a prompt-input restriction (spec
+ * 3.4). The model only ever sees the answer-blind `CoachContext` built by
+ * `buildCoachContext`; its candidate response is then checked with
+ * `assertNoLeak` before it may reach the learner. A rejected candidate gets
+ * exactly one regeneration under a stricter instruction; if that also fails
+ * — or the provider errors, times out, or returns an unparsable response at
+ * any point — the deterministic structural fallback is returned instead.
+ * No provider failure ever produces a 5xx for the learner.
+ */
+export async function evaluateHypothesisWorkflow(
+  request: HypothesisRequest,
+  options?: LiveOptions,
+): Promise<HypothesisResponse> {
+  const fixture = getFixture(request.challengeId);
+  if (!fixture) {
+    throw new RequestError("The challenge identifier is invalid.", "INVALID_CHALLENGE", 404);
+  }
+
+  const context = buildCoachContext(fixture, request);
+  const live = resolveLiveOptions(options);
+
+  if (live.liveAvailable && live.gateway) {
+    for (let attempt = 0; attempt < MAX_COACH_ATTEMPTS; attempt += 1) {
+      try {
+        const candidate = await live.gateway.coachHypothesis(context, attempt > 0);
+        const observationCheck = assertNoLeak(candidate.observation, fixture);
+        const questionCheck = assertNoLeak(candidate.question, fixture);
+        if (!observationCheck.passed || !questionCheck.passed) continue;
+
+        return hypothesisResponseSchema.parse({ ...candidate, source: "gpt-5.6" });
+      } catch {
+        // Provider error, timeout, or an unparsable response: try again with
+        // the stricter instruction, or fall through to the deterministic
+        // fallback below once attempts are exhausted.
+      }
+    }
+  }
+
+  return buildDeterministicFallbackResponse(context);
 }

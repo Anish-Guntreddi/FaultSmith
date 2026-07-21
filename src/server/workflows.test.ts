@@ -7,6 +7,8 @@ import type {
   GenerateChallengeRequest,
   TestResult,
 } from "@/lib/contracts";
+import type { ModelHypothesisCoachResponse } from "@/server/hypothesis-coach-contract";
+import type { CoachContext } from "@/server/hypothesis-context";
 import type { MutationPlan } from "@/server/mutation-contract";
 import type { ValidationInterpretation } from "@/server/validation-contract";
 import {
@@ -19,6 +21,7 @@ import { runFixtureTests } from "./fixture-runner";
 import { challengeFixtures, type ChallengeFixture } from "./fixtures";
 import {
   assessChallengeWorkflow,
+  evaluateHypothesisWorkflow,
   executeChallengeWorkflow,
   generateChallengeWorkflow,
   revealHintWorkflow,
@@ -61,6 +64,8 @@ class MockGateway implements AIGateway {
       assessment?: ModelAssessmentScores;
       hint?: string;
       validationInterpretation?: ValidationInterpretation;
+      coachFail?: boolean;
+      coachResponse?: ModelHypothesisCoachResponse;
     } = {},
   ) {}
 
@@ -109,6 +114,21 @@ class MockGateway implements AIGateway {
           mutated.failedCount > 0 &&
           mutated.matchedExpectedFailure,
         validationFeedback: "Evidence satisfies the deterministic release gate.",
+      }
+    );
+  }
+
+  async coachHypothesis(context: CoachContext, stricter: boolean) {
+    void context;
+    void stricter;
+    if (this.behavior.coachFail) throw new Error("coach provider unavailable");
+    return (
+      this.behavior.coachResponse ?? {
+        axes: { locus: "partial", mechanism: "unstated", trigger: "unstated" },
+        weakestAxis: "mechanism" as const,
+        observation: "The mutated source still contains the comparison you named.",
+        question: "What specific comparison or condition causes the wrong behavior?",
+        movement: "first" as const,
       }
     );
   }
@@ -467,5 +487,122 @@ describe("OpenAI-backed workflows with mocked provider calls", () => {
     expect(grounded.assessment.rootCauseScore).toBeGreaterThan(
       irrelevant.assessment.rootCauseScore,
     );
+  });
+});
+
+const hypothesisRequest = (fixture: ChallengeFixture) => ({
+  challengeId: fixture.challengeId,
+  hypothesis: "The comparison excludes the exact boundary value.",
+  hypothesisHistory: ["An earlier, vaguer guess about the threshold."],
+});
+
+describe("evaluateHypothesisWorkflow", () => {
+  it("uses the deterministic fallback when the API key is missing", async () => {
+    const fixture = challengeFixtures[0];
+    const response = await evaluateHypothesisWorkflow(hypothesisRequest(fixture), {
+      liveAvailable: false,
+    });
+
+    expect(response.source).toBe("deterministic_fallback");
+    expect(response.axes.locus).not.toBe("aligned");
+    expect(response.axes.locus).not.toBe("off");
+  });
+
+  it("returns a live response validated against the strict response schema", async () => {
+    const fixture = challengeFixtures[0];
+    const response = await evaluateHypothesisWorkflow(hypothesisRequest(fixture), {
+      liveAvailable: true,
+      gateway: new MockGateway(),
+    });
+
+    expect(response.source).toBe("gpt-5.6");
+    expect(response.weakestAxis).toBe("mechanism");
+  });
+
+  it("degrades to the deterministic fallback on a provider error, never throwing", async () => {
+    const fixture = challengeFixtures[0];
+    const response = await evaluateHypothesisWorkflow(hypothesisRequest(fixture), {
+      liveAvailable: true,
+      gateway: new MockGateway({ coachFail: true }),
+    });
+
+    expect(response.source).toBe("deterministic_fallback");
+  });
+
+  it("regenerates once under a stricter instruction when a leak is detected, then succeeds", async () => {
+    const fixture = challengeFixtures[0];
+    let calls = 0;
+    const gateway = new MockGateway();
+    gateway.coachHypothesis = async (_context, stricter) => {
+      calls += 1;
+      if (!stricter) {
+        return {
+          axes: { locus: "aligned", mechanism: "unstated", trigger: "unstated" },
+          weakestAxis: "mechanism",
+          observation: `The repair is: ${fixture.fixedSnippet}`,
+          question: "Does that match your hypothesis?",
+          movement: "first",
+        };
+      }
+      return {
+        axes: { locus: "aligned", mechanism: "partial", trigger: "unstated" },
+        weakestAxis: "trigger",
+        observation: "The failing test rejects the exact boundary value.",
+        question: "Which input value sits right at that boundary?",
+        movement: "first",
+      };
+    };
+
+    const response = await evaluateHypothesisWorkflow(hypothesisRequest(fixture), {
+      liveAvailable: true,
+      gateway,
+    });
+
+    expect(calls).toBe(2);
+    expect(response.source).toBe("gpt-5.6");
+    expect(response.weakestAxis).toBe("trigger");
+    expect(JSON.stringify(response)).not.toContain(fixture.fixedSnippet);
+  });
+
+  it("degrades to the deterministic fallback when both attempts leak protected content", async () => {
+    const fixture = challengeFixtures[0];
+    const gateway = new MockGateway();
+    gateway.coachHypothesis = async () => ({
+      axes: { locus: "aligned", mechanism: "unstated", trigger: "unstated" },
+      weakestAxis: "mechanism" as const,
+      observation: `The repair is: ${fixture.fixedSnippet}`,
+      question: "Does that match your hypothesis?",
+      movement: "first" as const,
+    });
+
+    const response = await evaluateHypothesisWorkflow(hypothesisRequest(fixture), {
+      liveAvailable: true,
+      gateway,
+    });
+
+    expect(response.source).toBe("deterministic_fallback");
+    expect(JSON.stringify(response)).not.toContain(fixture.fixedSnippet);
+  });
+
+  it("never carries hidden fixture material even when the model attempts to leak it", async () => {
+    const fixture = challengeFixtures[0];
+    const gateway = new MockGateway();
+    gateway.coachHypothesis = async () => ({
+      axes: { locus: "aligned", mechanism: "aligned", trigger: "aligned" },
+      weakestAxis: "none" as const,
+      observation: fixture.hiddenRootCause,
+      question: "Does that match your hypothesis?",
+      movement: "first" as const,
+    });
+
+    const response = await evaluateHypothesisWorkflow(hypothesisRequest(fixture), {
+      liveAvailable: true,
+      gateway,
+    });
+
+    expect(response.source).toBe("deterministic_fallback");
+    const serialized = JSON.stringify(response);
+    expect(serialized).not.toContain(fixture.hiddenRootCause);
+    expect(serialized).not.toContain(fixture.hiddenReferenceSolution);
   });
 });
