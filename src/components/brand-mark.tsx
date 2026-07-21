@@ -7,6 +7,7 @@ export function BrandMark() {
       <span className="h-3.5 w-3.5 rotate-45 rounded-[3px] border-2 border-amber-200" />
       <span className="absolute bottom-1.5 h-[2px] w-4 rounded-full bg-cyan-200/60" />
       <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-amber-300/15 blur-sm" />
+      <span className="absolute -bottom-1 -left-1 h-3 w-3 rounded-full bg-cyan-300/12 blur-sm" />
     </span>
   );
 }

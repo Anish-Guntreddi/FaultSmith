@@ -207,21 +207,34 @@ button:disabled {
   letter-spacing: 0.08em;
 }
 
+/* Elevation tier 1 — Card's default "panel" surface. Border and inner
+   top-highlight now come from the --elevation-1-* tokens above instead of
+   ad-hoc values, so any future elevation tuning has one source of truth. */
 .lab-panel {
-  border: 1px solid rgba(255, 255, 255, 0.085);
+  border: 1px solid var(--elevation-1-border);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 42%),
+    linear-gradient(180deg, var(--elevation-1-highlight), transparent 42%),
     rgba(16, 21, 27, 0.94);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025), var(--shadow-panel);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.028), var(--shadow-panel);
   backdrop-filter: blur(18px);
 }
 
+/* Elevation tier 2 — Card's "raised" surface, reserved for the most
+   important panels. Gets the same warm tint as before plus a hairline
+   amber-to-transparent keyline across the very top edge (background-image
+   layer, not a pseudo-element, so it never disturbs a child's own
+   position: absolute containing block). */
 .lab-panel-raised {
-  border: 1px solid rgba(242, 184, 75, 0.19);
-  background:
+  border: 1px solid var(--elevation-2-border);
+  background-image:
+    var(--gradient-keyline-amber),
     linear-gradient(145deg, rgba(242, 184, 75, 0.065), transparent 38%),
-    rgba(18, 23, 29, 0.98);
-  box-shadow: inset 0 1px 0 rgba(255, 239, 202, 0.045), var(--shadow-active);
+    linear-gradient(180deg, var(--elevation-2-highlight), transparent 46%);
+  background-color: rgba(18, 23, 29, 0.98);
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-size: 100% 1px, 100% 100%, 100% 100%;
+  background-position: top, 0 0, 0 0;
+  box-shadow: inset 0 1px 0 rgba(255, 239, 202, 0.05), var(--shadow-active);
 }
 
 .evidence-well {
@@ -588,9 +601,15 @@ button:disabled {
 .primary-action {
   min-height: 2.65rem;
   border: 1px solid rgba(255, 220, 145, 0.18);
-  background: linear-gradient(180deg, #f5c45f, var(--amber));
+  /* Three-stop gradient (light top / amber core / a shade darker at the
+     foot) reads as a subtly domed, pressable surface at rest, not a flat
+     fill — the extra bottom inset shadow reinforces the same cue. */
+  background: linear-gradient(180deg, #f8cd70 0%, var(--amber) 55%, #d99a2e 100%);
   color: #211506;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 30px rgba(159, 98, 10, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(120, 68, 4, 0.2),
+    0 10px 30px rgba(159, 98, 10, 0.16);
   transition:
     transform var(--duration-press) var(--ease-out),
     background-color var(--duration-ui) var(--ease-out),
@@ -607,14 +626,20 @@ button:disabled {
 @media (hover: hover) and (pointer: fine) {
   .primary-action:hover:not(:disabled) {
     transform: translateY(-1px);
-    background: linear-gradient(180deg, #ffd478, #f4bc4e);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 14px 34px rgba(159, 98, 10, 0.22);
+    background: linear-gradient(180deg, #ffd478 0%, #f4bc4e 55%, #dba236 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      inset 0 -1px 0 rgba(120, 68, 4, 0.22),
+      0 14px 34px rgba(159, 98, 10, 0.22),
+      0 0 0 1px rgba(255, 211, 110, 0.2);
   }
 
   .fine-hover-lift:hover:not(:disabled) {
     transform: translateY(-2px);
     border-color: rgba(242, 184, 75, 0.28);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), var(--shadow-active);
+    /* Adds a 1px amber glow ring alongside the existing lift shadow —
+       border-brightness + glow shift, no layout change. */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), var(--shadow-active), 0 0 0 1px rgba(242, 184, 75, 0.12);
   }
 }
 
@@ -623,6 +648,9 @@ button:disabled {
    would otherwise get zero press feedback on the primary CTAs. */
 .primary-action:active:not(:disabled) {
   transform: scale(0.97);
+  /* Pressed depth: the resting inset highlight/foot-shadow flips to a
+     single deeper inner shadow, reading as the surface sinking in. */
+  box-shadow: inset 0 2px 6px rgba(94, 54, 4, 0.35);
 }
 
 .fine-hover-lift:active:not(:disabled) {
@@ -675,6 +703,7 @@ button:disabled {
     transform: translateY(-1px);
     border-color: rgba(105, 208, 203, 0.5);
     background: linear-gradient(180deg, rgba(105, 208, 203, 0.19), rgba(105, 208, 203, 0.06));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(105, 208, 203, 0.16);
   }
 }
 
@@ -2559,30 +2588,45 @@ input:-webkit-autofill:focus {
   gap: 0.32rem;
 }
 
+/* Richer titlebar chrome (Pass 5): each light gets a small top-left glossy
+   highlight (a physical-button cue, not a status signal — the lights carry
+   no meaning of their own) and an inset rim so they read as pressed metal
+   rather than flat dots. The unset base state stays dimmed relative to the
+   three colored lights, which sit at full opacity. */
 .terminal-frame-lights i {
   display: block;
   width: 0.48rem;
   height: 0.48rem;
   border-radius: 50%;
-  background: #4b535c;
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.32), transparent 60%), #4b535c;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22);
+  opacity: 0.8;
 }
 
 .terminal-frame-lights i:first-child {
-  background: rgba(255, 122, 114, 0.72);
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.4), transparent 60%), rgba(255, 122, 114, 0.72);
+  opacity: 1;
 }
 
 .terminal-frame-lights i:nth-child(2) {
-  background: rgba(242, 184, 75, 0.68);
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.4), transparent 60%), rgba(242, 184, 75, 0.68);
+  opacity: 1;
 }
 
 .terminal-frame-lights i:last-child {
-  background: rgba(112, 214, 158, 0.62);
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.4), transparent 60%), rgba(112, 214, 158, 0.62);
+  opacity: 1;
 }
 
 .terminal-frame-label {
   overflow: hidden;
   min-width: 0;
   flex: 1 1 auto;
+  font-weight: 600;
+  /* Deliberate mono feature enablement for the session-label chrome —
+     contextual alternates plus JetBrains Mono's ss02 zero style read as a
+     more intentionally "instrument" typographic choice at this scale. */
+  font-feature-settings: "calt" 1, "ss02" 1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3609,28 +3653,35 @@ input:-webkit-autofill:focus {
 /* Badge: tone variants layered onto the existing .status-pill base
    (neutral). Colors match .case-chapter-signal-* exactly, so a badge and
    a case-file chapter signal in the same tone always read identically. */
+/* Restrained outer glow layered behind each tone — the border/background/
+   text stay exactly as before (no contrast change to the label itself),
+   the glow is a soft, low-opacity halo outside the pill's own edge. */
 .status-pill-investigation {
   border-color: rgba(242, 184, 75, 0.28);
   background: rgba(242, 184, 75, 0.07);
   color: #f4ce85;
+  box-shadow: 0 0 14px -8px rgba(242, 184, 75, 0.55);
 }
 
 .status-pill-instrument {
   border-color: rgba(105, 208, 203, 0.28);
   background: rgba(105, 208, 203, 0.07);
   color: #9be4e0;
+  box-shadow: 0 0 14px -8px rgba(105, 208, 203, 0.5);
 }
 
 .status-pill-verified {
   border-color: rgba(112, 214, 158, 0.24);
   background: rgba(112, 214, 158, 0.07);
   color: #a6ecc3;
+  box-shadow: 0 0 14px -8px rgba(112, 214, 158, 0.5);
 }
 
 .status-pill-failure {
   border-color: rgba(255, 122, 114, 0.24);
   background: rgba(255, 122, 114, 0.07);
   color: #ffaaa5;
+  box-shadow: 0 0 14px -8px rgba(255, 122, 114, 0.5);
 }
 
 .status-pill-locked {
@@ -3668,24 +3719,27 @@ input:-webkit-autofill:focus {
   background: var(--muted-dim);
 }
 
+/* Refined "instrument LED" glow: a tight ring plus a soft outer bloom,
+   instead of one flat ring — still fully decorative/aria-hidden and never
+   the sole status signal (see status-dot.tsx). */
 .status-dot-investigation {
   background: var(--amber);
-  box-shadow: 0 0 0 4px rgba(242, 184, 75, 0.08);
+  box-shadow: 0 0 0 3px rgba(242, 184, 75, 0.12), 0 0 8px rgba(242, 184, 75, 0.35);
 }
 
 .status-dot-instrument {
   background: var(--cyan);
-  box-shadow: 0 0 0 4px rgba(105, 208, 203, 0.08);
+  box-shadow: 0 0 0 3px rgba(105, 208, 203, 0.12), 0 0 8px rgba(105, 208, 203, 0.32);
 }
 
 .status-dot-verified {
   background: var(--green);
-  box-shadow: 0 0 0 4px rgba(112, 214, 158, 0.08);
+  box-shadow: 0 0 0 3px rgba(112, 214, 158, 0.12), 0 0 8px rgba(112, 214, 158, 0.32);
 }
 
 .status-dot-failure {
   background: var(--red);
-  box-shadow: 0 0 0 4px rgba(255, 122, 114, 0.08);
+  box-shadow: 0 0 0 3px rgba(255, 122, 114, 0.12), 0 0 8px rgba(255, 122, 114, 0.32);
 }
 
 .status-dot-locked {
