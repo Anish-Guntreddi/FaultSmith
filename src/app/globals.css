@@ -1208,38 +1208,46 @@ input:-webkit-autofill:focus {
   color: var(--text);
 }
 
+/* Ghostty-style hero: a single centered column, radically reduced copy,
+   with the animated terminal as the one dominant piece of artwork below it
+   — not a two-column split fighting the terminal for attention. */
+/* Ghostty keeps its ENTIRE hero — headline, one sentence, two buttons, and
+   the terminal artwork — inside roughly one fold. Every size/spacing value
+   below is deliberately compact (not the old editorial-scale hero) so the
+   terminal stays close to the top of the page instead of scrolling away
+   under a tall headline block. */
 .landing-hero {
-  display: grid;
-  width: min(100% - 2.5rem, 1480px);
-  min-height: min(52rem, calc(100vh - 4.5rem));
+  display: flex;
+  min-width: 0;
+  width: min(100% - 2.5rem, 1200px);
   margin-inline: auto;
-  grid-template-columns: minmax(0, 0.92fr) minmax(31rem, 0.78fr);
+  flex-direction: column;
   align-items: center;
-  gap: clamp(3rem, 7vw, 8rem);
-  padding-block: clamp(5rem, 9vw, 9rem);
+  text-align: center;
+  gap: clamp(1.5rem, 2.6vw, 2.1rem);
+  padding-block: clamp(2.25rem, 4vw, 3.5rem) clamp(2.5rem, 4vw, 4rem);
 }
 
 .landing-hero-copy {
-  /* Grid item: resets the automatic min-width so intrinsically wide
-     descendants (the trace ticker's max-content marquee track) never
-     blow out the hero column past the viewport. */
+  display: flex;
   min-width: 0;
-  max-width: 50rem;
+  max-width: 54rem;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Mono display headline — the terminal-forward signature. JetBrains Mono is
-   a fixed-width face, so it needs looser tracking and a smaller clamp than
-   the old variable-sans headline (-0.065em/6.6rem would collide glyphs and
-   overflow); -0.025em/5.6rem reads as a deliberately set mono headline
-   rather than default typewriter spacing. */
+   a fixed-width face, so it needs looser tracking than the old variable-
+   sans headline (-0.065em would collide glyphs); the compact clamp (versus
+   an editorial-scale 5.6rem) is what keeps the whole hero near one fold. */
 .landing-hero-copy h1 {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   color: #f7f3eb;
   font-family: var(--font-instrument);
-  font-size: clamp(2.35rem, 5.1vw, 5.6rem);
+  font-size: clamp(2rem, 3.6vw, 3.6rem);
   font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.04;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
 }
 
 .landing-hero-copy h1 span {
@@ -1247,18 +1255,20 @@ input:-webkit-autofill:focus {
 }
 
 .landing-hero-copy > p {
-  max-width: 42rem;
-  margin-top: 2rem;
+  max-width: 34rem;
+  margin-top: 1rem;
   color: #b2b8bd;
-  font-size: clamp(1rem, 1.4vw, 1.18rem);
-  line-height: 1.8;
+  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+  line-height: 1.6;
 }
 
 .landing-hero-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
   gap: 0.8rem;
-  margin-top: 2.2rem;
+  margin-top: 1.5rem;
 }
 
 .landing-hero-actions a {
@@ -1268,25 +1278,28 @@ input:-webkit-autofill:focus {
   gap: 0.65rem;
 }
 
-.landing-proof-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.4rem;
-  margin: 1.8rem 0 0;
-  padding: 0;
-  color: #989fa6;
-  font-family: var(--font-instrument);
-  font-size: 0.62rem;
-  list-style: none;
-}
-
-.landing-proof-list li {
-  display: flex;
+/* Warp-style inline command chip beside the primary CTA — decorative,
+   restates the in-app action in terminal-invocation form. A dashed border
+   and no fill (versus .secondary-action's solid border + tint) keeps it
+   reading as a caption/tag rather than a third clickable button. */
+.command-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.55ch;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  border-radius: 0.65rem;
+  padding: 0.85rem 1.05rem;
+  color: #9099a1;
+  font-size: 0.74rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
-.landing-proof-list span,
+.command-chip-prompt {
+  color: var(--amber);
+  font-weight: 700;
+}
+
 .landing-evidence-signal span,
 .landing-console-footer i {
   display: inline-block;
@@ -1298,9 +1311,14 @@ input:-webkit-autofill:focus {
   box-shadow: 0 0 0 4px rgba(112, 214, 158, 0.07);
 }
 
+/* The dominant hero artwork: one large centered terminal window, Ghostty-
+   style — roughly 900-1000px wide on desktop, full-width and legible on
+   mobile (see the ≤639px query). */
 .landing-hero-visual {
   position: relative;
+  width: min(100%, 62rem);
   min-width: 0;
+  margin-inline: auto;
   perspective: 1200px;
 }
 
@@ -1396,16 +1414,24 @@ input:-webkit-autofill:focus {
    whole visual block is aria-hidden — see debugging-demo.tsx — so none of
    the class names below need their own reduced-motion overrides beyond the
    global animation-duration collapse at the bottom of this file. */
+/* Art Direction rebuild: the hero terminal is the dominant page artwork
+   (Ghostty-style), not a small supporting panel — it needs real vertical
+   weight and a larger internal type scale to read as a full "screen"
+   rather than a caption-sized box floating in the layout. Content stays
+   centered within that taller frame, the way a real terminal's short
+   scrollback sits inside a much taller window. */
 .terminal-frame-body.debug-demo-body {
   position: relative;
-  min-height: 12.5rem;
+  min-height: 23rem;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
 }
 
 .debug-demo-phase-label {
-  margin-bottom: 0.9rem;
+  margin-bottom: 1.3rem;
+  font-size: 0.7rem;
 }
 
 .debug-demo-stage {
@@ -1426,7 +1452,7 @@ input:-webkit-autofill:focus {
 .debug-demo-command {
   color: #d0d5d8;
   font-family: var(--font-instrument);
-  font-size: 0.66rem;
+  font-size: 0.9rem;
 }
 
 .debug-demo-cursor {
@@ -1443,21 +1469,21 @@ input:-webkit-autofill:focus {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  margin-top: 0.9rem;
+  margin-top: 1.1rem;
   color: #8e98a2;
   font-family: var(--font-instrument);
-  font-size: 0.62rem;
+  font-size: 0.8rem;
 }
 
 .debug-demo-spinner {
   color: var(--amber);
-  font-size: 0.75rem;
+  font-size: 0.9rem;
 }
 
 .debug-demo-stream {
   display: grid;
-  gap: 0.4rem;
-  margin-top: 0.95rem;
+  gap: 0.55rem;
+  margin-top: 1.15rem;
 }
 
 .debug-demo-line {
@@ -1466,7 +1492,7 @@ input:-webkit-autofill:focus {
   animation: debug-demo-line-reveal var(--dur-base) var(--ease-out) both;
   color: #b7bcc1;
   font-family: var(--font-instrument);
-  font-size: 0.6rem;
+  font-size: 0.78rem;
 }
 
 @keyframes debug-demo-line-reveal {
@@ -2660,13 +2686,18 @@ input:-webkit-autofill:focus {
   vertical-align: -0.02em;
 }
 
-/* === Trace ticker (Pass 2) ==============================================
-   CSS-only marquee of evidence-loop events; decorative ambient detail,
-   fully hidden from assistive tech. Pausable on hover; the duplicated
-   second set collapses under reduced motion, leaving one static row. */
+/* === Trace ticker (Pass 2 / Art Direction) ==============================
+   CSS-only marquee of evidence-loop events, Warp-style — a thin mono ticker
+   bar sitting between the hero CTAs and the dominant terminal artwork.
+   Decorative ambient detail, fully hidden from assistive tech. Pausable on
+   hover; the duplicated second set collapses under reduced motion, leaving
+   one static row. Now a direct child of .landing-hero (not nested inside
+   .landing-hero-copy), so it gets its own centered width rather than
+   inheriting the narrower copy column. */
 .trace-ticker {
   overflow: hidden;
-  margin-top: 1.7rem;
+  width: min(100%, 34rem);
+  margin-inline: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   padding-top: 1rem;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
@@ -3665,19 +3696,8 @@ input:-webkit-autofill:focus {
     display: block;
   }
 
-  .landing-hero {
-    min-height: 0;
-    grid-template-columns: 1fr;
-    gap: 5rem;
-  }
-
-  .landing-hero-copy {
-    max-width: 58rem;
-  }
-
   .landing-hero-visual {
     width: min(100%, 42rem);
-    margin-inline: auto;
   }
 
   .landing-console {
@@ -3779,25 +3799,28 @@ input:-webkit-autofill:focus {
   }
 
   .landing-hero {
-    gap: 4rem;
-    padding-block: 4.5rem 5rem;
+    gap: 1.6rem;
+    padding-block: 2.5rem 3rem;
   }
 
   .landing-hero-copy h1 {
-    font-size: clamp(2.7rem, 13vw, 4rem);
-    letter-spacing: -0.06em;
+    font-size: clamp(1.9rem, 9.5vw, 2.75rem);
+    letter-spacing: -0.02em;
   }
 
   .landing-hero-actions {
     display: grid;
-  }
-
-  .landing-hero-actions a {
     width: 100%;
   }
 
-  .landing-proof-list {
-    display: grid;
+  .landing-hero-actions a,
+  .landing-hero-actions .command-chip {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .landing-hero-visual {
+    width: 100%;
   }
 
   .landing-console .terminal-frame-meta {

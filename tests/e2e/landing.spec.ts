@@ -15,7 +15,7 @@ test("landing page tells the FaultSmith story and routes into the complete produ
   await expect(
     page.getByRole("heading", { level: 1, name: "AI can write the patch. FaultSmith teaches you to prove it." }),
   ).toBeVisible();
-  await expect(page.getByText("OpenAI Build Week · Education")).toBeVisible();
+  await expect(page.getByText("$ start lesson-01")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "A patch can pass before the engineer understands why." }),
   ).toBeVisible();

@@ -67,6 +67,11 @@ function ArrowIcon() {
  * hero's word-by-word reveal — see .tw-word / --tw-i in globals.css. */
 const heroValuePropWords = "FaultSmith teaches you to prove it.".split(" ");
 
+/** Decorative Warp-style command chip beside the primary CTA. Not a real
+ * installable command — it names the in-app action the button performs, in
+ * terminal-invocation form, and fabricates no npm package. */
+const HERO_COMMAND = "start lesson-01";
+
 const traceTickerEvents = [
   "OBSERVE · failing assertion captured",
   "HYPOTHESIZE · causal branch isolated",
@@ -125,9 +130,6 @@ export function LandingPage() {
       <main id="main-content">
         <section aria-labelledby="landing-hero-heading" className="landing-hero">
           <div className="landing-hero-copy motion-rise">
-            <div className="instrument-label flex items-center gap-2 text-amber-300">
-              <span className="h-px w-9 bg-amber-300/65" />OpenAI Build Week · Education
-            </div>
             <h1 id="landing-hero-heading" className="prompt-heading prompt-heading-display">
               AI can write the patch.<br />
               <span className="typewriter-reveal block-cursor">
@@ -152,24 +154,20 @@ export function LandingPage() {
                 })}
               </span>
             </h1>
-            <p>
-              A deliberate debugging lab for students and engineers who want to understand unfamiliar code—not just accept the first generated fix.
-            </p>
+            <p>A deliberate debugging lab that withholds the fix until the evidence proves it.</p>
             <div className="landing-hero-actions">
               <Link href="/learn" className="primary-action focus-brackets rounded-xl px-5 py-3.5 text-sm font-semibold">
                 Start a guided lab <ArrowIcon />
               </Link>
+              <span className="command-chip font-instrument" aria-hidden="true">
+                <span className="command-chip-prompt">$</span> {HERO_COMMAND}
+              </span>
               <a href="#method" className="secondary-action focus-brackets rounded-xl px-5 py-3.5 text-sm font-semibold">
                 Watch the investigation
               </a>
             </div>
-            <ul className="landing-proof-list" aria-label="FaultSmith availability">
-              <li><span />No sign-in required</li>
-              <li><span />No API key required for guided labs</li>
-              <li><span />Verified progress evidence</li>
-            </ul>
-            <TraceTicker />
           </div>
+          <TraceTicker />
           <div className="landing-hero-visual motion-rise">
             <div className="landing-orbit landing-orbit-amber" aria-hidden="true" />
             <div className="landing-orbit landing-orbit-cyan" aria-hidden="true" />
