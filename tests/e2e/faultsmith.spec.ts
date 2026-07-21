@@ -108,6 +108,61 @@ test("primary Expense Approval demo completes with persisted evidence", async ({
   await expect(page.getByText("PASSED · 6 passed · 0 failed")).toBeVisible();
 });
 
+test("hypothesis coach is a secondary, keyboard-operable affordance that renders fallback feedback and stays axe-clean", async ({ page }) => {
+  await openPrimaryFixture(page);
+
+  const coachButton = page.getByRole("button", { name: "Check my reasoning" });
+  await expect(coachButton).toBeVisible();
+  // Secondary, not primary — submission stays the primary action.
+  await expect(coachButton).toHaveClass(/secondary-action/);
+  await expect(coachButton).toBeDisabled();
+
+  const hypothesisField = page.getByRole("textbox", { name: "Current hypothesis" });
+  await hypothesisField.fill("I have a vague feeling about this.");
+  await expect(coachButton).toBeEnabled();
+
+  // Keyboard-only activation, no mouse click: Tab-equivalent focus + Enter.
+  await coachButton.focus();
+  await expect(coachButton).toBeFocused();
+  await page.keyboard.press("Enter");
+
+  await expect(page.getByText("Reduced fidelity · deterministic fallback coaching")).toBeVisible();
+  await expect(page.getByText("Locus — which code")).toBeVisible();
+  await expect(page.getByText("Mechanism — why it misbehaves")).toBeVisible();
+  await expect(page.getByText("Trigger — which inputs")).toBeVisible();
+  await expect(page.getByText("Unstated", { exact: true })).toHaveCount(3);
+  await expect(page.getByText("Focus here")).toBeVisible();
+  await expect(page.getByText(
+    "Which exact line or identifier in the mutated source do you believe is responsible?",
+  )).toBeVisible();
+  await expect(page.getByText("not yet grounded in anything from the mutated source", { exact: false })).toBeVisible();
+
+  // Submission remains the primary, unaffected action — coaching never
+  // gates or alters it.
+  await expect(page.getByRole("button", { name: "Submit patch + reasoning" })).toBeEnabled();
+  const savedAttempt = await page.evaluate(() => window.localStorage.getItem("faultsmith:attempt:v2"));
+  expect(savedAttempt ?? "").not.toContain("weakestAxis");
+
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
+});
+
+test("hypothesis coach degrades quietly on a server error without blocking submission", async ({ page }) => {
+  await openPrimaryFixture(page);
+  await page.route("**/api/challenges/hypothesis", (route) =>
+    route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ error: "Coaching is temporarily unavailable." }) }),
+  );
+
+  await page.getByRole("textbox", { name: "Current hypothesis" }).fill(
+    "The exact $500 boundary is excluded by a strict greater-than comparison.",
+  );
+  await page.getByRole("button", { name: "Check my reasoning" }).click();
+
+  await expect(page.getByText("Coaching is temporarily unavailable.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Check my reasoning" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Submit patch + reasoning" })).toBeEnabled();
+});
+
 test("guided roadmap records only verified progress and restores the next lesson", async ({ page }) => {
   await openClean(page);
   await expect(page.getByText("0/9 verified")).toBeVisible();

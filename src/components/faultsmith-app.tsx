@@ -9,7 +9,7 @@ import { GuidedRoadmap } from "@/components/guided-roadmap";
 import { ProgressDashboard } from "@/components/progress-dashboard";
 import { AccountSyncCallout, useCloudProgressSync, type CloudProgressSync } from "@/components/progress-sync";
 import { TerminalFrame } from "@/components/terminal-frame";
-import { Badge, Button, Card, Dossier, ProcessRail, StatusDot as StatusDotPrimitive } from "@/components/ui";
+import { Badge, Button, Card, Dossier, ProcessRail, StatusDot as StatusDotPrimitive, type BadgeVariant } from "@/components/ui";
 import { projects } from "@/lib/catalog";
 import {
   appendAnonymousAttemptEvent,
@@ -21,10 +21,13 @@ import {
   executionResponseSchema,
   fileSnapshotSchema,
   hintResponseSchema,
+  hypothesisResponseSchema,
   publicChallengeSchema,
   type AssessmentResponse,
   type Difficulty,
   type FileSnapshot,
+  type HypothesisAxisStatus,
+  type HypothesisResponse,
   type ProjectId,
   type PublicChallenge,
   type TestResult,
@@ -899,6 +902,132 @@ function ForgingView({ projectTitle, validationStep, preferLive }: { projectTitl
   );
 }
 
+const HYPOTHESIS_AXIS_META: Record<HypothesisAxisStatus, { glyph: string; label: string; variant: BadgeVariant }> = {
+  aligned: { glyph: "✓", label: "Aligned", variant: "verified" },
+  partial: { glyph: "~", label: "Partially aligned", variant: "investigation" },
+  off: { glyph: "✕", label: "Off track", variant: "failure" },
+  unstated: { glyph: "–", label: "Unstated", variant: "locked" },
+};
+
+const HYPOTHESIS_AXIS_ORDER = ["locus", "mechanism", "trigger"] as const;
+const HYPOTHESIS_AXIS_TITLE: Record<(typeof HYPOTHESIS_AXIS_ORDER)[number], string> = {
+  locus: "Locus — which code",
+  mechanism: "Mechanism — why it misbehaves",
+  trigger: "Trigger — which inputs",
+};
+
+/**
+ * "Check my reasoning" affordance (design spec section 3.7). A secondary,
+ * optional, additive control beside the hypothesis textarea — it never
+ * gates submission and never writes progress. It POSTs to
+ * /api/challenges/hypothesis, which is answer-blind to the model and
+ * output-filtered before any response reaches the learner (spec 3.3–3.4);
+ * this component only ever renders whatever the server already decided is
+ * safe to show, including the visible fallback label when the server
+ * degraded to the deterministic evaluator.
+ */
+function HypothesisCoachPanel({
+  challengeId,
+  hypothesis,
+  hypothesisHistory,
+}: {
+  challengeId: string;
+  hypothesis: string;
+  hypothesisHistory: string[];
+}) {
+  const [status, setStatus] = useState<"idle" | "running">("idle");
+  const [result, setResult] = useState<HypothesisResponse | null>(null);
+  const [coachError, setCoachError] = useState("");
+
+  const trimmedHypothesis = hypothesis.trim();
+  const disabled = trimmedHypothesis.length === 0 || status === "running";
+
+  async function checkReasoning() {
+    if (trimmedHypothesis.length === 0 || status === "running") return;
+    setStatus("running");
+    setCoachError("");
+    try {
+      const data = await postJson("/api/challenges/hypothesis", {
+        challengeId,
+        hypothesis,
+        // The route accepts at most the last 10 revisions (spec 3.6); the
+        // workspace can retain more locally for the investigation log.
+        hypothesisHistory: hypothesisHistory.slice(-10),
+      });
+      const parsed = hypothesisResponseSchema.safeParse(data);
+      if (!parsed.success) throw new Error("The coach returned an invalid response.");
+      setResult(parsed.data);
+    } catch (requestError) {
+      // Errors degrade quietly to an inline message; they never block the
+      // learner or touch the submit path (spec 3.7 / hard constraints).
+      setCoachError(
+        requestError instanceof Error ? requestError.message : "Coaching is unavailable right now.",
+      );
+    } finally {
+      setStatus("idle");
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        disabled={disabled}
+        loading={status === "running"}
+        loadingText="Checking reasoning…"
+        onClick={checkReasoning}
+        className="w-full"
+      >
+        Check my reasoning
+      </Button>
+      <p className="mt-1.5 text-[10px] leading-4 text-zinc-600">
+        Coaching never reveals the fix and never affects your score — only passing tests do.
+      </p>
+      <div aria-live="polite" className="mt-2">
+        {coachError && (
+          <p role="status" className="rounded-lg border border-red-400/15 bg-red-400/[0.05] px-3 py-2 text-[11px] leading-4 text-red-300">
+            {coachError}
+          </p>
+        )}
+        {result && (
+          <Card variant="evidence-well" padding="sm" className="space-y-3">
+            {result.source === "deterministic_fallback" && (
+              <span className="inline-block rounded-full border border-white/7 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wide text-zinc-500">
+                Reduced fidelity · deterministic fallback coaching
+              </span>
+            )}
+            <div className="grid gap-2 sm:grid-cols-3">
+              {HYPOTHESIS_AXIS_ORDER.map((axis) => {
+                const meta = HYPOTHESIS_AXIS_META[result.axes[axis]];
+                const weakest = result.weakestAxis === axis;
+                return (
+                  <div
+                    key={axis}
+                    className={`rounded-lg border px-2.5 py-2 ${weakest ? "border-amber-400/35 bg-amber-400/[0.06]" : "border-white/7 bg-black/10"}`}
+                  >
+                    <div className="text-[9px] uppercase tracking-wide text-zinc-500">{HYPOTHESIS_AXIS_TITLE[axis]}</div>
+                    <div className="mt-1">
+                      <Badge variant={meta.variant} glyph={meta.glyph}>{meta.label}</Badge>
+                    </div>
+                    {weakest && <div className="mt-1 text-[9px] font-semibold text-amber-300">Focus here</div>}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs leading-5 text-zinc-400">{result.observation}</p>
+            <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/[0.05] px-3 py-2.5">
+              <div className="text-[9px] font-semibold uppercase tracking-wide text-cyan-200/70">Consider</div>
+              <p className="mt-1 text-sm font-medium leading-5 text-cyan-100">{result.question}</p>
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
 type WorkspaceProps = {
   challenge: PublicChallenge; files: FileSnapshot[]; setFiles: (files: FileSnapshot[]) => void;
   activeFile: string; setActiveFile: (path: string) => void; testResult: TestResult | null;
@@ -999,6 +1128,11 @@ function WorkspaceView(props: WorkspaceProps) {
               <textarea value={props.hypothesis} onChange={(event) => props.setHypothesis(event.target.value)} placeholder="What do you think is causing the failure?" className="evidence-well h-24 w-full resize-none rounded-xl p-3 text-xs leading-5 text-zinc-300 outline-none placeholder:text-zinc-700" />
               <span className="mt-2 block text-[10px] leading-4 text-zinc-600">Guided labs use a deterministic causal rubric: identify the failed condition, explain why it produced the evidence, and revise when the evidence changes.</span>
             </label>
+            <HypothesisCoachPanel
+              challengeId={props.challenge.challengeId}
+              hypothesis={props.hypothesis}
+              hypothesisHistory={props.hypothesisHistory}
+            />
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-medium text-zinc-300">Hypothesis revisions</span>
