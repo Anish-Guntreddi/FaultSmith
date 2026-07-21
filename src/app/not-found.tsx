@@ -5,7 +5,7 @@ export default function NotFound() {
     <main className="grid min-h-screen place-items-center px-6">
       <section className="max-w-lg text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">404 · Unknown lab</p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">This challenge does not exist.</h1>
+        <h1 className="font-instrument mt-3 text-3xl font-semibold text-white">This challenge does not exist.</h1>
         <Link className="mt-6 inline-block rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-[#1a1105]" href="/">
           Return to FaultSmith
         </Link>

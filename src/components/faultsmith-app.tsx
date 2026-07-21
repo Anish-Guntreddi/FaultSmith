@@ -808,7 +808,7 @@ function ConfigureView(props: ConfigureProps) {
         <div className="motion-rise grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="max-w-3xl">
             <div className="instrument-label mb-5 flex items-center gap-2 text-amber-300"><span className="h-px w-9 bg-amber-300/65" />Controlled failure. Measurable learning.</div>
-            <h1 className="max-w-3xl text-[2.65rem] font-semibold leading-[0.98] tracking-[-0.05em] text-[#f7f3eb] sm:text-6xl lg:text-[4.25rem]">Learn to debug code you<span className="text-zinc-500"> didn&apos;t write.</span></h1>
+            <h1 className="font-instrument max-w-3xl text-[2.65rem] font-semibold leading-[0.98] tracking-[-0.05em] text-[#f7f3eb] sm:text-6xl lg:text-[4.25rem]">Learn to debug code you<span className="text-zinc-500"> didn&apos;t write.</span></h1>
             <p className="mt-6 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">Build the habit AI shortcuts skip: read evidence, form a hypothesis, and prove the smallest repair inside a validated Python lab.</p>
           </div>
           <aside aria-label="FaultSmith learning method" className="workflow-rail hidden p-4 lg:block">
@@ -1086,7 +1086,7 @@ function ReportView({
         <div className="text-center">
           <div className={`mx-auto grid h-14 w-14 place-items-center rounded-2xl border text-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${verified ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : "border-red-400/25 bg-red-400/10 text-red-300"}`}>{verified ? "✓" : "!"}</div>
           <div className={`instrument-label mt-5 ${verified ? "text-emerald-300" : "text-red-300"}`}>{verified ? "Repair verified" : "Repair not verified"}</div>
-          <h1 className="mx-auto mt-2 max-w-3xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">{verified ? "You proved the fix, not just the outcome." : "The evidence found more work to do."}</h1>
+          <h1 className="font-instrument mx-auto mt-2 max-w-3xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">{verified ? "You proved the fix, not just the outcome." : "The evidence found more work to do."}</h1>
           <p className="mt-2 text-sm font-medium text-zinc-300">{challenge.title}</p>
           <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-zinc-500">{result.evidenceSummary}</p>
         </div>
@@ -1095,7 +1095,7 @@ function ReportView({
             <div className="p-6">
               <div className="instrument-label">Skill evidence — not a certification</div>
               <div className={`mx-auto mt-5 grid h-36 w-36 place-items-center rounded-full border-[10px] ${verified ? "border-emerald-400/15 bg-emerald-400/[0.04]" : "border-red-400/15 bg-red-400/[0.04]"}`}>
-                <div><div className="text-4xl font-semibold text-white">{overall}</div><div className={`text-[10px] uppercase tracking-wider ${verified ? "text-emerald-300" : "text-red-300"}`}>{verified ? "Verified" : "Not verified"}</div></div>
+                <div><div className="font-instrument tabular-nums text-4xl font-semibold text-white">{overall}</div><div className={`text-[10px] uppercase tracking-wider ${verified ? "text-emerald-300" : "text-red-300"}`}>{verified ? "Verified" : "Not verified"}</div></div>
               </div>
               <div className="mt-5 text-sm font-medium text-zinc-200">{challenge.targetSkill}</div>
               <div className="mt-1 text-xs text-zinc-600">{difficultyLabel(challenge.difficulty)} · {sourceLabel(challenge)}</div>
