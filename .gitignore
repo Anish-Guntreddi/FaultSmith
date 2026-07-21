@@ -49,3 +49,6 @@ ui-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 .playwright-mcp/
+
+# Local Netlify folder
+.netlify
