@@ -23,8 +23,10 @@ FaultSmith is built for CS learners who can write basic Python but struggle to d
 - Opens with a public landing story explaining the problem and the Observe → Hypothesize → Repair → Verify method, then routes into the full application at `/learn`.
 - Offers a zero-token, three-phase, nine-lesson **Guided Roadmap** for beginners, plus a direct **Practice by skill** catalog across three curated Python/pytest projects — Expense Approval API, Inventory Reservation Service, and Notification Preference Engine.
 - Loads a real, prevalidated challenge fixture by default (no API key needed) or, when a server-side `OPENAI_API_KEY` is configured, an optional live path where GPT-5.6 emits a schema-constrained mutation contract and OpenAI Code Interpreter proves original-pass/mutated-fail behavior before the lab opens.
+- Loads one validated bug aligned to the chosen system and skill; the current practice-level control labels the attempt rather than changing fixture content.
 - Gives the learner an allowlisted code editor, authoritative test output, a revision-aware hypothesis journal, up to three progressive hints, and — new for this submission — an AI hypothesis coach ("Check my reasoning") that scores a hypothesis on three independent axes (locus, mechanism, trigger) and asks one targeted question, without ever revealing the fix.
 - Reruns the learner's exact submitted code snapshot server-side and blocks `verified` status on any failing result, regardless of the explanation or any model score.
+- In live mode, uses GPT-5.6 for three bounded rubric scores; server-owned templates provide learner-facing feedback.
 - Shows a guest-first **My Progress** dashboard — phase completion, score dimensions, independent-solve rate, and a deterministic next-lesson recommendation with its reason — derived entirely from local browser state, no account required.
 - Optionally lets a learner create a verified email/password account or continue with Google (Firebase Authentication + server-mediated Cloud Firestore) to sync the same bounded metrics across devices. Guest mode is always the default; there is no login wall anywhere in the product.
 
