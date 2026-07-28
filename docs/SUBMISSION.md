@@ -86,7 +86,7 @@ If a funded `OPENAI_API_KEY` is configured server-side, Practice-by-skill genera
 The following fields are intentionally **not** filled in here. Do not treat any value elsewhere in the repository as a substitute — none has been generated.
 
 - **YouTube video URL:** `[NOT YET RECORDED/PUBLISHED]` — the public, under-three-minute demo video required by the submission rules.
-- **Primary Codex `/feedback` Session ID:** `[NOT YET CAPTURED]` — the Session ID from the primary Codex thread where the majority of core functionality was built, required by `docs/PRD.md` §17–18 and the Devpost submission form.
+- **Primary Codex `/feedback` Session ID:** `019f73a1-3483-7ca3-a4ed-75ac831925a5` — captured from the "Complete FaultSmith" Codex build thread (via `/feedback` run inside the active thread). Paste into the Devpost submission form. Verify the exact format the form expects.
 - **Five-external-tester UAT result:** `[NOT YET RUN]` — per `docs/UAT_PROTOCOL.md`, at least five external testers completing the scripted experience with at least four of five understanding the product's purpose unaided. Optional context for the submission narrative but not required to open the app.
 
 Everything else in this document is drawn directly from the repository's build log, planning records, and design specs as of this commit — no metrics, review outcomes, or test counts in this packet were invented.
