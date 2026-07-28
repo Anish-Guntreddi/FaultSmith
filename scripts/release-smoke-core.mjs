@@ -484,7 +484,7 @@ export async function runChallengeLifecycle({
   const health = assertKeys(
     await request({ path: "/api/health", stage: "health" }),
     ["status", "liveOpenAIConfigured", "fixtureFallback"],
-    [],
+    ["hypothesisContainmentRecentRejection"],
     "health",
   );
   assertExact(health.status, "ok", "HEALTH_STATUS", "health");
