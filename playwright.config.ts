@@ -4,6 +4,13 @@ import { defineConfig } from "@playwright/test";
 // gate. Keep it deterministic even when a developer has real Firebase values
 // in an untracked .env.local; emulator/real-cloud proof uses separate configs.
 const localOnlyEnv: Record<string, string> = {
+  // Blank AI provider keys force the deterministic fallback path the suite
+  // asserts (health `liveOpenAIConfigured: false`, fallback coaching UI),
+  // even when a developer's .env.local holds a live key. An already-set
+  // process env var takes precedence over .env.local in Next.js, and a
+  // blank value reads as "no key" to the provider auto-detection.
+  GEMINI_API_KEY: "",
+  OPENAI_API_KEY: "",
   NEXT_PUBLIC_FAULTSMITH_CLOUD_SYNC: "false",
   NEXT_PUBLIC_FIREBASE_API_KEY: "",
   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "",
