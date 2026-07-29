@@ -44,7 +44,9 @@ export type ModelAssessmentScores = z.infer<typeof modelAssessmentScoresSchema>;
  * classifier's own output must never itself become a vector for leaking
  * the protected answer key back out.
  */
-const hypothesisLeakClassificationSchema = z.object({ leaks: z.boolean() }).strict();
+export const hypothesisLeakClassificationSchema = z
+  .object({ leaks: z.boolean() })
+  .strict();
 
 export interface AIGateway {
   planMutation(

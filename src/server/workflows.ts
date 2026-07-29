@@ -21,12 +21,8 @@ import { buildCoachContext } from "@/server/hypothesis-context";
 import { buildDeterministicFallbackResponse } from "@/server/hypothesis-fallback";
 import { recordContainmentRejection } from "@/server/hypothesis-health";
 import type { MutationPlan } from "@/server/mutation-contract";
-import {
-  OpenAIGateway,
-  hasOpenAIKey,
-  type AIGateway,
-  type ModelAssessmentScores,
-} from "./ai-gateway";
+import { type AIGateway, type ModelAssessmentScores } from "./ai-gateway";
+import { createLiveGateway, isLiveConfigured } from "./ai-provider";
 import { getPrevalidatedChallenge, toPublicChallenge } from "./challenge-service";
 import { countChangedLines, runFixtureTests, validateSubmittedFiles } from "./fixture-runner";
 import { getFixture, selectFixture, withRequestedDifficulty, type ChallengeFixture } from "./fixtures";
@@ -41,10 +37,10 @@ type LiveOptions = {
 };
 
 function resolveLiveOptions(options?: LiveOptions) {
-  const liveAvailable = options?.liveAvailable ?? hasOpenAIKey();
+  const liveAvailable = options?.liveAvailable ?? isLiveConfigured();
   return {
     liveAvailable,
-    gateway: options?.gateway ?? (liveAvailable ? new OpenAIGateway() : undefined),
+    gateway: options?.gateway ?? (liveAvailable ? createLiveGateway() : undefined),
   };
 }
 
