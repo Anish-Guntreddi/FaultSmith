@@ -1,0 +1,271 @@
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test } from "@playwright/test";
+
+test("landing page tells the FaultSmith story and routes into the complete product", async ({ page }) => {
+  const runtimeErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      runtimeErrors.push(message.text());
+    }
+  });
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+
+  await page.goto("/");
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "AI can write the patch. FaultSmith teaches you to prove it." }),
+  ).toBeVisible();
+  await expect(page.getByText("$ start lesson-01")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "A patch can pass before the engineer understands why." }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "See the investigation, not just the answer." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ground beginners. Stretch advanced learners." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "The AI proposes. The evidence decides." })).toBeVisible();
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /^http:\/\/localhost:3000\/?$/);
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    "content",
+    "FaultSmith — Learn to prove the fix",
+  );
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", /^http:\/\/localhost:3000\/?$/);
+  await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute(
+    "content",
+    "FaultSmith — Learn to prove the fix",
+  );
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    "content",
+    /^http:\/\/localhost:3000\/opengraph-image(?:\?.*)?$/,
+  );
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
+    "content",
+    /^http:\/\/localhost:3000\/twitter-image(?:\?.*)?$/,
+  );
+
+  const productLinks = page.getByRole("link", { name: /Open FaultSmith|Start a guided lab|Explore the learning system|Open the debugging lab|Launch application/ });
+  await expect(productLinks).toHaveCount(5);
+  for (const link of await productLinks.all()) {
+    await expect(link).toHaveAttribute("href", "/learn");
+  }
+
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(accessibility.violations).toEqual([]);
+
+  await page.getByRole("link", { name: "Start a guided lab" }).click();
+  await expect(page).toHaveURL(/\/learn$/);
+  await expect(page.getByRole("heading", { name: "Learn to debug code you didn't write." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your debugging roadmap" })).toBeVisible();
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "http://localhost:3000/learn");
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", "Learning Lab — FaultSmith");
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
+    "content",
+    "http://localhost:3000/learn",
+  );
+  await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute("content", "Learning Lab — FaultSmith");
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    "content",
+    /^http:\/\/localhost:3000\/opengraph-image(?:\?.*)?$/,
+  );
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
+    "content",
+    /^http:\/\/localhost:3000\/twitter-image(?:\?.*)?$/,
+  );
+
+  await page.getByRole("link", { name: "Return to the FaultSmith landing page" }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { level: 1, name: /FaultSmith teaches you to prove it/ })).toBeVisible();
+  expect(runtimeErrors).toEqual([]);
+});
+
+test("landing and product routes remain responsive while the health API stays available", async ({ page, request }) => {
+  const health = await request.get("/api/health");
+  expect(health.status()).toBe(200);
+  expect(health.headers()["cache-control"]).toContain("no-store");
+  await expect(health.json()).resolves.toMatchObject({
+    status: "ok",
+    liveOpenAIConfigured: false,
+  });
+
+  for (const imagePath of ["/opengraph-image", "/twitter-image"]) {
+    const image = await request.get(imagePath);
+    expect(image.status()).toBe(200);
+    expect(image.headers()["content-type"]).toContain("image/png");
+    expect((await image.body()).byteLength).toBeGreaterThan(1_000);
+  }
+
+  for (const path of ["/", "/learn"]) {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(path);
+    await expect(page.locator("body")).toBeVisible();
+    const overflow = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      page: document.documentElement.scrollWidth,
+    }));
+    expect(overflow.page).toBeLessThanOrEqual(overflow.viewport);
+  }
+
+  await page.goto("/");
+  const mobileNavigation = page.locator(".landing-nav-mobile");
+  const mobileNavigationTrigger = page.locator(".landing-nav-mobile-trigger");
+  await mobileNavigationTrigger.click();
+  await expect(mobileNavigation).toHaveAttribute("open", "");
+  await mobileNavigation.getByRole("link", { name: "Method", exact: true }).click();
+  await expect(page).toHaveURL(/#method$/);
+  await expect(mobileNavigation).not.toHaveAttribute("open", "");
+
+  await mobileNavigationTrigger.click();
+  await expect(mobileNavigation).toHaveAttribute("open", "");
+  await mobileNavigationTrigger.press("Escape");
+  await expect(mobileNavigation).not.toHaveAttribute("open", "");
+  await expect(mobileNavigationTrigger).toBeFocused();
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Method" })).toHaveAttribute("href", "#method");
+  await expect(page.getByRole("link", { name: "Learning system", exact: true })).toHaveAttribute("href", "#learning-system");
+  await expect(page.getByRole("link", { name: "Evidence" })).toHaveAttribute("href", "#evidence");
+
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await page.goto("/");
+  const lowHeightStory = page.locator("[data-debugging-story]");
+  await lowHeightStory.scrollIntoViewIfNeeded();
+  await expect(lowHeightStory).toHaveAttribute("data-motion", "static");
+  await expect(lowHeightStory.locator(".case-monitor-sticky")).toHaveCSS("position", "static");
+  const lowHeightOverflow = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    page: document.documentElement.scrollWidth,
+  }));
+  expect(lowHeightOverflow.page).toBeLessThanOrEqual(lowHeightOverflow.viewport);
+});
+
+test("hero debugging demo auto-plays, exposes a working pause control, and stays static under reduced motion", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const toggle = page.getByRole("button", { name: "Pause debugging demo animation" });
+  await expect(toggle).toBeVisible();
+
+  // A concise, always-present static summary stands in for the aria-hidden,
+  // continuously-changing terminal content for assistive tech.
+  await expect(page.locator(".debug-demo .sr-only")).toHaveText(/pytest run on test_cursor_pagination\.py/);
+  await expect(page.locator(".debug-demo [aria-hidden='true']").first()).toBeVisible();
+
+  // The loop is genuinely mid-flight: capture the visible phase label, wait,
+  // and confirm it moved on its own — not merely a CSS animation replaying
+  // the same DOM content.
+  const phaseLabel = page.locator(".debug-demo-phase-label");
+  const before = await phaseLabel.textContent();
+  // The "typing" stage alone runs ~1.8s; wait past it so the phase label is
+  // guaranteed to have advanced at least once under real auto-play.
+  await page.waitForTimeout(2200);
+  const duringPlay = await phaseLabel.textContent();
+  expect(duringPlay).not.toBe(before);
+
+  // Pausing must be keyboard-operable and must actually halt the loop.
+  await toggle.focus();
+  await expect(toggle).toBeFocused();
+  await toggle.press("Enter");
+  await expect(page.getByRole("button", { name: "Play debugging demo animation" })).toBeVisible();
+  const paused = await phaseLabel.textContent();
+  await page.waitForTimeout(1200);
+  await expect(phaseLabel).toHaveText(paused ?? "");
+
+  await page.getByRole("button", { name: "Play debugging demo animation" }).click();
+  await expect(page.getByRole("button", { name: "Pause debugging demo animation" })).toBeVisible();
+
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
+test("hero debugging demo renders a static verified frame with no pause control under prefers-reduced-motion", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  await expect(page.getByRole("button", { name: /debugging demo animation/i })).toHaveCount(0);
+  await expect(page.locator(".debug-demo-phase-label")).toHaveText("VERIFY / PROOF SEALED");
+  await expect(page.locator(".debug-demo .sr-only")).toHaveText(/Re-running the suite passes all tests/);
+
+  const before = await page.locator(".debug-demo-footer").textContent();
+  await page.waitForTimeout(1200);
+  await expect(page.locator(".debug-demo-footer")).toHaveText(before ?? "");
+});
+
+test("reasoning bypass figure plays its one-shot circuit into view and replays without losing focus", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "A patch can pass before the engineer understands why." })).toBeVisible();
+  await expect(
+    page.getByText("Send a failure straight to a model and the code may recover. The learner may not."),
+  ).toBeVisible();
+  await expect(page.getByText("FaultSmith withholds the repair, guides the investigation", { exact: false })).toBeVisible();
+
+  const canvas = page.locator(".rb-canvas");
+  await page.locator(".reasoning-bypass-figure").scrollIntoViewIfNeeded();
+  await expect(canvas).toHaveAttribute("data-motion", "playing", { timeout: 5_000 });
+
+  // Let the ~3.48s one-shot sequence finish and settle into its complete,
+  // fully-bypassed end state.
+  await page.waitForTimeout(3_800);
+
+  await expect(page.getByText("Fictional schematic")).toBeVisible();
+  await expect(page.getByText("Observed symptom")).toBeVisible();
+  await expect(page.getByText("Generated diff")).toBeVisible();
+  await expect(page.getByText("Accept 01")).toBeVisible();
+  await expect(page.getByText("Accept 02")).toBeVisible();
+  await expect(page.getByText("Accept 03")).toBeVisible();
+  await expect(page.getByText("READ EVIDENCE", { exact: false })).toBeVisible();
+  await expect(page.getByText("FORM HYPOTHESIS", { exact: false })).toBeVisible();
+  await expect(page.getByText("PROVE REPAIR", { exact: false })).toBeVisible();
+  await expect(page.getByText("Bypassed")).toHaveCount(3);
+  await expect(page.getByText("Unfamiliar codebase")).toBeVisible();
+  await expect(page.getByText("Debug independently", { exact: false })).toBeVisible();
+  await expect(page.getByText("Causal model not formed")).toBeVisible();
+  await expect(
+    page.getByText("A working diff is an output. Debugging skill is the path that produced it."),
+  ).toBeVisible();
+  // Nothing in this fictional schematic is verified — no green anywhere.
+  await expect(page.locator(".reasoning-bypass-figure .status-pill-verified")).toHaveCount(0);
+
+  const replay = page.getByRole("button", { name: "Replay dependency trace" });
+  await expect(replay).toBeVisible();
+  await replay.focus();
+  await expect(replay).toBeFocused();
+  await replay.press("Enter");
+  await expect(replay).toBeFocused();
+  await expect(canvas).toHaveAttribute("data-motion", "playing");
+
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
+test("reasoning bypass figure renders its complete static end state with no replay control under prefers-reduced-motion", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  const canvas = page.locator(".rb-canvas");
+  await expect(canvas).toHaveAttribute("data-motion", "static");
+  await expect(page.getByRole("button", { name: "Replay dependency trace" })).toHaveCount(0);
+
+  // The complete argument is visible immediately — no scrolling into view,
+  // no waiting on timers.
+  await expect(page.getByText("Bypassed")).toHaveCount(3);
+  await expect(page.getByText("Causal model not formed")).toBeVisible();
+  await expect(
+    page.getByText("A working diff is an output. Debugging skill is the path that produced it."),
+  ).toBeVisible();
+
+  const before = await page.locator(".reasoning-bypass-figure").innerHTML();
+  await page.waitForTimeout(1_000);
+  const after = await page.locator(".reasoning-bypass-figure").innerHTML();
+  expect(after).toBe(before);
+
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(accessibility.violations).toEqual([]);
+});

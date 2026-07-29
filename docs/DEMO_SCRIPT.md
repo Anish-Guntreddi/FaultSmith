@@ -6,29 +6,34 @@
 
 ## Before recording
 
-1. Start from the project selection screen and reset any saved attempt.
+1. Reset any saved attempt in `/learn`, then return to the public landing page at `/` for the opening shot.
 2. Confirm Expense Approval, Inventory Service, and Notification Preferences all show `ready`.
 3. Use a production build or stable preview URL.
-4. If demonstrating live mode, complete the live smoke checklist first. Never expose the key or terminal.
-5. Keep the browser at 100% zoom and 1440 × 900.
+4. Run `npm run smoke:production -- --base-url <public HTTPS URL>` against the exact reviewed deployment. If demonstrating live mode, run the explicit live smoke first. Never expose the key, terminal, evidence file, or provider identifiers.
+5. Run `npm run readiness:strict` only after the real UAT record, public video URL, public demo URL, and feedback ID are filled. A preparation-mode pass is not final submission evidence.
+6. Confirm the public application, repository, and video open without authentication, then keep the browser at 100% zoom and 1440 × 900.
 
 ## Timed narrative
 
-### 0:00–0:20 — The problem
+### 0:00–0:18 — The problem and hook
 
-“Developers do not get better at debugging by watching another tutorial. FaultSmith gives them deliberate practice: AI introduces one validated failure into a working Python project, then the learner has to find, fix, and explain it.”
+On the landing hero, say: “AI can write the patch. FaultSmith teaches you to prove it. Students can now receive working code before they learn to parse a failure, and that dependency breaks down when they inherit unfamiliar software.”
 
-Show the three curated projects. Select **Expense Approval**, **Boundary conditions**, and **Guided**.
+Click **Start a guided lab**.
 
-### 0:20–0:45 — Forge and validate
+### 0:18–0:35 — The learning system and roadmap
 
-Click **Forge debugging lab**.
+Show the three-phase, nine-lesson Guided roadmap and the **Prevalidated lab · no API credits required** label. Briefly point to **Practice by skill** as the advanced/live path, then start Lesson 1.
 
-“GPT-5.6 produces a strict mutation contract. Before the lab opens, FaultSmith proves the original passes and the mutation fails with the expected signature. If the live service is unavailable, this same workflow recovers to a real prevalidated fixture.”
+### 0:35–0:55 — Forge and validate
+
+Click **Start guided lab**.
+
+“This guided lesson intentionally makes no model call. It loads a real server-owned fixture whose original-pass and intended-failure evidence was validated before release. The mode label keeps that provenance visible.”
 
 Point briefly to the mode label and validation evidence. Do not dwell on loading animation.
 
-### 0:45–1:25 — Investigate
+### 0:55–1:30 — Investigate
 
 Show the failing `amount == 500` test and the mutated comparison in the editor.
 
@@ -36,35 +41,42 @@ Show the failing `amount == 500` test and the mutated comparison in the editor.
 
 Enter: `The approval threshold excludes the exact boundary value.` Reveal the first hint. Change `amount > 500` to `amount >= 500`.
 
-### 1:25–1:50 — Prove the repair
+### 1:30–1:52 — Prove the repair
 
 Click **Run test suite**.
 
-“Learner Python runs only in OpenAI Code Interpreter in live mode. Executed tests are authoritative, output is sanitized, and a plausible explanation can never override a failing suite.”
+“This prevalidated mode compares the exact submitted snapshot with the approved repair and does not execute learner Python. In the separately verified live mode, learner snapshots run only in OpenAI Code Interpreter. Either way, evidence is authoritative and prose cannot override a failure.”
 
 Show `6 passed · 0 failed`.
 
-### 1:50–2:15 — Explain and assess
+### 1:52–2:15 — Explain and assess
 
 Enter: `The mutation excluded exactly 500 even though the requirement is inclusive. Changing > to >= restores the boundary while preserving behavior above and below it.`
 
 Click **Submit patch + reasoning**.
 
-### 2:15–2:35 — Evidence report and close
+### 2:15–2:35 — Evidence, progress, dashboard, and close
 
-“The final report separates deterministic test evidence from GPT-5.6 feedback. FaultSmith measures whether the learner repaired the code and whether they can explain the root cause—without pretending the model is a test runner.”
+“The final report separates deterministic repair evidence from reasoning feedback. In this guided run the rubric is deterministic. In a verified live run, GPT-5.6 may supply only bounded scores while the feedback text and verification decision remain server-owned.”
 
-Show verified status, score, changed-line count, executed tests, and assessment feedback.
+Show verified status, score, changed-line count, executed tests, assessment feedback, **Guided roadmap updated**, and the deterministic next lesson. Then click **My Progress** for roughly three seconds: phase progress, verified score dimensions, and the explained next recommendation — all derived locally with no account and no model call.
 
 Close: “FaultSmith: AI that breaks your code on purpose so you learn how to fix it.”
+
+### Optional secondary evidence — account sync (only if pre-verified)
+
+Sign-in is deliberately **not** part of the primary narrative; the under-three-minute fixture story must never depend on network identity. Only if cloud sync has already passed its separate real-Firebase proof, a secondary clip may show the optional account panel inside My Progress (“Guest practice is the default…”), a verified sign-in, and the storage chip flipping to **Synced to account**. If anything hesitates, cut the clip — guest mode is the product's promise, and the dashboard demonstrates personalization without any account.
 
 ## Recording fallback
 
 If generation or sandbox execution fails, continue on the labeled prevalidated fixture path. Do not retry repeatedly on camera. The fallback is a designed reliability mode and still demonstrates the complete learner experience; describe live verification only if a separate controlled live smoke test has passed.
 
+If a controlled live smoke has passed and a direct-catalog live run is recorded, describe GPT-5.6 as emitting a contract constrained to the exact approved challenge—not as choosing or inventing an arbitrary mutation.
+
 ## Claims to avoid
 
-- Do not call the report a certification.
+- Do not call the report a certification, and do not present My Progress metrics as grades or mastery claims.
 - Do not say arbitrary repositories or arbitrary Python are supported.
 - Do not imply the fallback executed in Code Interpreter.
 - Do not claim a public deployment, tester result, or live API result until independently verified.
+- Do not show or claim account sync unless the real-Firebase checkpoint has passed; emulator proof is not real-provider proof.

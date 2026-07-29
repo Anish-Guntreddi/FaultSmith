@@ -1,17 +1,97 @@
 @import "tailwindcss";
 
 :root {
-  --background: #090b0d;
-  --surface: #111418;
-  --surface-strong: #171b20;
-  --line: #262b31;
-  --muted: #929ba6;
-  --text: #f3f5f7;
-  --amber: #f0a43c;
-  --amber-soft: #6c4318;
-  --red: #f16f6f;
-  --green: #64d49b;
+  --background: #080a0d;
+  --surface: #10151b;
+  --surface-strong: #151b22;
+  --surface-soft: #0c1015;
+  --line: #26303a;
+  --line-strong: #3a4652;
+  --muted: #a7adb3;
+  --muted-dim: #747d86;
+  --text: #f3f0e8;
+  --amber: #f2b84b;
+  --amber-bright: #ffd36e;
+  --amber-soft: #6f4717;
+  --cyan: #69d0cb;
+  --red: #ff7a72;
+  --green: #70d69e;
+  /* Self-hosted terminal-forward type system (Art Direction rebuild, July
+     2026). --font-sans / --font-mono are injected by next/font/local in
+     src/app/layout.tsx (vendored OFL woff2, zero external origins); the
+     system stacks that follow are the fallback chain, not the primary
+     face. Every existing --font-interface/--font-instrument consumer below
+     picks up the new faces automatically through this one indirection. */
+  --font-interface: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-instrument: var(--font-mono), ui-monospace, "SFMono-Regular", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  --shadow-panel: 0 28px 80px rgba(0, 0, 0, 0.28), 0 4px 18px rgba(0, 0, 0, 0.22);
+  --shadow-active: 0 0 0 1px rgba(242, 184, 75, 0.1), 0 18px 55px rgba(0, 0, 0, 0.24);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --duration-press: 140ms;
+  --duration-ui: 240ms;
+
+  /* Forensic Terminal motion vocabulary (Pass 1).
+     Nothing animates outside these tokens:
+     - --dur-fast   press/tap feedback and hover states
+     - --dur-base   standard UI state transitions (the default)
+     - --dur-slow   explanatory transitions and continuity moves
+     - --dur-reveal stepped/typewriter reveals (CSS steps())
+     - --dur-blink  block-cursor blink period
+     Easings:
+     - --ease-out    default; anything responding to the user
+     - --ease-in-out on-screen elements moving A to B
+     - --ease-snap   strong ease-out for entrance rise-and-fade
+     (--duration-press/--duration-ui are the legacy aliases of
+     --dur-fast/--dur-base and are kept for existing rules.) */
+  --dur-fast: 140ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+  --dur-reveal: 900ms;
+  --dur-blink: 1.2s;
+  --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Terminal grammar semantics. */
+  --prompt-color: var(--amber);
+  --cursor-color: var(--amber-bright);
+  --focus-ring: var(--amber-bright);
+
+  /* Theme-enrichment pass (Pass 5) — surface elevation, keyline, duotone,
+     grain, and vignette tokens. Two explicit elevation tiers (panel/raised)
+     plus the deliberately flatter tier-0 evidence-well/inset surfaces
+     already defined above give the system three visually distinct levels
+     without inventing a fourth. Every new visual value used more than once
+     below is named here rather than repeated as ad-hoc rgba()/hex. */
+  --elevation-1-border: rgba(255, 255, 255, 0.085);
+  --elevation-1-highlight: rgba(255, 255, 255, 0.032);
+  --elevation-2-border: rgba(242, 184, 75, 0.22);
+  --elevation-2-highlight: rgba(255, 239, 202, 0.06);
+
+  /* Hairline gradient keyline: reserved for the "most important cards"
+     (raised panels, the final CTA, active dossiers) per DESIGN_SYSTEM.md's
+     "amber keyline and restrained glow" rule for selected/primary surfaces. */
+  --gradient-keyline-amber: linear-gradient(90deg, rgba(242, 184, 75, 0.85), rgba(242, 184, 75, 0));
+  --gradient-keyline-cyan: linear-gradient(90deg, rgba(105, 208, 203, 0.8), rgba(105, 208, 203, 0));
+
+  /* Restrained amber/cyan duotone for small decorative glyphs/ornaments
+     only (e.g. BrandMark) — never applied to status-carrying color, which
+     stays single-hue per the evidence/instrumentation/verified/failure
+     grammar in DESIGN_SYSTEM.md. */
+  --gradient-duotone: linear-gradient(135deg, var(--amber), var(--cyan));
+
+  /* Gentle top-anchored vignette layered into the body background. */
+  --gradient-vignette: radial-gradient(ellipse 85% 60% at 50% 16%, transparent 55%, rgba(3, 4, 6, 0.5) 100%);
+
+  /* Barely-there grain: a self-contained inline SVG fractalNoise tile (no
+     external asset, no new CSP origin). Alpha is pre-scaled to ~0.05 inside
+     the filter itself so it tiles as fine white specks at low opacity —
+     texture, not visible static — over the canvas. */
+  --texture-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+
+/* Spacing rhythm: all spacing sits on the 4px (0.25rem) base grid —
+   4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96. Tailwind's spacing scale
+   already follows it; avoid ad-hoc pixel values outside the grid. */
 
 * {
   box-sizing: border-box;
@@ -20,17 +100,31 @@
 html {
   background: var(--background);
   color-scheme: dark;
+  scroll-padding-top: 5rem;
 }
 
 body {
   min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(circle at 16% 0%, rgba(240, 164, 60, 0.1), transparent 28rem),
-    radial-gradient(circle at 88% 18%, rgba(89, 112, 139, 0.08), transparent 24rem),
-    var(--background);
+  background-color: var(--background);
+  /* Layer order (back to front): amber corner glow, cyan corner glow, a
+     top-anchored vignette for depth, the existing vertical tone gradient,
+     then a tiled grain texture on top. The grain layer gets its own
+     background-size/repeat so it tiles as a fine 180px texture while the
+     gradients above it each cover the full viewport once, matching how
+     .grid-texture already layers a tiled pattern under a full-bleed tint. */
+  background-image:
+    radial-gradient(circle at 12% -8%, rgba(242, 184, 75, 0.13), transparent 34rem),
+    radial-gradient(circle at 88% 10%, rgba(105, 208, 203, 0.075), transparent 30rem),
+    var(--gradient-vignette),
+    linear-gradient(180deg, #090c10 0%, var(--background) 44%, #07090b 100%),
+    var(--texture-grain);
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+  background-size: auto, auto, auto, auto, 180px 180px;
   color: var(--text);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-interface);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 button,
@@ -49,7 +143,8 @@ button:disabled {
 }
 
 ::selection {
-  background: rgba(240, 164, 60, 0.35);
+  background: rgba(242, 184, 75, 0.32);
+  color: #fff9e9;
 }
 
 ::-webkit-scrollbar {
@@ -68,21 +163,3695 @@ button:disabled {
 }
 
 .grid-texture {
+  position: relative;
+  isolation: isolate;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 32px 32px;
+    linear-gradient(rgba(255, 255, 255, 0.021) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.021) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.grid-texture::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(90deg, rgba(242, 184, 75, 0.055), transparent 22%, transparent 78%, rgba(105, 208, 203, 0.035)),
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.025), transparent 40rem);
+  mask-image: linear-gradient(to bottom, black, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+}
+
+.font-instrument {
+  font-family: var(--font-instrument);
+}
+
+/* Deliberate JetBrains Mono feature enablement (Pass 5) — contextual
+   alternates plus the ss02 zero style — scoped to the code/instrument
+   surfaces named in DESIGN_SYSTEM.md's typography section (code, paths,
+   test output, timing, counters, instrument labels, hero/section-head
+   display type), not applied blanket-wide to every mono usage in the file. */
+.font-instrument,
+.instrument-label,
+.terminal-frame-bar,
+.case-code-line,
+.case-code-block,
+.case-diff,
+.debug-demo-command,
+.landing-hero-copy h1,
+.landing-section-heading h2,
+.landing-problem-copy h2,
+.landing-evidence-intro h2,
+.landing-final-cta h2 {
+  font-feature-settings: "calt" 1, "ss02" 1;
+}
+
+.instrument-label {
+  color: #8e98a2;
+  font-family: var(--font-instrument);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.16em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+/* Box-drawing rule/marker glyphs flanking a SectionMark-wrapped eyebrow —
+   see src/components/ui/section-mark.tsx. Deliberately more muted than the
+   tone-colored label text beside it, so the ornament reads as a terminal
+   comment framing the label rather than competing with it. */
+.section-mark-glyph {
+  color: rgba(255, 255, 255, 0.28);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+/* Elevation tier 1 — Card's default "panel" surface. Border and inner
+   top-highlight now come from the --elevation-1-* tokens above instead of
+   ad-hoc values, so any future elevation tuning has one source of truth. */
+.lab-panel {
+  border: 1px solid var(--elevation-1-border);
+  background:
+    linear-gradient(180deg, var(--elevation-1-highlight), transparent 42%),
+    rgba(16, 21, 27, 0.94);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.028), var(--shadow-panel);
+  backdrop-filter: blur(18px);
+}
+
+/* Elevation tier 2 — Card's "raised" surface, reserved for the most
+   important panels. Gets the same warm tint as before plus a hairline
+   amber-to-transparent keyline across the very top edge (background-image
+   layer, not a pseudo-element, so it never disturbs a child's own
+   position: absolute containing block). */
+.lab-panel-raised {
+  border: 1px solid var(--elevation-2-border);
+  background-image:
+    var(--gradient-keyline-amber),
+    linear-gradient(145deg, rgba(242, 184, 75, 0.065), transparent 38%),
+    linear-gradient(180deg, var(--elevation-2-highlight), transparent 46%);
+  background-color: rgba(18, 23, 29, 0.98);
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-size: 100% 1px, 100% 100%, 100% 100%;
+  background-position: top, 0 0, 0 0;
+  box-shadow: inset 0 1px 0 rgba(255, 239, 202, 0.05), var(--shadow-active);
+}
+
+.evidence-well {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(5, 8, 11, 0.52);
+  box-shadow: inset 0 1px 8px rgba(0, 0, 0, 0.22);
+}
+
+/* Authored forensic primitives ------------------------------------------------
+   These are deliberately not another family of rounded cards. Dossier shells
+   use cut corners and registration marks; rails expose order and state as part
+   of the silhouette, so the UI still reads as FaultSmith in monochrome. */
+.ui-dossier {
+  --dossier-accent: #8e98a2;
+  --dossier-accent-rgb: 142, 152, 162;
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid rgba(var(--dossier-accent-rgb), 0.28);
+  background:
+    linear-gradient(115deg, rgba(var(--dossier-accent-rgb), 0.065), transparent 31%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 42%),
+    #0e1318;
+  box-shadow: 0 22px 65px rgba(0, 0, 0, 0.24);
+  clip-path: polygon(0 0, calc(100% - 1.1rem) 0, 100% 1.1rem, 100% 100%, 0.8rem 100%, 0 calc(100% - 0.8rem));
+}
+
+.ui-dossier::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-left: 1px solid rgba(var(--dossier-accent-rgb), 0.34);
+  content: "";
+  transform: rotate(-45deg) translate(-0.05rem, -0.25rem);
+  transform-origin: left top;
+}
+
+.ui-dossier-amber {
+  --dossier-accent: var(--amber);
+  --dossier-accent-rgb: 242, 184, 75;
+}
+
+.ui-dossier-cyan {
+  --dossier-accent: var(--cyan);
+  --dossier-accent-rgb: 105, 208, 203;
+}
+
+.ui-dossier-green {
+  --dossier-accent: var(--green);
+  --dossier-accent-rgb: 112, 214, 158;
+}
+
+.ui-dossier-active {
+  border-color: rgba(var(--dossier-accent-rgb), 0.54);
+  box-shadow: 0 0 0 1px rgba(var(--dossier-accent-rgb), 0.09), 0 22px 65px rgba(0, 0, 0, 0.28);
+}
+
+.ui-dossier-rail {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid rgba(var(--dossier-accent-rgb), 0.2);
+  padding: 1.1rem 0.65rem 0.85rem;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 7px, rgba(var(--dossier-accent-rgb), 0.055) 7px 8px),
+    rgba(var(--dossier-accent-rgb), 0.035);
+}
+
+.ui-dossier-index {
+  color: var(--dossier-accent);
+  font-family: var(--font-instrument);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.ui-dossier-axis {
+  width: 1px;
+  flex: 1;
+  margin-block: 0.8rem;
+  background: linear-gradient(to bottom, rgba(var(--dossier-accent-rgb), 0.55), rgba(var(--dossier-accent-rgb), 0.05));
+}
+
+.ui-dossier-axis::before,
+.ui-dossier-axis::after {
+  display: block;
+  width: 0.45rem;
+  height: 1px;
+  margin-left: -0.2rem;
+  background: rgba(var(--dossier-accent-rgb), 0.7);
+  content: "";
+}
+
+.ui-dossier-axis::after {
+  margin-top: calc(100% - 1px);
+}
+
+.ui-dossier-stamp {
+  color: rgba(var(--dossier-accent-rgb), 0.62);
+  font-family: var(--font-instrument);
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+  writing-mode: vertical-rl;
+}
+
+.ui-dossier-body {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding: 1.4rem 1.5rem 1.5rem;
+}
+
+.ui-dossier-register {
+  position: absolute;
+  top: 0.28rem;
+  left: 1.5rem;
+  overflow: hidden;
+  width: calc(100% - 3.5rem);
+  color: rgba(var(--dossier-accent-rgb), 0.3);
+  font-family: var(--font-instrument);
+  font-size: 0.42rem;
+  letter-spacing: 0.72em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ui-evidence-ledger {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: evidence;
+}
+
+.ui-evidence-record {
+  --record-accent: var(--amber);
+  --record-accent-rgb: 242, 184, 75;
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 3.6rem minmax(0, 1fr) auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.35rem 0;
+}
+
+.ui-evidence-record:last-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ui-evidence-record::before {
+  position: absolute;
+  inset: -1px auto auto 0;
+  width: clamp(4rem, 22%, 8rem);
+  height: 1px;
+  background: linear-gradient(90deg, var(--record-accent), transparent);
+  content: "";
+}
+
+.ui-evidence-record-cyan {
+  --record-accent: var(--cyan);
+  --record-accent-rgb: 105, 208, 203;
+}
+
+.ui-evidence-record-green {
+  --record-accent: var(--green);
+  --record-accent-rgb: 112, 214, 158;
+}
+
+.ui-evidence-record-index {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+  color: var(--record-accent);
+  font-family: var(--font-instrument);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.ui-evidence-record-index i {
+  display: block;
+  width: 1.5rem;
+  height: 0.34rem;
+  background: repeating-linear-gradient(90deg, rgba(var(--record-accent-rgb), 0.7) 0 1px, transparent 1px 4px);
+}
+
+.ui-evidence-record-copy h3 {
+  margin: 0;
+  color: #f0eee8;
+  font-size: 0.96rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.ui-evidence-record-copy p {
+  max-width: 34rem;
+  margin: 0.45rem 0 0;
+  color: #818a93;
+  font-size: 0.76rem;
+  line-height: 1.65;
+}
+
+.ui-evidence-record-signal {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+  color: rgba(var(--record-accent-rgb), 0.9);
+  font-family: var(--font-instrument);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-evidence-record-seal {
+  align-self: start;
+  margin-left: 1rem;
+  border: 1px solid rgba(var(--record-accent-rgb), 0.24);
+  padding: 0.3rem 0.45rem;
+  color: rgba(var(--record-accent-rgb), 0.78);
+  font-family: var(--font-instrument);
+  font-size: 0.45rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  transform: rotate(2deg);
+}
+
+.ui-process-rail {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-process-rail li {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 2.35rem minmax(0, 1fr);
+  gap: 0.7rem;
+  padding: 0 0 1rem;
+}
+
+.ui-process-rail li:not(:last-child)::after {
+  position: absolute;
+  top: 1.55rem;
+  bottom: 0.15rem;
+  left: 1.15rem;
+  width: 1px;
+  background: linear-gradient(var(--amber), rgba(242, 184, 75, 0.12));
+  content: "";
+}
+
+.ui-process-node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 2.35rem;
+  height: 1.55rem;
+  place-items: center;
+  border: 1px solid rgba(242, 184, 75, 0.34);
+  background: #10151b;
+  color: var(--amber);
+  font-family: var(--font-instrument);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  clip-path: polygon(0 0, calc(100% - 0.35rem) 0, 100% 0.35rem, 100% 100%, 0 100%);
+}
+
+.ui-process-title {
+  color: #d8d7d2;
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.ui-process-note {
+  margin-top: 0.15rem;
+  color: #747d86;
+  font-size: 0.64rem;
+  line-height: 1.5;
+}
+
+.ui-process-rail-compact li {
+  grid-template-columns: 1.9rem minmax(0, 1fr);
+  gap: 0.65rem;
+  padding-bottom: 0.8rem;
+}
+
+.ui-process-rail-compact .ui-process-node {
+  width: 1.9rem;
+  height: 1.35rem;
+  font-size: 0.5rem;
+}
+
+.ui-process-rail-compact li:not(:last-child)::after {
+  top: 1.35rem;
+  left: 0.92rem;
+}
+
+.mode-switcher {
+  display: inline-flex;
+  max-width: 100%;
+  gap: 0.25rem;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 0.875rem;
+  padding: 0.25rem;
+  background: rgba(13, 17, 22, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025), 0 12px 40px rgba(0, 0, 0, 0.2);
+  scrollbar-width: none;
+}
+
+.mode-switcher::-webkit-scrollbar {
+  display: none;
+}
+
+.mode-tab {
+  min-height: 2.55rem;
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  padding: 0.6rem 1rem;
+  color: #9da4ab;
+  font-size: 0.75rem;
+  font-weight: 650;
+  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.mode-tab:hover {
+  color: var(--text);
+}
+
+/* Guards against a stuck/slow client-hydration flag (localProgressReady)
+   leaving the tabs looking normal and clickable while silently doing
+   nothing — a real disabled treatment makes that state visibly distinct. */
+.mode-tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* aria-checked covers the SegmentedControl primitive (src/components/ui/),
+   which renders this same surface as a WAI-ARIA radiogroup/radio instead of
+   the toggle-button aria-pressed markup still used by faultsmith-app.tsx's
+   hand-written mode switcher — both selected-state looks stay identical. */
+.mode-tab[aria-pressed="true"],
+.mode-tab[aria-checked="true"] {
+  border-color: rgba(242, 184, 75, 0.38);
+  background: linear-gradient(180deg, rgba(242, 184, 75, 0.18), rgba(242, 184, 75, 0.09));
+  color: #ffe3a4;
+  box-shadow: inset 0 1px 0 rgba(255, 244, 218, 0.08);
+}
+
+.primary-action {
+  min-height: 2.65rem;
+  border: 1px solid rgba(255, 220, 145, 0.18);
+  /* Three-stop gradient (light top / amber core / a shade darker at the
+     foot) reads as a subtly domed, pressable surface at rest, not a flat
+     fill — the extra bottom inset shadow reinforces the same cue. */
+  background: linear-gradient(180deg, #f8cd70 0%, var(--amber) 55%, #d99a2e 100%);
+  color: #211506;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(120, 68, 4, 0.2),
+    0 10px 30px rgba(159, 98, 10, 0.16);
+  transition:
+    transform var(--duration-press) var(--ease-out),
+    background-color var(--duration-ui) var(--ease-out),
+    box-shadow var(--duration-ui) var(--ease-out);
+}
+
+.fine-hover-lift {
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .primary-action:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: linear-gradient(180deg, #ffd478 0%, #f4bc4e 55%, #dba236 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      inset 0 -1px 0 rgba(120, 68, 4, 0.22),
+      0 14px 34px rgba(159, 98, 10, 0.22),
+      0 0 0 1px rgba(255, 211, 110, 0.2);
+  }
+
+  .fine-hover-lift:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: rgba(242, 184, 75, 0.28);
+    /* Adds a 1px amber glow ring alongside the existing lift shadow —
+       border-brightness + glow shift, no layout change. */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), var(--shadow-active), 0 0 0 1px rgba(242, 184, 75, 0.12);
+  }
+}
+
+/* Press feedback must not be gated behind (hover: hover) and (pointer: fine)
+   — that gate is meant for :hover only. Touch devices report hover:none and
+   would otherwise get zero press feedback on the primary CTAs. */
+.primary-action:active:not(:disabled) {
+  transform: scale(0.97);
+  /* Pressed depth: the resting inset highlight/foot-shadow flips to a
+     single deeper inner shadow, reading as the surface sinking in. */
+  box-shadow: inset 0 2px 6px rgba(94, 54, 4, 0.35);
+}
+
+.fine-hover-lift:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.progress-fill {
+  width: 100%;
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left center;
+  transition: transform var(--duration-ui) var(--ease-in-out);
+}
+
+.secondary-action {
+  min-height: 2.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.018);
+  color: #c8cbd0;
+  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.secondary-action:hover:not(:disabled) {
+  border-color: rgba(105, 208, 203, 0.26);
+  background: rgba(105, 208, 203, 0.045);
+  color: #e7ffff;
+}
+
+/* Instrumentation action: the workspace's "Run tests" control. Cyan marks
+   instrumentation per the Forensic Workbench color grammar, keeping it
+   visually distinct from the amber .primary-action (Submit) while sharing
+   the same state vocabulary (default/hover/active/disabled/loading). The
+   loading state reuses .forge-pulse — the one bounded continuous animation
+   already in the system — rather than introducing a new one. */
+.instrument-action {
+  min-height: 2.55rem;
+  border: 1px solid rgba(105, 208, 203, 0.3);
+  background: linear-gradient(180deg, rgba(105, 208, 203, 0.12), rgba(105, 208, 203, 0.035));
+  color: #d6faf6;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .instrument-action:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(105, 208, 203, 0.5);
+    background: linear-gradient(180deg, rgba(105, 208, 203, 0.19), rgba(105, 208, 203, 0.06));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(105, 208, 203, 0.16);
+  }
+}
+
+.instrument-action:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.instrument-action:disabled {
+  opacity: 0.4;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.025);
+  color: #aeb4ba;
+  font-family: var(--font-instrument);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+}
+
+.motion-rise {
+  animation: motion-rise var(--dur-slow) var(--ease-snap) both;
+}
+
+.workflow-rail {
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(10, 13, 17, 0.76);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+input,
+select,
+textarea {
+  accent-color: var(--amber);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  box-shadow: 0 0 0 1000px #0b0f13 inset;
+  caret-color: var(--text);
 }
 
 .forge-pulse {
   animation: forge-pulse 1.7s ease-in-out infinite;
 }
 
+.debugging-case-file {
+  margin-top: 7rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 4.5rem;
+  padding-bottom: 3rem;
+}
+
+.case-file-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 3.5rem;
+}
+
+.case-file-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(19rem, 0.72fr);
+  gap: clamp(2rem, 5vw, 6rem);
+}
+
+.case-monitor-column {
+  min-width: 0;
+}
+
+.case-monitor-sticky {
+  position: sticky;
+  top: 7.5rem;
+  padding-block: 2rem 4rem;
+}
+
+.case-monitor-scene {
+  width: min(100%, 680px);
+  margin-inline: auto;
+  perspective: 1200px;
+}
+
+.case-monitor-shell {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1.35rem;
+  padding: 0.6rem;
+  background: linear-gradient(145deg, #202932, #11171d 64%, #0b0f13);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.7),
+    0 35px 90px rgba(0, 0, 0, 0.38);
+  transform: rotateX(2deg) rotateY(-8deg);
+  transform-style: preserve-3d;
+}
+
+[data-debugging-story][data-motion="enhanced"] .case-monitor-shell,
+[data-debugging-story][data-motion="enhanced"] .case-visual-stage {
+  will-change: transform, opacity;
+}
+
+/* The case-file monitor and hero console render their titlebar + screen via
+   the shared TerminalFrame primitive (dots + mono session label); the bezel
+   here supplies only the outer hardware frame, so the nested frame's own
+   border/background/shadow are suppressed — see "TerminalFrame nested
+   inside hardware bezels" below. */
+
+.terminal-frame-body.case-monitor-screen {
+  position: relative;
+  min-height: 25rem;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    #070a0d;
+  background-size: 100% 2rem;
+  box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.36);
+}
+
+.case-monitor-screen::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(120deg, rgba(105, 208, 203, 0.025), transparent 42%, rgba(242, 184, 75, 0.025));
+}
+
+.case-visual-stage {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.4rem, 4vw, 3rem);
+  opacity: 0;
+  transform-style: preserve-3d;
+}
+
+.case-visual-stage[data-case-visual-stage="0"] {
+  opacity: 1;
+}
+
+.case-terminal-label {
+  margin-bottom: 1.5rem;
+  color: #69737d;
+  font-family: var(--font-instrument);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.case-code-line,
+.case-code-block,
+.case-diff {
+  font-family: var(--font-instrument);
+  font-size: clamp(0.68rem, 1.2vw, 0.82rem);
+  line-height: 1.9;
+}
+
+.case-callout {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-block: 1rem;
+  border: 1px solid rgba(255, 122, 114, 0.2);
+  border-radius: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  background: rgba(255, 122, 114, 0.055);
+  color: #d9dde0;
+  font-family: var(--font-instrument);
+  font-size: clamp(0.62rem, 1vw, 0.72rem);
+}
+
+.case-callout span {
+  border-radius: 999px;
+  padding: 0.25rem 0.45rem;
+  background: rgba(255, 122, 114, 0.12);
+  color: var(--red);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.case-evidence-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 1rem;
+  color: #8e98a2;
+  font-family: var(--font-instrument);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+}
+
+.case-evidence-strip span {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+}
+
+.case-evidence-red span { background: var(--red); }
+.case-evidence-amber span { background: var(--amber); }
+.case-evidence-cyan span { background: var(--cyan); }
+.case-evidence-green span { background: var(--green); }
+
+.case-code-block {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0.8rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.018);
+  color: #c4c9ce;
+}
+
+.case-code-focus {
+  margin-top: 0.3rem;
+  border-left: 2px solid var(--amber);
+  padding-left: 0.65rem;
+  background: rgba(242, 184, 75, 0.065);
+  color: #fff1cf;
+}
+
+.case-causal-note {
+  display: flex;
+  gap: 0.9rem;
+  margin-top: 1.15rem;
+  border-radius: 0.75rem;
+  padding: 0.9rem;
+  background: rgba(242, 184, 75, 0.055);
+  color: #aeb5ba;
+  font-family: var(--font-instrument);
+  font-size: 0.65rem;
+  line-height: 1.65;
+}
+
+.case-causal-note strong {
+  color: #f6d796;
+  font-weight: 700;
+}
+
+.case-causal-arrow {
+  color: var(--amber);
+  font-size: 1rem;
+}
+
+.case-diff {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.8rem;
+}
+
+.case-diff > div {
+  padding: 0.75rem 1rem;
+}
+
+.case-diff > div + div {
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.case-diff span {
+  display: inline-block;
+  width: 1.4rem;
+  font-weight: 800;
+}
+
+.case-diff-remove {
+  background: rgba(255, 122, 114, 0.055);
+  color: #e9aaa6;
+}
+
+.case-diff-add {
+  background: rgba(112, 214, 158, 0.07);
+  color: #9ce5bb;
+}
+
+.case-change-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+}
+
+.case-change-summary div {
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 0.7rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.case-change-summary span,
+.case-change-summary strong {
+  display: block;
+  font-family: var(--font-instrument);
+}
+
+.case-change-summary span {
+  min-height: 2rem;
+  color: #737d86;
+  font-size: 0.54rem;
+  line-height: 1.4;
+}
+
+.case-change-summary strong {
+  margin-top: 0.35rem;
+  color: #dce4e8;
+  font-size: 1rem;
+}
+
+.case-test-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.45rem;
+  margin-top: 1rem;
+}
+
+.case-test-grid span {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(112, 214, 158, 0.16);
+  border-radius: 0.55rem;
+  background: rgba(112, 214, 158, 0.055);
+  color: var(--green);
+  font-family: var(--font-instrument);
+  font-size: 0.65rem;
+}
+
+.case-verified-seal {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.2rem;
+  border: 1px solid rgba(112, 214, 158, 0.2);
+  border-radius: 0.8rem;
+  padding: 1rem;
+  background: rgba(112, 214, 158, 0.06);
+  color: #99a6a8;
+  font-family: var(--font-instrument);
+  font-size: 0.65rem;
+  line-height: 1.7;
+}
+
+.case-verified-seal strong {
+  color: #aff0ca;
+  font-size: 0.75rem;
+}
+
+.case-seal-mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(112, 214, 158, 0.32);
+  border-radius: 50%;
+  color: var(--green);
+  font-size: 1rem;
+}
+
+.case-monitor-neck {
+  width: 4.5rem;
+  height: 2.2rem;
+  margin-inline: auto;
+  border-inline: 1px solid rgba(255, 255, 255, 0.09);
+  background: linear-gradient(90deg, #11171c, #252d34 50%, #10151a);
+}
+
+.case-monitor-base {
+  width: min(38%, 12rem);
+  height: 0.65rem;
+  margin-inline: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 80% 80% 0.35rem 0.35rem;
+  background: linear-gradient(180deg, #252d34, #10151a);
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.28);
+}
+
+.case-chapters {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.case-chapter {
+  display: flex;
+  min-height: 58vh;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-radius: 1.25rem;
+  padding: clamp(1.4rem, 3vw, 2rem);
+}
+
+.case-chapter-signal {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 0.35rem 0.6rem;
+  font-family: var(--font-instrument);
+  font-size: 0.56rem;
+  letter-spacing: 0.04em;
+}
+
+.case-chapter-signal-red { color: #ffaaa5; background: rgba(255, 122, 114, 0.05); }
+.case-chapter-signal-amber { color: #f4ce85; background: rgba(242, 184, 75, 0.05); }
+.case-chapter-signal-cyan { color: #9be4e0; background: rgba(105, 208, 203, 0.05); }
+.case-chapter-signal-green { color: #a6ecc3; background: rgba(112, 214, 158, 0.05); }
+
+/* Hackathon landing page — the same Forensic Workbench, arranged as a story. */
+.landing-page {
+  overflow: clip;
+}
+
+.landing-skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 0.75rem;
+  left: 0.75rem;
+  border-radius: 0.65rem;
+  padding: 0.7rem 1rem;
+  background: var(--amber-bright);
+  color: #211506;
+  font-size: 0.8rem;
+  font-weight: 750;
+  transform: translateY(-160%);
+  transition: transform var(--duration-ui) var(--ease-out);
+}
+
+.landing-skip-link:focus {
+  transform: translateY(0);
+}
+
+.landing-nav-shell {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(9, 12, 16, 0.86);
+  backdrop-filter: blur(20px);
+}
+
+.landing-nav {
+  display: grid;
+  width: min(100% - 2.5rem, 1480px);
+  min-height: 4.5rem;
+  margin-inline: auto;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 2rem;
+}
+
+.landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.8rem;
+}
+
+/* Mono-forward, minimal: nav and footer links join the mono display system
+   (see .landing-hero-copy h1 / .instrument-label above) instead of reading
+   as a generic sans-serif marketing nav bolted onto a terminal-styled page. */
+.landing-nav-links a,
+.landing-footer > a {
+  color: #aeb4ba;
+  font-family: var(--font-instrument);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: color var(--duration-ui) var(--ease-out);
+}
+
+.landing-nav-links a:hover,
+.landing-footer > a:hover {
+  color: var(--text);
+}
+
+.landing-nav-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-self: end;
+  gap: 0.55rem;
+}
+
+/* Mobile nav disclosure — hidden on desktop where .landing-nav-links
+   covers this. Shown only under the max-width: 1023px breakpoint below,
+   where .landing-nav-links is hidden and would otherwise leave no way to
+   reach in-page sections from the header. */
+.landing-nav-mobile {
+  display: none;
+  justify-self: end;
+}
+
+.landing-nav-mobile-trigger {
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  list-style: none;
+  transition: border-color var(--dur-base) var(--ease-out), background-color var(--dur-base) var(--ease-out);
+}
+
+.landing-nav-mobile-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.landing-nav-mobile[open] .landing-nav-mobile-trigger {
+  border-color: rgba(242, 184, 75, 0.3);
+  background: rgba(242, 184, 75, 0.06);
+}
+
+.landing-nav-mobile-icon,
+.landing-nav-mobile-icon::before,
+.landing-nav-mobile-icon::after {
+  display: block;
+  width: 1.05rem;
+  height: 2px;
+  border-radius: 1px;
+  background: #c8cbd0;
+}
+
+.landing-nav-mobile-icon {
+  position: relative;
+}
+
+.landing-nav-mobile-icon::before,
+.landing-nav-mobile-icon::after {
+  position: absolute;
+  left: 0;
+  content: "";
+}
+
+.landing-nav-mobile-icon::before {
+  top: -0.35rem;
+}
+
+.landing-nav-mobile-icon::after {
+  top: 0.35rem;
+}
+
+.landing-nav-mobile-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.6rem);
+  z-index: 60;
+  display: grid;
+  min-width: 12rem;
+  gap: 0.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  padding: 0.6rem;
+  background: rgba(9, 12, 16, 0.98);
+  box-shadow: var(--shadow-panel);
+}
+
+.landing-nav-mobile-panel a {
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.7rem;
+  color: #d7dbdd;
+  font-size: 0.85rem;
+  font-weight: 650;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.landing-nav-mobile-panel a:hover {
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+}
+
+/* Ghostty-style hero: a single centered column, radically reduced copy,
+   with the animated terminal as the one dominant piece of artwork below it
+   — not a two-column split fighting the terminal for attention. */
+/* Ghostty keeps its ENTIRE hero — headline, one sentence, two buttons, and
+   the terminal artwork — inside roughly one fold. Every size/spacing value
+   below is deliberately compact (not the old editorial-scale hero) so the
+   terminal stays close to the top of the page instead of scrolling away
+   under a tall headline block. */
+.landing-hero {
+  display: flex;
+  min-width: 0;
+  width: min(100% - 2.5rem, 1200px);
+  margin-inline: auto;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(1.5rem, 2.6vw, 2.1rem);
+  padding-block: clamp(2.25rem, 4vw, 3.5rem) clamp(2.5rem, 4vw, 4rem);
+}
+
+.landing-hero-copy {
+  display: flex;
+  min-width: 0;
+  max-width: 54rem;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Mono display headline — the terminal-forward signature. JetBrains Mono is
+   a fixed-width face, so it needs looser tracking than the old variable-
+   sans headline (-0.065em would collide glyphs); the compact clamp (versus
+   an editorial-scale 5.6rem) is what keeps the whole hero near one fold. */
+.landing-hero-copy h1 {
+  margin-top: 1rem;
+  color: #f7f3eb;
+  font-family: var(--font-instrument);
+  font-size: clamp(2rem, 3.6vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+.landing-hero-copy h1 span {
+  color: #8e969e;
+}
+
+.landing-hero-copy > p {
+  max-width: 34rem;
+  margin-top: 1rem;
+  color: #b2b8bd;
+  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+  line-height: 1.6;
+}
+
+.landing-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+.landing-hero-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+/* Warp-style inline command chip beside the primary CTA — decorative,
+   restates the in-app action in terminal-invocation form. A dashed border
+   and no fill (versus .secondary-action's solid border + tint) keeps it
+   reading as a caption/tag rather than a third clickable button. */
+.command-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55ch;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  border-radius: 0.65rem;
+  padding: 0.85rem 1.05rem;
+  color: #9099a1;
+  font-size: 0.74rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.command-chip-prompt {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+.landing-evidence-signal span,
+.landing-console-footer i {
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgba(112, 214, 158, 0.07);
+}
+
+/* The dominant hero artwork: one large centered terminal window, Ghostty-
+   style — roughly 900-1000px wide on desktop, full-width and legible on
+   mobile (see the ≤639px query). */
+.landing-hero-visual {
+  position: relative;
+  width: min(100%, 62rem);
+  min-width: 0;
+  margin-inline: auto;
+  perspective: 1200px;
+}
+
+.landing-orbit {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.landing-orbit-amber {
+  top: -12%;
+  right: -14%;
+  width: 23rem;
+  height: 23rem;
+  border: 1px solid rgba(242, 184, 75, 0.13);
+  box-shadow: inset 0 0 80px rgba(242, 184, 75, 0.035), 0 0 100px rgba(242, 184, 75, 0.035);
+}
+
+.landing-orbit-cyan {
+  bottom: -16%;
+  left: -13%;
+  width: 18rem;
+  height: 18rem;
+  border: 1px solid rgba(105, 208, 203, 0.12);
+  box-shadow: inset 0 0 70px rgba(105, 208, 203, 0.03), 0 0 90px rgba(105, 208, 203, 0.03);
+}
+
+.landing-console {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 1.5rem;
+  padding: 0.65rem;
+  background: linear-gradient(145deg, #202932, #11171d 68%, #0b0f13);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 45px 100px rgba(0, 0, 0, 0.38);
+  transform: rotateX(1.5deg) rotateY(-3.5deg);
+}
+
+.landing-console::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(135deg, rgba(242, 184, 75, 0.035), transparent 30%, transparent 72%, rgba(105, 208, 203, 0.035));
+}
+
+.terminal-frame-body.landing-console-body {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 1rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background: linear-gradient(rgba(255, 255, 255, 0.016) 1px, transparent 1px), #070a0d;
+  background-size: 100% 2rem;
+  box-shadow: inset 0 0 36px rgba(0, 0, 0, 0.34);
+}
+
+.landing-card-number {
+  color: var(--amber);
+  font-family: var(--font-instrument);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.landing-console-footer {
+  position: relative;
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-inline: 0.75rem;
+  color: #9da5ab;
+  font-family: var(--font-instrument);
+  font-size: 0.55rem;
+}
+
+.landing-console-footer span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #b8e8cb;
+}
+
+/* === Hero debugging demo (marquee animated typing/running/failing/
+   hypothesize/repair/verify loop) =========================================
+   Replaces the previous static HeroConsole. React state drives which stage
+   is showing and how much of it has "typed" or "streamed" in; CSS only
+   handles the resulting opacity/transform reveals (never layout
+   properties), matching the case-file's transform/opacity-only rule. The
+   whole visual block is aria-hidden — see debugging-demo.tsx — so none of
+   the class names below need their own reduced-motion overrides beyond the
+   global animation-duration collapse at the bottom of this file. */
+/* Art Direction rebuild: the hero terminal is the dominant page artwork
+   (Ghostty-style), not a small supporting panel — it needs real vertical
+   weight and a larger internal type scale to read as a full "screen"
+   rather than a caption-sized box floating in the layout. Content stays
+   centered within that taller frame, the way a real terminal's short
+   scrollback sits inside a much taller window. */
+.terminal-frame-body.debug-demo-body {
+  position: relative;
+  min-height: 23rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
+}
+
+.debug-demo-phase-label {
+  margin-bottom: 1.3rem;
+  font-size: 0.7rem;
+}
+
+.debug-demo-stage {
+  animation: debug-demo-stage-reveal var(--dur-base) var(--ease-out) both;
+}
+
+@keyframes debug-demo-stage-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(0.3em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.debug-demo-command {
+  color: #d0d5d8;
+  font-family: var(--font-instrument);
+  font-size: 0.9rem;
+}
+
+.debug-demo-cursor {
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-left: 0.15em;
+  vertical-align: -0.15em;
+  background: var(--cursor-color);
+  animation: cursor-blink var(--dur-blink) step-end infinite;
+}
+
+.debug-demo-spinner-line {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1.1rem;
+  color: #8e98a2;
+  font-family: var(--font-instrument);
+  font-size: 0.8rem;
+}
+
+.debug-demo-spinner {
+  color: var(--amber);
+  font-size: 0.9rem;
+}
+
+.debug-demo-stream {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1.15rem;
+}
+
+.debug-demo-line {
+  opacity: 0;
+  transform: translateY(0.3em);
+  animation: debug-demo-line-reveal var(--dur-base) var(--ease-out) both;
+  color: #b7bcc1;
+  font-family: var(--font-instrument);
+  font-size: 0.78rem;
+}
+
+@keyframes debug-demo-line-reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.debug-demo-status {
+  display: inline-block;
+  min-width: 3.6rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.debug-demo-status-passed {
+  color: var(--green);
+}
+
+.debug-demo-status-failed {
+  color: var(--red);
+}
+
+/* The failing line highlights on its own merit (border + tint), not color
+   alone — the PASSED/FAILED text above already states status in words. */
+.debug-demo-line-fail {
+  border-left: 2px solid var(--red);
+  border-radius: 0.3rem;
+  padding: 0.15rem 0.5rem 0.15rem 0.45rem;
+  background: rgba(255, 122, 114, 0.07);
+}
+
+.debug-demo-line-assert {
+  margin-top: 0.4rem;
+  border: 1px solid rgba(255, 122, 114, 0.2);
+  border-radius: 0.6rem;
+  padding: 0.65rem 0.8rem;
+  background: rgba(255, 122, 114, 0.06);
+  color: #ffb5af;
+  font-weight: 700;
+}
+
+.debug-demo-hypothesis {
+  margin-top: 0.4rem;
+}
+
+.debug-demo-diff {
+  margin-top: 0.4rem;
+}
+
+.debug-demo-diff-token {
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+  font-weight: 800;
+}
+
+.debug-demo-seal {
+  margin-top: 1rem;
+}
+
+.debug-demo-dot {
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.debug-demo-dot-amber {
+  background: var(--amber);
+  box-shadow: 0 0 0 4px rgba(242, 184, 75, 0.08);
+}
+
+.debug-demo-dot-red {
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgba(255, 122, 114, 0.08);
+}
+
+.debug-demo-dot-cyan {
+  background: var(--cyan);
+  box-shadow: 0 0 0 4px rgba(105, 208, 203, 0.08);
+}
+
+.debug-demo-dot-green {
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgba(112, 214, 158, 0.08);
+}
+
+.debug-demo-footer span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #c7cdd1;
+}
+
+.debug-demo-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.7rem;
+}
+
+/* WCAG 2.2.2: the demo auto-plays past 5s, so this control must be visible,
+   keyboard-reachable, and must genuinely stop the underlying clock (see
+   the `playing` gate in debugging-demo.tsx) — not just pause a CSS
+   animation that keeps advancing state underneath it. */
+.debug-demo-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: #cfd4d8;
+  font-family: var(--font-instrument);
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out);
+}
+
+.debug-demo-toggle-glyph {
+  color: var(--amber);
+  font-size: 0.65rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .debug-demo-toggle:hover {
+    border-color: rgba(242, 184, 75, 0.35);
+    background: rgba(242, 184, 75, 0.06);
+    color: #f7f0e2;
+  }
+}
+
+/* Art Direction rebuild: each screenful should read as one dominant moment,
+   not a slow generic-SaaS scroll — clamp(3.5rem, 7vw, 6.5rem) (versus the
+   old clamp(5rem, 10vw, 9rem)) keeps sections close enough together that
+   the next section's heading is already in view as the current one leaves. */
+.landing-section {
+  width: min(100% - 2.5rem, 1320px);
+  margin-inline: auto;
+  padding-block: clamp(3.5rem, 7vw, 6.5rem);
+}
+
+/* Section atmosphere (Pass 5): a soft radial glow anchored to each
+   section's dominant element, per DESIGN_SYSTEM.md's amber=action /
+   cyan=instrumentation grammar — cyan behind the case-file's evidence loop
+   and the evidence-boundaries ledger, amber behind the roadmap's guided
+   action. #problem (the fictional Reasoning Bypass schematic) stays
+   ungloved on purpose: that section's own caption states nothing in it is
+   verified, so it gets no color signal. Targets existing section ids —
+   zero markup change. .landing-page's overflow: clip (below) keeps the
+   negative-inset glow from ever creating horizontal scroll. */
+#method,
+#learning-system,
+#evidence {
+  position: relative;
+}
+
+#method::before,
+#learning-system::before,
+#evidence::before {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+}
+
+#method::before {
+  inset: -4rem -6rem auto auto;
+  width: 34rem;
+  height: 30rem;
+  background: radial-gradient(circle, rgba(105, 208, 203, 0.07), transparent 70%);
+}
+
+#learning-system::before {
+  inset: -4rem auto auto -6rem;
+  width: 34rem;
+  height: 30rem;
+  background: radial-gradient(circle, rgba(242, 184, 75, 0.06), transparent 70%);
+}
+
+#evidence::before {
+  inset: -4rem -6rem auto auto;
+  width: 30rem;
+  height: 26rem;
+  background: radial-gradient(circle, rgba(105, 208, 203, 0.06), transparent 70%);
+}
+
+.landing-section-heading {
+  max-width: 50rem;
+}
+
+/* Section headings share the hero's mono display treatment (see
+   .landing-hero-copy h1 above for the tracking/size rationale). */
+.landing-section-heading h2,
+.landing-problem-copy h2,
+.landing-evidence-intro h2,
+.landing-final-cta h2 {
+  margin-top: 0.7rem;
+  color: #f5f1e9;
+  font-family: var(--font-instrument);
+  font-size: clamp(1.9rem, 3.4vw, 3.4rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+}
+
+.landing-section-heading > p,
+.landing-section-heading-wide > p,
+.landing-evidence-intro > p,
+.landing-final-cta p {
+  margin-top: 1.3rem;
+  color: #aeb4ba;
+  font-size: 0.98rem;
+  line-height: 1.75;
+}
+
+.landing-problem {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-learning-card {
+  position: relative;
+  min-width: 0;
+}
+
+.landing-learning-card h3,
+.landing-evidence-stack h3 {
+  margin-top: 2.5rem;
+  color: #e7e5df;
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.landing-learning-card p,
+.landing-evidence-stack p {
+  margin-top: 0.8rem;
+  color: #a8afb5;
+  font-size: 0.8rem;
+  line-height: 1.75;
+}
+
+/* === Problem-statement section (docs/design/PROBLEM_STATEMENT_SECTION_BRIEF.md) === */
+
+.landing-problem-layout {
+  display: grid;
+  grid-template-columns: minmax(22rem, 5fr) minmax(0, 7fr);
+  align-items: center;
+  gap: clamp(2.5rem, 6vw, 6rem);
+  margin-top: 3.5rem;
+}
+
+.landing-problem-copy {
+  max-width: 31.875rem;
+}
+
+.landing-problem-lead {
+  margin-top: 1.5rem;
+  color: var(--text);
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.6;
+}
+
+.landing-problem-body {
+  max-width: 62ch;
+  margin-top: 1rem;
+  color: #a8afb5;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.landing-problem-bridge {
+  margin-top: 2rem;
+}
+
+.landing-problem-bridge p {
+  margin-top: 0.35rem;
+  color: #aeb4ba;
+  font-size: 0.84rem;
+  line-height: 1.7;
+}
+
+/* === Reasoning Bypass Circuit — signature figure for the section above.
+   Deliberately not TerminalFrame: no window chrome, no command prompt, no
+   source, no test output. Everything here is a fictional schematic (see
+   the "Fictional schematic" Badge) and contains no green — nothing in the
+   story is verified. ============================================== */
+
+.reasoning-bypass-figure {
+  display: flex;
+  min-height: 28.5rem;
+  flex-direction: column;
+  padding: 1.75rem;
+}
+
+.rb-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.rb-header-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.rb-title {
+  color: #8e98a2;
+}
+
+.rb-canvas-wrap {
+  flex: 1;
+  min-width: 0;
+  margin-top: 1.75rem;
+}
+
+.rb-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.rb-branch {
+  display: grid;
+  grid-template-columns: minmax(8.5rem, 10.5rem) 1fr;
+  gap: 1.5rem;
+}
+
+.rb-failure {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.rb-subtext {
+  color: #8e98a2;
+  font-family: var(--font-instrument);
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+}
+
+.rb-rails {
+  display: grid;
+  min-width: 0;
+  grid-template-rows: auto auto;
+  gap: 1.5rem;
+}
+
+.rb-rail {
+  min-width: 0;
+}
+
+.rb-rail-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: var(--font-instrument);
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rb-rail-label-cyan {
+  color: #9be4e0;
+}
+
+.rb-rail-label-amber {
+  color: #f4ce85;
+}
+
+.rb-rail-sublabel {
+  color: #767f88;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.rb-rail-track {
+  position: relative;
+  height: 2px;
+  margin-top: 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.rb-rail-track-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(105, 208, 203, 0.15), rgba(105, 208, 203, 0.85));
+}
+
+.rb-accepts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.rb-nodes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.rb-node {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  /* Resting/final state: already "settled" 8px down — see rb-node-settle. */
+  transform: translateY(0.5rem);
+}
+
+.rb-node-active {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(242, 184, 75, 0.28);
+  border-radius: inherit;
+  background: rgba(242, 184, 75, 0.05);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rb-node-connector {
+  position: absolute;
+  left: -1.15rem;
+  width: 0.75rem;
+  height: 2px;
+  background: rgba(242, 184, 75, 0.4);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rb-node-text {
+  position: relative;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.rb-node-number {
+  color: #767f88;
+  font-family: var(--font-instrument);
+  font-size: 0.68rem;
+}
+
+.rb-node-badge {
+  position: relative;
+  margin-left: auto;
+}
+
+.rb-next-task {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1.5rem;
+}
+
+.rb-next-task-item,
+.rb-blocked {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+
+.rb-tag-label {
+  color: #767f88;
+  font-family: var(--font-instrument);
+  font-size: 0.6rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rb-next-task-text {
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.rb-next-task-arrow {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #9da5ab;
+  font-family: var(--font-instrument);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+}
+
+.rb-blocked {
+  margin-left: auto;
+}
+
+.rb-caption {
+  margin-top: 1.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 1.1rem;
+  color: #9da5ab;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+/* Pre-play values — applied only once the client confirms it can actually
+   run the sequence (see reasoning-bypass-figure.tsx). Everything above is
+   already the complete/static end state, which stays the default CSS for
+   prefers-reduced-motion, no JavaScript, a missing IntersectionObserver,
+   or a hydration failure. */
+.rb-canvas[data-motion="ready"] .rb-diagram {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.rb-canvas[data-motion="ready"] .rb-rail-track-fill {
+  clip-path: inset(0 100% 0 0);
+}
+
+.rb-canvas[data-motion="ready"] .rb-accept {
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
+}
+
+.rb-canvas[data-motion="ready"] .rb-node {
+  transform: translateY(0);
+}
+
+.rb-canvas[data-motion="ready"] .rb-node-active,
+.rb-canvas[data-motion="ready"] .rb-node-connector {
+  opacity: 1;
+}
+
+.rb-canvas[data-motion="ready"] .rb-node-badge {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.rb-canvas[data-motion="ready"] .rb-next-task-item {
+  opacity: 0;
+  transform: translateX(16px);
+}
+
+.rb-canvas[data-motion="ready"] .rb-next-task-arrow {
+  clip-path: inset(0 100% 0 0);
+  transform: translateX(8px);
+}
+
+.rb-canvas[data-motion="ready"] .rb-blocked {
+  opacity: 0;
+  transform: translateX(8px) scale(0.98);
+}
+
+.rb-canvas[data-motion="ready"] .rb-caption {
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+}
+
+/* Playing — the one-shot 3,480ms schedule from the design brief. Only
+   transform, opacity, and clip-path animate; every duration/easing comes
+   from the existing --dur- and --ease- tokens. */
+.rb-canvas[data-motion="playing"] .rb-diagram {
+  animation: rb-enter var(--dur-slow) var(--ease-snap) both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-rail-track-fill {
+  animation: rb-shortcut-reveal var(--dur-reveal) var(--ease-in-out) 420ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-accept:nth-child(1) {
+  animation: rb-accept-in var(--dur-base) var(--ease-snap) 420ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-accept:nth-child(2) {
+  animation: rb-accept-in var(--dur-base) var(--ease-snap) 560ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-accept:nth-child(3) {
+  animation: rb-accept-in var(--dur-base) var(--ease-snap) 700ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(1) {
+  animation: rb-node-settle var(--dur-slow) var(--ease-in-out) 660ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(2) {
+  animation: rb-node-settle var(--dur-slow) var(--ease-in-out) 800ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(3) {
+  animation: rb-node-settle var(--dur-slow) var(--ease-in-out) 940ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(1) .rb-node-active,
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(1) .rb-node-connector {
+  animation: rb-fade-out var(--dur-slow) var(--ease-out) 660ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(2) .rb-node-active,
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(2) .rb-node-connector {
+  animation: rb-fade-out var(--dur-slow) var(--ease-out) 800ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(3) .rb-node-active,
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(3) .rb-node-connector {
+  animation: rb-fade-out var(--dur-slow) var(--ease-out) 940ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(1) .rb-node-badge {
+  animation: rb-badge-in var(--dur-slow) var(--ease-out) 660ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(2) .rb-node-badge {
+  animation: rb-badge-in var(--dur-slow) var(--ease-out) 800ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-node:nth-child(3) .rb-node-badge {
+  animation: rb-badge-in var(--dur-slow) var(--ease-out) 940ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-next-task-item {
+  animation: rb-slide-in-x var(--dur-slow) var(--ease-snap) 1320ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-next-task-arrow {
+  animation: rb-arrow-reveal var(--dur-slow) var(--ease-in-out) 1740ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-blocked {
+  animation: rb-blocked-in var(--dur-slow) var(--ease-snap) 2160ms both;
+}
+
+.rb-canvas[data-motion="playing"] .rb-caption {
+  animation: rb-caption-reveal var(--dur-reveal) var(--ease-out) 2580ms both;
+}
+
+@keyframes rb-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rb-shortcut-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0); }
+}
+
+@keyframes rb-accept-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes rb-node-settle {
+  from { transform: translateY(0); }
+  to { transform: translateY(8px); }
+}
+
+@keyframes rb-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes rb-badge-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes rb-slide-in-x {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes rb-arrow-reveal {
+  from { clip-path: inset(0 100% 0 0); transform: translateX(8px); }
+  to { clip-path: inset(0); transform: translateX(0); }
+}
+
+@keyframes rb-blocked-in {
+  from { opacity: 0; transform: translateX(8px) scale(0.98); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes rb-caption-reveal {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0); }
+}
+
+.landing-method {
+  padding-block: 0;
+}
+
+.landing-method .debugging-case-file {
+  margin-top: 0;
+  padding-bottom: 5rem;
+}
+
+.landing-section-heading-wide {
+  display: grid;
+  max-width: none;
+  grid-template-columns: minmax(0, 1.2fr) minmax(20rem, 0.62fr);
+  align-items: end;
+  gap: clamp(2rem, 7vw, 7rem);
+}
+
+/* One large + two stacked — deliberately not the equal-thirds card grid a
+   generic pricing/feature section defaults to. The guided-foundations track
+   (mode 01, the beginner entry point) gets the tall primary cell; adaptive
+   practice and the evidence dashboard stack beside it as a secondary pair,
+   so the hierarchy reads visually, not just in reading order. */
+.landing-learning-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 3.5rem;
+}
+
+.landing-learning-dossier-primary {
+  grid-row: 1 / span 2;
+}
+
+.landing-learning-card {
+  overflow: hidden;
+  min-height: 24rem;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 55%), rgba(14, 19, 24, 0.94);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025), var(--shadow-panel);
+}
+
+.landing-learning-card::after {
+  position: absolute;
+  right: -5rem;
+  bottom: -6rem;
+  width: 13rem;
+  height: 13rem;
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+
+.landing-learning-card-amber::after { background: radial-gradient(circle, rgba(242, 184, 75, 0.22), transparent 66%); }
+.landing-learning-card-cyan::after { background: radial-gradient(circle, rgba(105, 208, 203, 0.22), transparent 66%); }
+.landing-learning-card-green::after { background: radial-gradient(circle, rgba(112, 214, 158, 0.2), transparent 66%); }
+
+/* Tone-differentiated numeral + top keyline, matching how
+   .case-chapter-signal-* carries its tone in the sibling case-file
+   component — the corner glow alone reads as identical across all
+   three cards at normal viewing distance. */
+.landing-learning-card-amber { border-top-color: rgba(242, 184, 75, 0.35); }
+.landing-learning-card-cyan { border-top-color: rgba(105, 208, 203, 0.35); }
+.landing-learning-card-green { border-top-color: rgba(112, 214, 158, 0.3); }
+
+.landing-learning-card-amber .landing-card-number { color: var(--amber); }
+.landing-learning-card-cyan .landing-card-number { color: var(--cyan); }
+.landing-learning-card-green .landing-card-number { color: var(--green); }
+
+.landing-learning-card h3 {
+  max-width: 18rem;
+  margin-top: 4rem;
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+
+.landing-card-detail {
+  position: absolute;
+  inset: auto 1.5rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 1rem;
+  color: #959ea5;
+  font-family: var(--font-instrument);
+  font-size: 0.66rem;
+}
+
+.landing-evidence {
+  display: grid;
+  grid-template-columns: minmax(0, 0.78fr) minmax(28rem, 1fr);
+  align-items: center;
+  gap: clamp(3rem, 9vw, 9rem);
+}
+
+.landing-evidence-intro .secondary-action {
+  transition: border-color var(--duration-ui) var(--ease-out), background-color var(--duration-ui) var(--ease-out), color var(--duration-ui) var(--ease-out);
+}
+
+.landing-evidence-stack {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.landing-evidence-stack h3 {
+  margin-top: 0;
+}
+
+.landing-evidence-signal {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  color: #9da5ab;
+  font-family: var(--font-instrument);
+  font-size: 0.56rem;
+}
+
+.landing-evidence-signal span {
+  background: var(--cyan);
+  box-shadow: 0 0 0 4px rgba(105, 208, 203, 0.06);
+}
+
+.landing-final-cta {
+  display: flex;
+  width: min(100% - 2.5rem, 1320px);
+  margin: 2rem auto 5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  overflow: hidden;
+  border: 1px solid rgba(242, 184, 75, 0.2);
+  border-radius: 1.5rem;
+  padding: clamp(2rem, 5vw, 4rem);
+  background: linear-gradient(125deg, rgba(242, 184, 75, 0.095), transparent 42%, rgba(105, 208, 203, 0.055)), rgba(17, 22, 28, 0.96);
+  box-shadow: inset 0 1px 0 rgba(255, 239, 202, 0.05), var(--shadow-active);
+}
+
+.landing-final-cta > div {
+  max-width: 50rem;
+}
+
+.landing-final-cta h2 {
+  font-size: clamp(2.2rem, 4vw, 3.8rem);
+}
+
+.landing-final-cta .primary-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.landing-footer {
+  display: grid;
+  width: min(100% - 2.5rem, 1480px);
+  min-height: 6.5rem;
+  margin-inline: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 2rem;
+}
+
+.landing-footer p {
+  color: #8e979f;
+  font-family: var(--font-instrument);
+  font-size: 0.58rem;
+}
+
+.landing-footer > a {
+  justify-self: end;
+}
+
+/* === Forensic Terminal prompt grammar (Pass 1) ========================= */
+
+/* Heading prompt prefixes. The glyph is decorative: the alt-text form of
+   `content` hides it from assistive tech; the plain form is the fallback
+   for engines that predate the alt-text syntax. */
+.prompt-heading::before,
+.prompt-heading-cmd::before {
+  margin-right: 0.55ch;
+  color: var(--prompt-color);
+  font-family: var(--font-instrument);
+  font-weight: 700;
+}
+
+.prompt-heading::before {
+  content: ">";
+  content: ">" / "";
+}
+
+.prompt-heading-cmd::before {
+  content: "$";
+  content: "$" / "";
+}
+
+/* Block-cursor accent. CSS-only blink; fully static (solid, no animation)
+   under prefers-reduced-motion. Bounded to a handful of blinks and then
+   settles solid — continuous ambient motion is reserved for the bounded
+   challenge-validation state, not decoration a visitor sees indefinitely. */
+.block-cursor::after {
+  content: "▮";
+  content: "▮" / "";
+  margin-left: 0.18em;
+  color: var(--cursor-color);
+  animation: cursor-blink var(--dur-blink) step-end 6;
+}
+
+@keyframes cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Amber bracket-corner focus treatment for buttons, cards, and inputs.
+   Opt-in: it replaces the default focus ring with four corner brackets
+   drawn on ::after, so do not apply it to elements that already use their
+   own ::after (they keep the default outline instead). The transparent
+   outline stays so forced-colors modes still draw a visible ring. */
+.focus-brackets {
+  position: relative;
+}
+
+.focus-brackets:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 4px;
+}
+
+.focus-brackets:focus-visible::after {
+  position: absolute;
+  inset: -0.4rem;
+  content: "";
+  pointer-events: none;
+  background:
+    linear-gradient(var(--focus-ring), var(--focus-ring)) left 0 top 0 / 0.7rem 2px,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) left 0 top 0 / 2px 0.7rem,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) right 0 top 0 / 0.7rem 2px,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) right 0 top 0 / 2px 0.7rem,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) left 0 bottom 0 / 0.7rem 2px,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) left 0 bottom 0 / 2px 0.7rem,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) right 0 bottom 0 / 0.7rem 2px,
+    linear-gradient(var(--focus-ring), var(--focus-ring)) right 0 bottom 0 / 2px 0.7rem;
+  background-repeat: no-repeat;
+}
+
+/* .primary-action sits on a warm amber gradient fill, the same family as
+   --focus-ring (--amber-bright): the brackets this rule draws for keyboard
+   users blend into the button's own fill on the highest-traffic CTAs
+   (guided-roadmap "Start guided lab", My Progress "Start Lesson N", the
+   landing page's primary links). Override to a dark, high-contrast bracket
+   color on amber surfaces specifically, leaving every other .focus-brackets
+   host on the default --focus-ring. */
+.primary-action.focus-brackets:focus-visible::after {
+  background:
+    linear-gradient(#211506, #211506) left 0 top 0 / 0.7rem 2px,
+    linear-gradient(#211506, #211506) left 0 top 0 / 2px 0.7rem,
+    linear-gradient(#211506, #211506) right 0 top 0 / 0.7rem 2px,
+    linear-gradient(#211506, #211506) right 0 top 0 / 2px 0.7rem,
+    linear-gradient(#211506, #211506) left 0 bottom 0 / 0.7rem 2px,
+    linear-gradient(#211506, #211506) left 0 bottom 0 / 2px 0.7rem,
+    linear-gradient(#211506, #211506) right 0 bottom 0 / 0.7rem 2px,
+    linear-gradient(#211506, #211506) right 0 bottom 0 / 2px 0.7rem;
+  background-repeat: no-repeat;
+}
+
+/* === Terminal titlebar frame (Pass 1) ==================================
+   Themed terminal window chrome for evidence wells and the case-file
+   monitor. Rendered by src/components/terminal-frame.tsx. */
+.terminal-frame {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 32%),
+    rgba(9, 12, 16, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 50px rgba(0, 0, 0, 0.3);
+}
+
+.terminal-frame-bar {
+  display: flex;
+  min-height: 2.35rem;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-inline: 0.75rem;
+  background: rgba(255, 255, 255, 0.014);
+  color: #8e98a2;
+  font-family: var(--font-instrument);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+}
+
+.terminal-frame-lights {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.32rem;
+}
+
+/* Richer titlebar chrome (Pass 5): each light gets a small top-left glossy
+   highlight (a physical-button cue, not a status signal — the lights carry
+   no meaning of their own) and an inset rim so they read as pressed metal
+   rather than flat dots. The unset base state stays dimmed relative to the
+   three colored lights, which sit at full opacity. */
+.terminal-frame-lights i {
+  display: block;
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.32), transparent 60%), #4b535c;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22);
+  opacity: 0.8;
+}
+
+.terminal-frame-lights i:first-child {
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.4), transparent 60%), rgba(255, 122, 114, 0.72);
+  opacity: 1;
+}
+
+.terminal-frame-lights i:nth-child(2) {
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.4), transparent 60%), rgba(242, 184, 75, 0.68);
+  opacity: 1;
+}
+
+.terminal-frame-lights i:last-child {
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.4), transparent 60%), rgba(112, 214, 158, 0.62);
+  opacity: 1;
+}
+
+.terminal-frame-label {
+  overflow: hidden;
+  min-width: 0;
+  flex: 1 1 auto;
+  font-weight: 600;
+  /* Deliberate mono feature enablement for the session-label chrome —
+     contextual alternates plus JetBrains Mono's ss02 zero style read as a
+     more intentionally "instrument" typographic choice at this scale. */
+  font-feature-settings: "calt" 1, "ss02" 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.terminal-frame-meta {
+  flex: 0 0 auto;
+  color: #69737d;
+}
+
+.terminal-frame-body {
+  padding: 1rem;
+}
+
+/* TerminalFrame nested inside hardware bezels (Pass 2): the hero console
+   and case-file monitor draw their own metal bezel (border, gradient,
+   shadow, 3D transform). The TerminalFrame they contain should contribute
+   only its titlebar (dots + mono label) and content slot, not a second
+   competing card outline. */
+/* .landing-console is a descendant (not child) combinator here: the hero's
+   animated debugging demo wraps its TerminalFrame in an aria-hidden div (see
+   debug-demo-visual below) so the churning terminal output stays out of the
+   accessibility tree while the Pause/Play control and sr-only summary do
+   not — the bezel treatment still needs to reach the frame through that
+   extra layer. */
+.landing-console .terminal-frame,
+.case-monitor-shell > .terminal-frame {
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.landing-console .terminal-frame > .terminal-frame-bar,
+.case-monitor-shell > .terminal-frame > .terminal-frame-bar {
+  padding-inline: 0.7rem;
+}
+
+/* Investigation workspace evidence well (Pass 3): the TerminalFrame sits
+   inside a .lab-panel that already supplies its own outer border/radius, so
+   it contributes only a divider and a flat dark floor for the evidence
+   stream — the same "nested TerminalFrame" pattern as the hero console and
+   case-file monitor above, applied to the workspace's test-output pane. */
+.workspace-evidence-frame.terminal-frame {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0;
+  background: rgba(7, 10, 13, 0.94);
+  box-shadow: none;
+}
+
+.terminal-frame-body.workspace-evidence-body {
+  padding: 0;
+}
+
+/* Streaming line-reveal: each evidence line rises and fades in with a short
+   stagger when fresh test output arrives (the .evidence-stream <pre> is
+   remounted per run, see faultsmith-app.tsx). Delay is capped in JS so long
+   stack traces do not stretch the reveal out indefinitely. Collapses to
+   static/instant under prefers-reduced-motion via the global override below. */
+.evidence-stream .evidence-line {
+  display: block;
+  opacity: 0;
+  transform: translateY(0.3em);
+  animation: evidence-line-reveal var(--dur-base) var(--ease-out) both;
+}
+
+@keyframes evidence-line-reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* tmux/vim-style workspace status line (Pass 3): Observe → Hypothesize →
+   Repair → Verify with the active stage picked out in amber, plus the
+   lesson identifier. Static, in-flow footer — never fixed/sticky — so it
+   can never overlap workspace content at any viewport, including 390×844. */
+.workspace-status-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  background: rgba(8, 10, 13, 0.92);
+  padding: 0.55rem 0.9rem;
+  color: #8e98a2;
+  font-family: var(--font-instrument);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+}
+
+/* The footer intentionally shows only the *current* stage, not the full
+   Observe → Hypothesize → Repair → Verify list: that full four-stage view
+   already lives in the workflow rail above the columns. Repeating it here
+   would just be the same data in the same visual language a few lines of
+   eye-travel away; the footer's distinct job is a persistent one-line
+   callout of what stage the learner is on right now, plus the lesson id. */
+.workspace-status-line-current {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55em;
+}
+
+.workspace-status-line-current-index {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.4rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--amber);
+  color: #201404;
+  font-weight: 700;
+}
+
+.workspace-status-line-current.is-complete .workspace-status-line-current-index {
+  background: var(--green);
+  color: #06170e;
+}
+
+.workspace-status-line-current-label {
+  flex: 0 0 auto;
+  color: #f3f0e8;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.workspace-status-line-current-note {
+  overflow: hidden;
+  min-width: 0;
+  color: #8e98a2;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-status-line-lesson {
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
+  align-items: center;
+  gap: 0.4em 0.5em;
+  color: #a7adb3;
+}
+
+.workspace-status-line-lesson-key {
+  color: #5b6470;
+}
+
+/* At narrow widths the status line wraps to two rows (stages, then lesson);
+   let both rows fill the width on their own line instead of clipping the
+   lesson identifier against the Next.js dev-mode corner badge. */
+@media (max-width: 639px) {
+  .workspace-status-line {
+    justify-content: flex-start;
+  }
+
+  .workspace-status-line-current,
+  .workspace-status-line-lesson {
+    width: 100%;
+  }
+}
+
+/* === Hero typewriter reveal + display-scale prompt grammar (Pass 2) ====
+   Word-by-word reveal, not a single clip-path over the whole (wrapping)
+   headline: a box-relative clip-path percentage resolves against the
+   *element's* bounding box, which spans both wrapped lines once the
+   heading wraps at hero scale — so the reveal rectangle does not track
+   reading order and a shorter second line can finish before a longer
+   first line clears. Animating each word's own opacity/transform instead
+   is immune to where the browser happens to wrap, because each word's
+   delay is tied to its position in reading order, not to box geometry.
+   Instant and fully visible under prefers-reduced-motion. */
+.typewriter-reveal {
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+.tw-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.2em);
+  animation: tw-word-reveal var(--dur-base) var(--ease-out) both;
+  animation-delay: calc(300ms + (var(--tw-i, 0) * 80ms));
+}
+
+@keyframes tw-word-reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scales the prompt-heading glyph down for display-size headings so a
+   giant ">" doesn't overpower hero/section type; default .prompt-heading
+   sizing (used at body/heading-3 scale) is left untouched. */
+.prompt-heading-display::before {
+  margin-right: 0.16em;
+  font-size: 0.42em;
+  vertical-align: 0.1em;
+}
+
+/* The block-cursor glyph inherits its host's font-size; at hero display
+   scale that renders an oversized bar that wraps onto its own line. Scale
+   it down to a legible accent that stays on the value-prop's line. The
+   cursor class now lives on .typewriter-reveal itself (see landing-page.tsx)
+   so its ::after glyph is the last inline child inside the *same*
+   inline-block that wraps the sentence — it participates in that element's
+   own internal line-wrap and always lands right after the final word,
+   instead of being appended after the whole (possibly multi-line) box from
+   the outside and overflowing onto an orphan line. */
+.landing-hero-copy h1 .block-cursor::after {
+  margin-left: 0.08em;
+  font-size: 0.4em;
+  vertical-align: -0.02em;
+}
+
+/* === Trace ticker (Pass 2 / Art Direction) ==============================
+   CSS-only marquee of evidence-loop events, Warp-style — a thin mono ticker
+   bar sitting between the hero CTAs and the dominant terminal artwork.
+   Decorative ambient detail, fully hidden from assistive tech. Pausable on
+   hover; the duplicated second set collapses under reduced motion, leaving
+   one static row. Now a direct child of .landing-hero (not nested inside
+   .landing-hero-copy), so it gets its own centered width rather than
+   inheriting the narrower copy column. */
+.trace-ticker {
+  overflow: hidden;
+  width: min(100%, 34rem);
+  margin-inline: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 1rem;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.trace-ticker-track {
+  display: flex;
+  width: max-content;
+  /* Bounded loop count, not infinite — the cycle boundary (translateX(-50%))
+     lands exactly on the start of the duplicated set, so the freeze frame
+     after the final iteration is visually seamless with the resting state. */
+  animation: trace-ticker-scroll 24s linear 6 forwards;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .trace-ticker:hover .trace-ticker-track {
+    animation-play-state: paused;
+  }
+}
+
+.trace-ticker-set {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2.5rem;
+  padding-right: 2.5rem;
+  white-space: nowrap;
+}
+
+.trace-ticker-set em {
+  color: #6d7a86;
+  font-family: var(--font-instrument);
+  font-size: 0.6rem;
+  font-style: normal;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.trace-ticker-set em::before {
+  margin-right: 0.6ch;
+  color: var(--amber);
+  content: "//";
+}
+
+@keyframes trace-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* === Roadmap + Progress instrumentation (Pass 4) =======================
+   The guided-roadmap lesson cards and the My Progress dashboard share two
+   small primitives: an `ls -la`-flavored metadata row (permission bits +
+   lesson id + skill + duration, monospace, decorative glyph aria-hidden)
+   and a block-segment progress meter. */
+
+/* Lesson card (Pass 4 fix): a dedicated class instead of reusing
+   .fine-hover-lift on the roadmap cards. .fine-hover-lift's :hover sets
+   border-color as unlayered author CSS, which — per the CSS cascade-layers
+   spec — always wins over Tailwind v4's hover:border-cyan and hover:bg-white
+   utilities (emitted inside @layer utilities) regardless of source order or
+   specificity. That silently replaced the intended cyan hover with the
+   pre-existing amber .fine-hover-lift hover border on every unselected card,
+   which reads as "this is now selected." Splitting the concerns fixes it:
+   .lesson-card owns only transform/box-shadow lift here, leaving
+   border-color/background hover fully owned by the Tailwind utilities in the
+   button's className.
+   It also supplies one explicit, bounded transition list shared by *both*
+   the selected and unselected card states. Previously only the unselected
+   branch carried .fine-hover-lift's token-correct transition; the selected
+   branch fell through to the bare Tailwind `transition duration-200`
+   utility — an unbounded ~22-property transition on Tailwind's built-in
+   easing, not this project's --ease-out token — so the same button used two
+   different curves depending on selection state. */
+.lesson-card {
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lesson-card:hover:not(:disabled):not([aria-pressed="true"]) {
+    transform: translateY(-2px);
+  }
+}
+
+.lesson-card:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.lesson-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  overflow: hidden;
+  font-size: 0.58rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.lesson-meta-skill {
+  overflow: hidden;
+  min-width: 0;
+  flex: 1 1 auto;
+  text-overflow: ellipsis;
+}
+
+/* Draws static cut lines over the existing scaleX .progress-fill bar so it
+   reads as a row of discrete instrument segments (a VU-meter), without the
+   fill itself needing to distort under transform — the overlay sits on the
+   always-full-width track, never on the scaled fill, and never animates. */
+.block-meter {
+  position: relative;
+}
+
+.block-meter::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  content: "";
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(100% / 20 - 2px),
+    var(--background) calc(100% / 20 - 2px),
+    var(--background) calc(100% / 20)
+  );
+}
+
+/* Forensic dossier applications -------------------------------------------- */
+.landing-learning-dossier {
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.landing-learning-dossier-primary {
+  min-height: 24rem;
+}
+
+.landing-learning-dossier-secondary {
+  min-height: 11.25rem;
+}
+
+.landing-learning-dossier .ui-dossier-body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Compound selector (both classes on one element) outranks the shared
+   `.landing-learning-dossier h3` rule below regardless of source order —
+   the secondary cards are much shorter than the primary cell, so they need
+   the header pulled up instead of inheriting the primary's 3.75rem gap. */
+.landing-learning-dossier.landing-learning-dossier-secondary h3 {
+  margin-top: 1.4rem;
+}
+
+.landing-dossier-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.landing-dossier-code {
+  color: rgba(var(--dossier-accent-rgb), 0.58);
+  font-family: var(--font-instrument);
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+}
+
+.landing-learning-dossier h3 {
+  max-width: 18rem;
+  margin-top: 3.75rem;
+  color: #ece9e2;
+  font-size: 1.45rem;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+
+.landing-learning-dossier p {
+  margin-top: 1rem;
+  color: #9ba3aa;
+  font-size: 0.8rem;
+  line-height: 1.75;
+}
+
+.landing-dossier-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: auto;
+  border-top: 1px dashed rgba(var(--dossier-accent-rgb), 0.22);
+  padding-top: 1rem;
+  color: rgba(var(--dossier-accent-rgb), 0.82);
+  font-family: var(--font-instrument);
+  font-size: 0.58rem;
+  line-height: 1.5;
+}
+
+.landing-problem-bridge .ui-dossier-body {
+  padding: 1.1rem 1.25rem 1.2rem;
+}
+
+.landing-evidence-ledger {
+  align-self: stretch;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ui-dossier-cyan.fine-hover-lift:hover {
+    border-color: rgba(105, 208, 203, 0.44);
+  }
+
+  .ui-dossier-green.fine-hover-lift:hover {
+    border-color: rgba(112, 214, 158, 0.4);
+  }
+}
+
+.roadmap-meter {
+  position: relative;
+  border: 1px solid rgba(112, 214, 158, 0.2);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 9px, rgba(112, 214, 158, 0.035) 9px 10px),
+    rgba(5, 8, 11, 0.62);
+  clip-path: polygon(0 0, calc(100% - 0.7rem) 0, 100% 0.7rem, 100% 100%, 0 100%);
+}
+
+.roadmap-meter::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-left: 1px solid rgba(112, 214, 158, 0.28);
+  content: "";
+  transform: rotate(-45deg) translate(-0.05rem, -0.2rem);
+  transform-origin: left top;
+}
+
+.roadmap-meter-track,
+.release-record-track {
+  position: relative;
+  height: 0.3rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.roadmap-meter-track::after,
+.release-record-track::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: repeating-linear-gradient(90deg, transparent 0 8px, #080a0d 8px 10px);
+}
+
+.phase-dossier .ui-dossier-body {
+  padding: 1.15rem 1.25rem 1.25rem;
+}
+
+.phase-dossier-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.phase-dossier-count {
+  border-bottom: 1px solid rgba(var(--dossier-accent-rgb), 0.3);
+  padding-bottom: 0.25rem;
+  color: rgba(var(--dossier-accent-rgb), 0.72);
+  font-family: var(--font-instrument);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.lesson-record {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(3, 6, 9, 0.34);
+  clip-path: polygon(0 0, calc(100% - 0.55rem) 0, 100% 0.55rem, 100% 100%, 0 100%);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.lesson-record::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.18rem;
+  background: rgba(255, 255, 255, 0.08);
+  content: "";
+}
+
+.lesson-record::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 0.24rem;
+  background: repeating-linear-gradient(90deg, transparent 0 7px, rgba(255, 255, 255, 0.08) 7px 8px);
+  content: "";
+}
+
+.lesson-record-active {
+  border-color: rgba(242, 184, 75, 0.44);
+  background: linear-gradient(145deg, rgba(242, 184, 75, 0.1), rgba(255, 255, 255, 0.012));
+  box-shadow: inset 0.18rem 0 0 rgba(242, 184, 75, 0.62);
+}
+
+.lesson-record-active::before {
+  background: var(--amber);
+}
+
+.lesson-record-locked-selected {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lesson-record-idle:hover {
+    border-color: rgba(105, 208, 203, 0.28);
+    background: rgba(105, 208, 203, 0.035);
+    transform: translateY(-2px);
+  }
+}
+
+.lesson-record:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.selected-lesson-dossier .ui-dossier-body {
+  padding: 1.35rem 1.4rem 1.5rem;
+}
+
+.concept-record,
+.selected-success-signal,
+.release-record {
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1rem 1rem 1rem 1.2rem;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 10px);
+}
+
+.concept-record::before,
+.selected-success-signal::before,
+.release-record::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.18rem;
+  background: var(--amber);
+  content: "";
+}
+
+.selected-success-signal::before,
+.release-record::before {
+  background: var(--green);
+}
+
+.selected-validation-stamp {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px dashed rgba(112, 214, 158, 0.3);
+  padding: 0.65rem 0.8rem;
+  color: #9fe6bb;
+  font-family: var(--font-instrument);
+  font-size: 0.58rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+  transform: rotate(-0.35deg);
+}
+
+.workflow-rail {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 0.8rem) 0, 100% 0.8rem, 100% 100%, 0 100%);
+}
+
+.mode-switcher {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 0.55rem) 0, 100% 0.55rem, 100% 100%, 0 100%);
+}
+
+.mode-tab {
+  border-radius: 0;
+}
+
+.specimen-slab {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 11px, rgba(255, 255, 255, 0.015) 11px 12px),
+    #0e1318;
+  clip-path: polygon(0 0, calc(100% - 0.9rem) 0, 100% 0.9rem, 100% 100%, 0.75rem 100%, 0 calc(100% - 0.75rem));
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.specimen-slab::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.22rem;
+  background: rgba(255, 255, 255, 0.1);
+  content: "";
+}
+
+.specimen-slab-active {
+  border-color: rgba(242, 184, 75, 0.48);
+  box-shadow: inset 0.22rem 0 0 var(--amber), 0 20px 55px rgba(0, 0, 0, 0.28);
+}
+
+.specimen-slab-index {
+  position: absolute;
+  right: 1.2rem;
+  bottom: 3.65rem;
+  color: rgba(255, 255, 255, 0.05);
+  font-family: var(--font-instrument);
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: -0.08em;
+}
+
+.specimen-ready-stamp {
+  border: 1px dashed rgba(112, 214, 158, 0.3);
+  padding: 0.26rem 0.42rem;
+  color: #8de2ae;
+  font-family: var(--font-instrument);
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.specimen-slab-footer {
+  position: absolute;
+  inset: auto 1.25rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-top: 0.8rem;
+  color: #68717a;
+  font-family: var(--font-instrument);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.forge-config-dossier .ui-dossier-body {
+  padding: 1.35rem 1.4rem 1.5rem;
+}
+
+.instrument-select {
+  border: 1px solid rgba(105, 208, 203, 0.18);
+  border-radius: 0;
+  background: rgba(4, 7, 10, 0.66);
+  clip-path: polygon(0 0, calc(100% - 0.45rem) 0, 100% 0.45rem, 100% 100%, 0 100%);
+}
+
+.instrument-option-grid {
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.instrument-option {
+  border: 0;
+  background: #0b0f13;
+  color: #737c85;
+  transition: background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+}
+
+.instrument-option[aria-pressed="true"] {
+  background: linear-gradient(145deg, rgba(242, 184, 75, 0.13), #10151b);
+  color: #f4ce85;
+  box-shadow: inset 0 -2px 0 var(--amber);
+}
+
+.release-record {
+  padding: 1rem;
+}
+
+.account-sync-callout {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(105, 208, 203, 0.24);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 11px, rgba(105, 208, 203, 0.018) 11px 12px),
+    #0c1116;
+  clip-path: polygon(0 0, calc(100% - 0.8rem) 0, 100% 0.8rem, 100% 100%, 0 100%);
+}
+
+.account-sync-callout::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.2rem;
+  background: var(--cyan);
+  content: "";
+}
+
+.account-sync-callout-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.1rem 1.25rem 1.1rem 1.4rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.account-sync-callout-summary::-webkit-details-marker {
+  display: none;
+}
+
+.account-sync-callout-copy {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.account-sync-callout-copy strong {
+  color: #e8e7e1;
+  font-size: 0.92rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.account-sync-callout-copy > span:last-child {
+  max-width: 52rem;
+  color: #858e97;
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
+.account-sync-callout-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #a9e8e4;
+  font-family: var(--font-instrument);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.account-sync-callout-action i {
+  display: grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  border: 1px solid rgba(105, 208, 203, 0.28);
+  font-size: 0.8rem;
+  font-style: normal;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.account-sync-callout[open] .account-sync-callout-action i {
+  transform: rotate(45deg);
+}
+
+.account-sync-callout-panel {
+  border-top: 1px solid rgba(105, 208, 203, 0.14);
+  padding: 1rem 1.25rem 0;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.account-sync-callout-panel > .ui-instrument-shell {
+  margin-bottom: 1rem;
+  box-shadow: none;
+}
+
+@media (max-width: 639px) {
+  .ui-dossier {
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+  }
+
+  .ui-dossier-rail {
+    padding-inline: 0.45rem;
+  }
+
+  .ui-dossier-body,
+  .phase-dossier .ui-dossier-body,
+  .selected-lesson-dossier .ui-dossier-body,
+  .forge-config-dossier .ui-dossier-body {
+    padding-inline: 1rem;
+  }
+
+  .landing-learning-dossier {
+    min-height: 20rem;
+  }
+
+  .landing-learning-dossier h3 {
+    margin-top: 2.5rem;
+  }
+
+  .ui-evidence-record {
+    grid-template-columns: 2.7rem minmax(0, 1fr);
+  }
+
+  .ui-evidence-record-seal {
+    display: none;
+  }
+
+  .phase-dossier-count {
+    display: none;
+  }
+
+  .account-sync-callout-summary {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+    padding-inline: 1rem;
+  }
+
+  .account-sync-callout-action {
+    justify-content: space-between;
+  }
+
+  .account-sync-callout-panel {
+    padding-inline: 0.75rem;
+  }
+}
+
+/* Destructive account/data action: same state vocabulary as
+   .primary-action/.instrument-action (default/hover/active/disabled),
+   red per the Forensic Workbench color grammar's failure/destructive
+   reservation, visually separated from the amber primary sync actions. */
+.danger-action {
+  min-height: 2.55rem;
+  border: 1px solid rgba(255, 122, 114, 0.35);
+  background: linear-gradient(180deg, rgba(255, 122, 114, 0.22), rgba(255, 122, 114, 0.1));
+  color: #ffe8e6;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .danger-action:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(255, 122, 114, 0.55);
+    background: linear-gradient(180deg, rgba(255, 122, 114, 0.3), rgba(255, 122, 114, 0.14));
+  }
+}
+
+.danger-action:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.danger-action:disabled {
+  opacity: 0.4;
+}
+
+/* === Component primitive layer (src/components/ui/) =====================
+   Supporting CSS for the hand-rolled component library. Each primitive
+   composes existing surfaces (.lab-panel, .evidence-well, .status-pill,
+   .mode-switcher/.mode-tab, .primary-action family) rather than reinventing
+   them; the rules below fill the few gaps — a ghost button tone, badge/dot
+   tone variants, a field input, and nested-card chrome. */
+
+/* Button: ghost variant. Same state vocabulary (default/hover/active/
+   disabled) as .secondary-action/.instrument-action/.danger-action, but
+   with no resting border or fill — for tertiary controls that shouldn't
+   compete with a surrounding card's own border. */
+.ghost-action {
+  min-height: 2.55rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #a7adb3;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ghost-action:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.035);
+    color: var(--text);
+  }
+}
+
+.ghost-action:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.ghost-action:disabled {
+  opacity: 0.4;
+}
+
+/* Button: loading spinner. Recolors via currentColor so it matches
+   whichever variant hosts it. Treated as an activity indicator tied to a
+   real async operation (WCAG 2.2.2's "essential" exception) rather than
+   decorative motion; still collapses to a static ring under the global
+   prefers-reduced-motion override below. */
+.ui-btn-spinner {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  flex: 0 0 auto;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: 0.85;
+  animation: ui-btn-spin 0.6s linear infinite;
+}
+
+@keyframes ui-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Button: size modifiers. sm trades the base action classes' own
+   min-height (already ~40-42px, "md") for a shorter compact control; lg
+   goes taller for hero/landing CTAs. */
+.ui-btn-sm {
+  min-height: 2.25rem;
+}
+
+.ui-btn-lg {
+  min-height: 3rem;
+}
+
+/* Card: nested-well variant — the "Success signal" / "Release gate" style
+   inset box already repeated across guided-roadmap.tsx and
+   faultsmith-app.tsx as inline border-white/7 + bg-black/20. */
+.ui-card-inset {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.ui-instrument-shell {
+  position: relative;
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 0.85rem) 0, 100% 0.85rem, 100% 100%, 0 100%);
+}
+
+.ui-instrument-shell::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  content: "";
+  pointer-events: none;
+  transform: rotate(-45deg) translate(-0.04rem, -0.2rem);
+  transform-origin: left top;
+}
+
+.ui-instrument-shell-raised::after {
+  border-left-color: rgba(242, 184, 75, 0.34);
+}
+
+.ui-evidence-well {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 0.45rem) 0, 100% 0.45rem, 100% 100%, 0 100%);
+}
+
+.ui-inset-record {
+  position: relative;
+  border-radius: 0;
+  border-left-color: rgba(105, 208, 203, 0.24);
+}
+
+/* Card: header/footer slot dividers. */
+.ui-card-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.ui-card-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Badge: tone variants layered onto the existing .status-pill base
+   (neutral). Colors match .case-chapter-signal-* exactly, so a badge and
+   a case-file chapter signal in the same tone always read identically. */
+/* Restrained outer glow layered behind each tone — the border/background/
+   text stay exactly as before (no contrast change to the label itself),
+   the glow is a soft, low-opacity halo outside the pill's own edge. */
+.status-pill-investigation {
+  border-color: rgba(242, 184, 75, 0.28);
+  background: rgba(242, 184, 75, 0.07);
+  color: #f4ce85;
+  box-shadow: 0 0 14px -8px rgba(242, 184, 75, 0.55);
+}
+
+.status-pill-instrument {
+  border-color: rgba(105, 208, 203, 0.28);
+  background: rgba(105, 208, 203, 0.07);
+  color: #9be4e0;
+  box-shadow: 0 0 14px -8px rgba(105, 208, 203, 0.5);
+}
+
+.status-pill-verified {
+  border-color: rgba(112, 214, 158, 0.24);
+  background: rgba(112, 214, 158, 0.07);
+  color: #a6ecc3;
+  box-shadow: 0 0 14px -8px rgba(112, 214, 158, 0.5);
+}
+
+.status-pill-failure {
+  border-color: rgba(255, 122, 114, 0.24);
+  background: rgba(255, 122, 114, 0.07);
+  color: #ffaaa5;
+  box-shadow: 0 0 14px -8px rgba(255, 122, 114, 0.5);
+}
+
+.status-pill-locked {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.02);
+  color: #6b7480;
+}
+
+/* StatusDot: decorative-only indicator (see status-dot.tsx — always
+   aria-hidden, always paired with caller text). Tone colors reuse the
+   core token variables directly rather than the Tailwind default palette,
+   so new UI never drifts from the five documented core colors. */
+.status-dot {
+  display: inline-block;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.status-dot-sm {
+  width: 0.375rem;
+  height: 0.375rem;
+}
+
+.status-dot-md {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+.status-dot-lg {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+.status-dot-neutral {
+  background: var(--muted-dim);
+}
+
+/* Refined "instrument LED" glow: a tight ring plus a soft outer bloom,
+   instead of one flat ring — still fully decorative/aria-hidden and never
+   the sole status signal (see status-dot.tsx). */
+.status-dot-investigation {
+  background: var(--amber);
+  box-shadow: 0 0 0 3px rgba(242, 184, 75, 0.12), 0 0 8px rgba(242, 184, 75, 0.35);
+}
+
+.status-dot-instrument {
+  background: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(105, 208, 203, 0.12), 0 0 8px rgba(105, 208, 203, 0.32);
+}
+
+.status-dot-verified {
+  background: var(--green);
+  box-shadow: 0 0 0 3px rgba(112, 214, 158, 0.12), 0 0 8px rgba(112, 214, 158, 0.32);
+}
+
+.status-dot-failure {
+  background: var(--red);
+  box-shadow: 0 0 0 3px rgba(255, 122, 114, 0.12), 0 0 8px rgba(255, 122, 114, 0.32);
+}
+
+.status-dot-locked {
+  background: var(--muted-dim);
+  opacity: 0.6;
+}
+
+/* Field: canonical text input/textarea surface (default/hover/focus-visible
+   via the existing global :focus-visible rule/disabled/invalid), replacing
+   the border-white/10 + bg-black/30 pattern repeated at each input call
+   site. */
+.field-input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text);
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.field-input::placeholder {
+  color: #71767d;
+}
+
+.field-input:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.field-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.field-input[aria-invalid="true"] {
+  border-color: rgba(255, 122, 114, 0.45);
+  background: rgba(255, 122, 114, 0.035);
+}
+
+.field-input[aria-invalid="true"]:focus-visible {
+  outline-color: var(--red);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block-cursor::after {
+    animation: none;
+    opacity: 1;
+  }
+
+  .tw-word {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .trace-ticker-track {
+    animation: none;
+    transform: none;
+  }
+
+  .trace-ticker-set:nth-child(2) {
+    display: none;
+  }
+
+  .evidence-stream .evidence-line {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Belt-and-suspenders: debugging-demo.tsx already skips its timer and
+     renders the static verified frame under reduced motion, so these rarely
+     fire — but a live preference change mid-loop (query event) should not
+     leave a stale opacity/transform mid-animation for one frame either. */
+  .debug-demo-stage,
+  .debug-demo-line {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .debug-demo-cursor {
+    animation: none;
+  }
+}
+
 /* Muted laboratory labels still meet WCAG AA on every dark surface. */
 .text-zinc-500,
 .text-zinc-600,
 .text-zinc-700 {
-  color: #a1a1aa;
+  color: #a7adb3;
 }
 
 .placeholder\:text-zinc-700::placeholder {
@@ -100,6 +3869,357 @@ button:disabled {
   }
 }
 
+@keyframes motion-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 719px) {
+  .case-monitor-sticky {
+    position: static;
+    top: auto;
+    padding-block: 1rem 2rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  .landing-nav {
+    grid-template-columns: 1fr auto auto;
+  }
+
+  .landing-nav-links {
+    display: none;
+  }
+
+  .landing-nav-mobile {
+    position: relative;
+    display: block;
+  }
+
+  .landing-hero-visual {
+    width: min(100%, 42rem);
+  }
+
+  .landing-console {
+    transform: none;
+  }
+
+  .landing-learning-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
+  .landing-learning-dossier-primary {
+    grid-row: auto;
+  }
+
+  .landing-learning-dossier-secondary {
+    min-height: 0;
+  }
+
+  .landing-learning-dossier.landing-learning-dossier-secondary h3 {
+    margin-top: 3.75rem;
+  }
+
+  .landing-learning-card {
+    min-height: 20rem;
+  }
+
+  .landing-problem-layout,
+  .landing-section-heading-wide,
+  .landing-evidence {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-problem-copy {
+    max-width: 42rem;
+  }
+
+  .landing-section-heading-wide > p {
+    max-width: 42rem;
+  }
+
+  .landing-evidence {
+    align-items: start;
+  }
+
+  .landing-evidence-intro {
+    max-width: 46rem;
+  }
+
+  .debugging-case-file {
+    margin-top: 5rem;
+    padding-top: 3.5rem;
+  }
+
+  .case-file-heading {
+    display: grid;
+    margin-bottom: 2.5rem;
+  }
+
+  .case-file-layout {
+    display: block;
+  }
+
+  .case-monitor-sticky {
+    position: static;
+    padding: 0 0 2.5rem;
+  }
+
+  .case-monitor-shell {
+    transform: none;
+  }
+
+  .case-chapters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .case-chapter {
+    min-height: 0;
+    margin: 0;
+  }
+}
+
+@media (max-width: 639px) {
+  .landing-nav-shell {
+    backdrop-filter: none;
+  }
+
+  .landing-nav {
+    width: min(100% - 1.5rem, 1480px);
+    gap: 0.75rem;
+  }
+
+  .landing-nav .font-instrument + .font-instrument {
+    display: none;
+  }
+
+  .landing-nav-cta {
+    padding-inline: 0.8rem;
+  }
+
+  .landing-nav-cta span {
+    display: none;
+  }
+
+  .landing-hero,
+  .landing-section,
+  .landing-final-cta,
+  .landing-footer {
+    width: min(100% - 1.5rem, 1480px);
+  }
+
+  /* Optical tracking adjustment for mobile (Pass 5): at small viewport
+     widths the mono display headings render at the lower end of their
+     clamp(), where the same negative tracking used at desktop scale reads
+     visibly tighter. Loosening it slightly keeps glyphs from crowding
+     without touching the clamp()/size values themselves. */
+  .landing-hero-copy h1,
+  .landing-section-heading h2,
+  .landing-problem-copy h2,
+  .landing-evidence-intro h2,
+  .landing-final-cta h2 {
+    letter-spacing: -0.012em;
+  }
+
+  .landing-hero {
+    gap: 1.6rem;
+    padding-block: 2.5rem 3rem;
+  }
+
+  .landing-hero-copy h1 {
+    font-size: clamp(1.9rem, 9.5vw, 2.75rem);
+    letter-spacing: -0.02em;
+  }
+
+  .landing-hero-actions {
+    display: grid;
+    width: 100%;
+  }
+
+  .landing-hero-actions a,
+  .landing-hero-actions .command-chip {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .landing-hero-visual {
+    width: 100%;
+  }
+
+  .landing-console .terminal-frame-meta {
+    display: none;
+  }
+
+  /* Unlike the landing/case-monitor demos above, the workspace evidence
+     frame's meta (pass/fail counts, timing) is real information the learner
+     needs, not decorative chrome — hiding it outright isn't acceptable here.
+     Wrap it onto its own row instead so the label gets room to breathe. */
+  .workspace-evidence-frame .terminal-frame-bar {
+    flex-wrap: wrap;
+    row-gap: 0.3rem;
+  }
+
+  .workspace-evidence-frame .terminal-frame-meta {
+    flex: 1 1 100%;
+  }
+
+  .terminal-frame-body.landing-console-body {
+    padding: 1rem;
+  }
+
+  .landing-console-footer {
+    display: grid;
+    padding-block: 0.65rem;
+  }
+
+  .landing-problem-layout {
+    margin-top: 2.5rem;
+    gap: 2.5rem;
+  }
+
+  .landing-problem-bridge {
+    margin-top: 1.5rem;
+  }
+
+  /* Circuit reflow: failure capsule full width, then MODEL SHORTCUT and
+     REASONING PATH side by side as two equal vertical rails (each still
+     stacking its own chips/nodes), then the next-task strip as three
+     stacked rows. */
+  .reasoning-bypass-figure {
+    min-height: 0;
+    padding: 1rem;
+  }
+
+  .rb-branch {
+    grid-template-columns: 1fr;
+  }
+
+  .rb-rails {
+    grid-template-rows: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .rb-rail-label {
+    font-size: 0.625rem;
+  }
+
+  .rb-next-task {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .rb-blocked {
+    margin-left: 0;
+  }
+
+  .landing-section-heading h2,
+  .landing-evidence-intro h2,
+  .landing-final-cta h2 {
+    font-size: clamp(2.1rem, 11vw, 3rem);
+  }
+
+  .landing-method .debugging-case-file {
+    margin-top: 0;
+  }
+
+  .landing-learning-grid {
+    margin-top: 2.5rem;
+  }
+
+  .landing-learning-card {
+    min-height: 22rem;
+  }
+
+  .landing-final-cta {
+    display: grid;
+    margin-bottom: 4rem;
+  }
+
+  .landing-final-cta .primary-action {
+    justify-content: center;
+  }
+
+  .landing-footer {
+    grid-template-columns: 1fr auto;
+    padding-block: 1.5rem;
+  }
+
+  .landing-footer p {
+    display: none;
+  }
+
+  .grid-texture {
+    background-size: 28px 28px;
+  }
+
+  .mode-switcher {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .mode-tab {
+    min-width: 0;
+    padding-inline: 0.35rem;
+    font-size: 0.68rem;
+    white-space: nowrap;
+  }
+
+  .lab-panel,
+  .lab-panel-raised {
+    backdrop-filter: none;
+  }
+
+  .debugging-case-file {
+    margin-top: 4rem;
+    padding-top: 3rem;
+  }
+
+  .case-file-heading {
+    gap: 1rem;
+  }
+
+  .terminal-frame-body.case-monitor-screen {
+    min-height: 20rem;
+  }
+
+  .case-monitor-shell .terminal-frame-meta {
+    display: none;
+  }
+
+  .case-visual-stage {
+    padding: 1.2rem;
+  }
+
+  .case-change-summary {
+    gap: 0.35rem;
+  }
+
+  .case-change-summary div {
+    padding: 0.55rem;
+  }
+
+  .case-test-grid {
+    gap: 0.3rem;
+  }
+
+  .case-chapters {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -107,5 +4227,6 @@ button:disabled {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

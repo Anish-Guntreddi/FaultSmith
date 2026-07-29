@@ -1,51 +1,65 @@
 # FaultSmith Roadmap and Direction Review
 
-**Last direction review:** July 18, 2026  
+**Last direction review:** July 20, 2026
 **Locked track:** Education  
 **Locked primary demo:** Expense Approval boundary condition  
-**Current state:** Public-source release candidate; live credential smoke, deployment, and remaining submission actions pending
+**Current state:** Phase 01.1, the Forensic Workbench, the isolated Debugging Case File motion pass, and the judge-facing public landing surface are complete locally. The July 20 presentation polish adds a shared primitive layer, a looping but pausable fictional debugging trace, a one-shot Reasoning Bypass Circuit, consistent roadmap/progress instrumentation, and a development-only styleguide. `/` presents the problem, method, learning system, and evidence boundaries; the complete guest-first product lives at `/learn`. The current local/emulator gate set passes with 325 unit/integration tests, 23 Firebase emulator-integration tests, 24 default browser tests, 16 Firebase-mode browser tests, production build, 25-artifact client-bundle scan, fallback/production smoke, and a zero-vulnerability audit. A private Firebase Spark project is configured and its sanitized automated real-project smoke passed 22/22 stages; Google popup/cancel/collision, real inbox links, clean-browser UI restoration, and the private credential-removal/cloud-off checkpoint remain pending human proof. Netlify deployment, live OpenAI proof, external UAT, recording, and final submission actions are still pending.
 
 ## Completed milestones
 
 | Milestone | Evidence |
 | --- | --- |
-| Secure challenge domain | Strict contracts, public DTO stripping, nine fixtures, allowlisted edits, exact prevalidated repair matching, challenge-grounded fallback scoring, sanitized output, 36 passing unit/integration tests |
+| Secure challenge domain | Strict contracts, public DTO stripping, nine fixtures, allowlisted edits, exact prevalidated repair matching, score-only live assessment with server-owned prose, expanded sanitation, 63 passing unit/integration tests |
 | Validated generation | Separate GPT-5.6 mutation and validation schemas are constrained by approved contracts; deterministic original-pass/mutated-fail/signature checks remain authoritative and one retry precedes fallback |
 | Isolated execution | Live Python path uses Code Interpreter only; client has no command or container-ID input; local fallback is deterministic and explicitly labeled |
-| Deterministic assessment | Exact submitted snapshot is rerun; failing evidence forces `not_verified`; model scores are bounded and subordinate |
+| Deterministic assessment | Exact submitted snapshot is rerun; failing or overbroad evidence forces `not_verified`; hidden answers are excluded from score-only model input; feedback prose remains server-owned |
 | Complete learning UI | Project/skill/difficulty selection, forge state, editor, tests, revision-aware hypothesis journal, separately delivered hints, explanation, evidence report, reset and refresh restoration |
+| Guided learning MVP | Three-phase, nine-lesson evidence-first roadmap; concept guides; investigation checklists; zero-token guided launches; bounded local progress; verified-only completion; deterministic reinforcement/next-step recommendations; direct catalog preserved |
 | Reliability breadth | Three projects and three scenarios per project; missing-key, malformed plan, timeout, expiration, and invalid patch paths covered |
-| Quality hardening | Keyboard and axe checks, secondary-project E2E, narrow viewport check, reduced-motion CSS, secure headers, bounded local telemetry/rate buckets, zero-audit dependency state, production build |
+| Quality hardening | Independent product/QA/security reviews, duplicate-action single-flight, streamed request cap, keyboard/axe/mobile checks, all-fixture bundle and source/history scans, secure headers, bounded local telemetry/rate buckets, zero-audit dependency state |
 | Submission package | README, build log, testing guide, threat model, demo script, Devpost draft, license, and completion report |
 | Public development baseline | `Anish-Guntreddi/FaultSmith` on GitHub with tracked `main`, CI, Dependabot, CODEOWNERS, issue forms, pull-request template, security policy, and contribution workflow |
+| Offline release readiness | Default-free seven-stage lifecycle smoke, explicit paid live gate, production HTML/header/cache smoke, strict safe evidence writer, honest submission/UAT validator, five-person protocol, and approval-gated deployment/rollback runbook; 63 focused tests and independent adversarial recheck green |
+| Phase 01.1 accounts and cloud progress (offline candidate) | Guest-first My Progress dashboard with deterministic explained metrics; optional verified email/password + Google accounts via a lazy browser Firebase adapter; server-only identity DAL (bounded token parsing, verified-email enforcement, UID-only paths); transactional Firestore repository with SHA-256 idempotency, 50-attempt retention, one-time labeled import, explicit deletion; deny-all direct-client rules; exact-origin cloud CSP widening; tested cloud-off rollback; 23 emulator-integration and 16 emulator-browser scenarios; three independent reviews with all accepted findings repaired |
+| Real Firebase automated proof | Sanitized 22/22 real-project stages covering password/email identity, verified/unverified boundaries, cloud persistence, idempotency/import/restore/isolation, deployed direct-client denial, bounded usage, degraded local fallback, deletion/cleanup, and secret-free logs; human Google/inbox/browser and cloud-off checkpoints remain open |
+| Forensic Workbench design system | Locked visual principles/tokens in `docs/DESIGN_SYSTEM.md`; unified roadmap, skill practice, progress/account sync, workspace, validation, and both report states; Observe → Hypothesize → Repair → Verify rhythm; desktop/mobile visual review plus keyboard/axe/overflow gates green; no new dependency or remote asset |
+| Debugging Case File motion narrative | Presentation-only GSAP/ScrollTrigger split chunks dynamically load near one desktop explanatory section; native CSS-sticky scroll demonstrates the four-step investigation loop; mobile/reduced-motion/static fallbacks, teardown transitions, compositor-only properties, no-overflow, and bundle-leakage regressions pass; core practice and fixture fallback remain independent |
+| Public hackathon landing and route separation | Theme-consistent story at `/`; complete application at `/learn`; two-way routing, axe/console/desktop/mobile/low-height checks, route-specific canonical/Open Graph/Twitter metadata, code-generated social images, Netlify-origin validation, and production smoke for every public surface; fixture-leak regression prevents marketing content from exposing curated faults or answers |
+| Forensic Terminal presentation polish | Shared Button/Card/Badge/Field/SegmentedControl/StatDisplay/StatusDot primitives; polished landing, roadmap, skill practice, progress/account, workspace, and evidence surfaces; fictional pausable hero trace; one-shot reasoning-bypass schematic; reduced-motion/static fallbacks; development-only `/styleguide`; mobile menu closes on selection and Escape with focus restored; full quality/security gates green |
 
 ## Remaining PRD gaps requiring external action
 
-1. Run the controlled live GPT-5.6 and Code Interpreter smoke test with a valid `OPENAI_API_KEY`.
-2. Obtain deployment approval, deploy, and verify the public URL without authentication.
-3. Run the study with at least five external testers and record comprehension results.
-4. Record and publish the under-three-minute demonstration.
-5. Capture the primary Codex `/feedback` Session ID and place it in the submission.
+1. ~~Complete Phase 01.1 credential-free contracts, metrics/dashboard, Firebase adapters, emulator tests, regression gates, and independent QA/security review.~~ **Done** — frozen offline candidate with three independent approvals; see `docs/TESTING.md` and the phase review reports.
+2. ~~Create/configure the Firebase Spark project and complete automated real-project verification.~~ **Automated portion done (22/22).** Still required: real Google popup/cancel/collision, emailed verification/reset links, clean-browser signed-in UI restoration at both target viewports, and the private configuration-off cleanup/rollback gate.
+3. Privately configure a funded `OPENAI_API_KEY` and run the single controlled local GPT-5.6 and Code Interpreter smoke command on the post-Phase-01.1 candidate; clean up the credential before repository scanning.
+4. Obtain Netlify deployment approval, configure shared/edge abuse controls, deploy a preview, and verify both guest and signed-in workflows before production promotion.
+5. Run the study with at least five external testers and record comprehension results.
+6. Record and publish the under-three-minute demonstration.
+7. Capture the primary Codex `/feedback` Session ID and place it in the submission.
 
 These are intentionally not marked complete by local fallback evidence.
 
 ## Current risks
 
 - **Highest technical risk:** live provider response or container behavior can drift from mocked/typed expectations. Mitigation: strict parse/validation, timeout, one retry, safe recovery, and a separate live smoke procedure.
-- **Highest demo risk:** network or credential failure during recording. Mitigation: the primary lab is prevalidated and automatically recovers to fixture mode with visible labeling.
-- **Highest security risk:** the in-memory rate limiter is per process and not globally coordinated across a multi-instance deployment. Mitigation: conservative route limits now; add provider/edge rate limiting before high-traffic public use.
-- **Highest judging opportunity:** show that GPT does more than chat—it creates a constrained mutation plan, Code Interpreter proves the failure, and deterministic evidence controls the final result.
+- **Highest demo risk:** network or credential failure during recording. Mitigation: the primary lab is prevalidated and automatically recovers to fixture mode with visible labeling; the explicit live proof is performed before recording rather than improvised on camera.
+- **Highest security risk:** the in-memory rate limiter is per process and not globally coordinated across a multi-instance deployment. Mitigation: conservative route limits now; add provider/edge rate limiting before any public exposure of a paid server credential.
+- **Highest new privacy risk:** cloud persistence and multiple providers can accidentally widen learner-data collection, expose account existence, split progress, or permit cross-user access. Mitigation: guest default, Firebase-owned password/verification/reset, enumeration-resistant responses, explicit provider-collision handling, server-derived UID, strict bounded DTOs, server-mediated writes, direct-client Firestore denial, no source/prose/password storage, deletion, emulator isolation tests, and independent adversarial review.
+- **Highest judging opportunity:** accurately show the zero-token guided curriculum, then—only after credentialed proof—show GPT emitting the exact approved live contract, Code Interpreter producing execution evidence, and deterministic policy controlling release.
 - **API-credit constraint:** live generation can require original and mutated executions, plus assessment. The fixture path allows unlimited rehearsal without spend.
-- **Time constraint:** prioritize the public deployment, five-tester study, and concise recording over new product breadth.
+- **Curriculum boundary:** guided metadata must never contain hidden answers or become an alternate execution authority. Mitigation: lesson data references only public project-skill IDs; fixtures and assessments remain server-owned.
+- **Time constraint:** the local product/UI candidate is now frozen for presentation. If any remaining live Firebase, OpenAI, or deployment checkpoint fails, ship the last known-green guest-first build with cloud sync disabled and the validated fixture fallback intact.
+- **Competition access requirement:** the [official rules](https://openai.devpost.com/rules) require working project access through a website, functioning demo, or test build plus a public repository/video. For this browser application, a stable unauthenticated HTTPS deployment is the safest compliance path even though the rules do not name Vercel specifically.
 
 ## Recommended next milestone
 
-With user authorization and a server-only API key, deploy a preview release, run the live smoke checklist, resolve any environment-specific failure, and then complete the five-person usability pass. If the live service is unstable near recording time, record the labeled fixture path while accurately describing the live architecture and separate live evidence.
+The local implementation and presentation candidate are ready. Next: rehearse the guest-first fixture workflow, complete the remaining human real-Firebase browser checks, privately omit/remove the credential file long enough to prove the canonical cloud-off/source-scan rollback, then run the separately credentialed OpenAI smoke. After explicit Netlify approval, configure `NEXT_PUBLIC_SITE_URL` plus platform controls, deploy a preview, run the expanded `/` + `/learn` + social-image + API production smoke, and complete five-person UAT. If any cloud checkpoint fails, disable sync through configuration and retain the local dashboard, fixture fallback, and validated learning loop.
 
 ## Explicitly deferred scope
 
+- Natural-language custom challenge prompting
 - Arbitrary repository upload or arbitrary Python execution
-- Accounts, cross-device synchronization, cohorts, and instructor dashboards
+- Cohorts, assignments, instructor dashboards, organization administration, and mandatory accounts
 - Languages other than Python
 - Learner-supplied shell commands, dependencies, file IDs, or container IDs
 - Competitive scoring, leaderboards, and unverifiable certification claims
@@ -54,8 +68,16 @@ With user authorization and a server-only API key, deploy a preview release, run
 ## Judging-criteria direction review
 
 - **Technological implementation:** strongest when the validated GPT contract, sandbox boundary, deterministic override rule, and recovery states are demonstrated together.
-- **Design:** strongest when the learner moves from evidence to hypothesis to minimal repair without premature answer leakage.
+- **Design:** the locked Forensic Workbench, fictional live trace, Reasoning Bypass Circuit, and isolated Debugging Case File make the evidence → hypothesis → minimal repair → exact verification loop visible from hook to working product without premature answer leakage, scroll-jacking, or decorative motion that obscures content.
 - **Potential impact:** a reusable practice loop can turn passive tutorials into deliberate debugging exercises.
 - **Quality of idea:** the deliberate, validated failure is the differentiator; adding broad project ingestion before submission would weaken reliability and safety.
 
-Direction remains aligned with the locked PRD. No material product change is recommended.
+Direction is aligned with the approved July 19 personalized-learning PRD amendment and the July 20 presentation design lock. No additional material product expansion is recommended before submission.
+
+## July 20 authored-component direction review
+
+The presentation candidate now has a FaultSmith-specific component grammar rather than a rounded-card skin: forensic dossiers identify curriculum and lesson artifacts, evidence ledgers present product guarantees as audit records, process rails show causal sequence, and specimen slabs distinguish selectable systems. Tailwind v4 continues to own layout, responsive behavior, and interaction utilities; the custom CSS layer owns the authored silhouette and instrumentation details. Installing the default shadcn Card family was intentionally unnecessary because it would recreate the generic surface pattern this pass removed.
+
+This closes the remaining local presentation-system gap without changing product scope. The next milestone remains external proof: real-service browser checks, credentialed OpenAI smoke, approved Netlify deployment, cross-network smoke, five-person UAT, recording/publication, and the required feedback Session ID. If any service proof fails, retain guest mode and the validated fixture fallback rather than expanding scope.
+
+Account conversion is now placed at evidence-bearing moments instead of as a gate: during the active investigation and after the result. The product must continue saying “already saved on this device” before describing account benefits; “create an account to save” is intentionally prohibited because it misrepresents the guest-first persistence contract.

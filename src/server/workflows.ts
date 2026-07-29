@@ -11,14 +11,25 @@ import {
   hintResponseSchema,
   type HintRequest,
   type HintResponse,
+  hypothesisResponseSchema,
+  type HypothesisRequest,
+  type HypothesisResponse,
   type PublicChallenge,
 } from "@/lib/contracts";
+import { assertNoLeak } from "@/server/hypothesis-containment";
+import { buildCoachContext } from "@/server/hypothesis-context";
+import { buildDeterministicFallbackResponse } from "@/server/hypothesis-fallback";
+import { recordContainmentRejection } from "@/server/hypothesis-health";
 import type { MutationPlan } from "@/server/mutation-contract";
-import { OpenAIGateway, hasOpenAIKey, type AIGateway } from "./ai-gateway";
+import { type AIGateway, type ModelAssessmentScores } from "./ai-gateway";
+import { createLiveGateway, isLiveConfigured } from "./ai-provider";
 import { getPrevalidatedChallenge, toPublicChallenge } from "./challenge-service";
 import { countChangedLines, runFixtureTests, validateSubmittedFiles } from "./fixture-runner";
 import { getFixture, selectFixture, withRequestedDifficulty, type ChallengeFixture } from "./fixtures";
 import { RequestError } from "./request-guard";
+
+/** Design spec section 3.4: one regeneration on a rejected candidate, then fall back. */
+const MAX_COACH_ATTEMPTS = 2;
 
 type LiveOptions = {
   gateway?: AIGateway;
@@ -26,10 +37,10 @@ type LiveOptions = {
 };
 
 function resolveLiveOptions(options?: LiveOptions) {
-  const liveAvailable = options?.liveAvailable ?? hasOpenAIKey();
+  const liveAvailable = options?.liveAvailable ?? isLiveConfigured();
   return {
     liveAvailable,
-    gateway: options?.gateway ?? (liveAvailable ? new OpenAIGateway() : undefined),
+    gateway: options?.gateway ?? (liveAvailable ? createLiveGateway() : undefined),
   };
 }
 
@@ -144,6 +155,11 @@ export async function generateChallengeWorkflow(
     } catch (error) {
       validationFeedback =
         error instanceof Error ? error.message.slice(0, 240) : "Validation failed.";
+      // Server-side only: fallbackReason stays generic for clients, so this
+      // is the sole record of why live generation was rejected.
+      console.error(
+        `[generate] live validation attempt ${attempt + 1} failed: ${validationFeedback}`,
+      );
     }
   }
 
@@ -259,6 +275,7 @@ function deterministicAssessment(
 ): AssessmentResult {
   const passed = testResult.status === "passed";
   const disciplined = changedLines <= fixture.maxChangedLines;
+  const verified = passed && disciplined;
   const reasoningText = `${request.hypothesisHistory.join(" ")} ${request.explanation}`.toLowerCase();
   const matchedSignalGroups = fixture.explanationSignals.filter((alternatives) =>
     alternatives.some((signal) => reasoningText.includes(signal.toLowerCase())),
@@ -280,22 +297,28 @@ function deterministicAssessment(
   const prevalidated = testResult.executionMode === "prevalidated_fixture";
 
   return {
-    completionStatus: passed ? "verified" : "not_verified",
+    completionStatus: verified ? "verified" : "not_verified",
     rootCauseScore,
     reasoningScore,
     patchDisciplineScore: disciplined ? 96 : 45,
     conceptUnderstandingScore,
-    strengths: passed && explanationGrounded
+    strengths: passed && !disciplined
+      ? ["The executed tests passed, but verification remains gated by the approved minimal-change boundary."]
+      : passed && explanationGrounded
       ? ["The repair passed and the explanation connected multiple challenge-specific causal signals."]
       : passed
         ? ["The submitted snapshot passed the authoritative deterministic challenge checks."]
       : ["The explanation was recorded and can guide the next debugging iteration."],
-    improvementAreas: passed && explanationGrounded
+    improvementAreas: passed && !disciplined
+      ? ["Reduce the repair to the smallest causal change before treating the attempt as verified."]
+      : passed && explanationGrounded
       ? ["Continue connecting the observed failure signature to the smallest causal code change."]
       : passed
         ? ["Name the affected condition, boundary or state, and explain causally why the observed test failed."]
       : ["Resolve the remaining failing test before treating the repair as complete."],
-    evidenceSummary: passed
+    evidenceSummary: passed && !disciplined
+      ? `${testResult.passedCount} executed tests passed, but ${changedLines} changed lines exceeded this lab's server-owned minimal-repair boundary.`
+      : passed
       ? prevalidated
         ? `The submitted source matched the server-owned repair snapshot associated with ${testResult.passedCount} passing tests and ${changedLines} changed line${changedLines === 1 ? "" : "s"}.`
         : `${testResult.passedCount} Code Interpreter tests passed with ${changedLines} changed line${changedLines === 1 ? "" : "s"}.`
@@ -303,6 +326,18 @@ function deterministicAssessment(
         ? `The submitted source did not match the prevalidated repair; the fixture's ${testResult.failedCount}-failure evidence remains authoritative.`
         : `${testResult.failedCount} Code Interpreter test${testResult.failedCount === 1 ? "" : "s"} still failed; verified status is blocked by executed evidence.`,
     nextPracticeRecommendation: `Practice another ${fixture.targetSkill.toLowerCase()} challenge with one fewer hint.`,
+  };
+}
+
+function applyModelScores(
+  assessment: AssessmentResult,
+  scores: ModelAssessmentScores,
+): AssessmentResult {
+  return {
+    ...assessment,
+    rootCauseScore: scores.rootCauseScore,
+    reasoningScore: scores.reasoningScore,
+    conceptUnderstandingScore: scores.conceptUnderstandingScore,
   };
 }
 
@@ -336,20 +371,24 @@ export async function assessChallengeWorkflow(
 
   if (live.liveAvailable && live.gateway) {
     try {
-      assessment = await live.gateway.assess(
+      const scores = await live.gateway.assess(
         fixture,
         request,
         execution.testResult,
         changedLines,
         changedFiles,
       );
+      assessment = applyModelScores(assessment, scores);
       assessmentSource = "gpt-5.6";
     } catch {
       assessmentSource = "deterministic_fallback";
     }
   }
 
-  if (execution.testResult.status !== "passed") {
+  if (
+    execution.testResult.status !== "passed" ||
+    changedLines > fixture.maxChangedLines
+  ) {
     assessment = { ...assessment, completionStatus: "not_verified" };
   }
 
@@ -364,4 +403,111 @@ export async function assessChallengeWorkflow(
     elapsedSeconds: request.elapsedSeconds,
     hypothesisRevisions: request.hypothesisHistory.length,
   });
+}
+
+/**
+ * Section 3.6's "observation and question ... both pass assertNoLeak"
+ * invariant applies to every response source, not just the live model
+ * path. The deterministic fallback's templates are hand-written and
+ * grounded only in already-visible evidence (see
+ * `hypothesis-fallback.test.ts`), so this should never actually trip — but
+ * nothing previously enforced that in code, so a future template edit
+ * could silently reproduce protected text with no test to catch it. Fail
+ * to a fixed, hard-coded emergency response rather than risk a leak.
+ */
+function ensureFallbackSafe(
+  response: HypothesisResponse,
+  fixture: ChallengeFixture,
+): HypothesisResponse {
+  const jointText = `${response.observation} ${response.question}`;
+  const safe =
+    assertNoLeak(response.observation, fixture).passed &&
+    assertNoLeak(response.question, fixture).passed &&
+    assertNoLeak(jointText, fixture).passed;
+  if (safe) return response;
+
+  recordContainmentRejection();
+  return hypothesisResponseSchema.parse({
+    source: "deterministic_fallback",
+    axes: { locus: "unstated", mechanism: "unstated", trigger: "unstated" },
+    weakestAxis: "none",
+    observation:
+      "Structural coaching is temporarily unavailable for this hypothesis. Re-run the tests and compare the failing case with the closest passing ones.",
+    question: "Which single input value distinguishes the failing test from the passing ones?",
+    movement: "first",
+  });
+}
+
+/**
+ * AI hypothesis coach (design spec section 3, phase 2). Additive and
+ * strictly advisory: it never writes progress or completion, which remain
+ * owned by the deterministic tests in `assessChallengeWorkflow`.
+ *
+ * Containment is an output filter, not a prompt-input restriction (spec
+ * 3.4). The model only ever sees the answer-blind `CoachContext` built by
+ * `buildCoachContext`; its candidate response is then checked with
+ * `assertNoLeak` — on the observation and question individually *and* on
+ * their concatenation, so a leak split across the two fields can't pass
+ * each field's individual check — and, when the gateway implements it, a
+ * semantic second-layer classifier grounded in the fixture's hidden answer
+ * key. A rejected candidate gets exactly one regeneration under a stricter
+ * instruction; a provider error, timeout, or unparsable response instead
+ * routes straight to the deterministic fallback (spec 3.5) rather than
+ * spending that regeneration budget on a failure that was never a leak. No
+ * provider failure ever produces a 5xx for the learner, and a leak — once
+ * detected by either layer — never reaches the learner.
+ */
+export async function evaluateHypothesisWorkflow(
+  request: HypothesisRequest,
+  options?: LiveOptions,
+): Promise<HypothesisResponse> {
+  const fixture = getFixture(request.challengeId);
+  if (!fixture) {
+    throw new RequestError("The challenge identifier is invalid.", "INVALID_CHALLENGE", 404);
+  }
+
+  const context = buildCoachContext(fixture, request);
+  const live = resolveLiveOptions(options);
+
+  if (live.liveAvailable && live.gateway) {
+    const gateway = live.gateway;
+    for (let attempt = 0; attempt < MAX_COACH_ATTEMPTS; attempt += 1) {
+      let candidate;
+      try {
+        candidate = await gateway.coachHypothesis(context, attempt > 0);
+      } catch {
+        // Provider error, timeout, or an unparsable response was never a
+        // leak: degrade straight to the deterministic fallback instead of
+        // consuming the containment-retry budget on it (spec 3.5).
+        break;
+      }
+
+      const jointCandidate = `${candidate.observation} ${candidate.question}`;
+      const denylistSafe =
+        assertNoLeak(candidate.observation, fixture).passed &&
+        assertNoLeak(candidate.question, fixture).passed &&
+        assertNoLeak(jointCandidate, fixture).passed;
+      if (!denylistSafe) {
+        recordContainmentRejection();
+        continue;
+      }
+
+      try {
+        const semanticLeak = await gateway.classifyHypothesisLeak?.(candidate, fixture);
+        if (semanticLeak) {
+          recordContainmentRejection();
+          continue;
+        }
+      } catch {
+        // The classifier itself failed: fail closed and treat the
+        // candidate as unverified rather than trusting it.
+        recordContainmentRejection();
+        continue;
+      }
+
+      return hypothesisResponseSchema.parse({ ...candidate, source: "gpt-5.6" });
+    }
+  }
+
+  return ensureFallbackSafe(buildDeterministicFallbackResponse(context), fixture);
 }

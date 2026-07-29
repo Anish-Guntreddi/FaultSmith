@@ -14,10 +14,96 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  quality:
-    name: Quality gate
+  static-analysis:
+    name: Static analysis
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check TypeScript
+        run: npm run typecheck
+
+  unit-integration:
+    name: Unit and integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Set up Java for Firebase emulators
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit and integration tests
+        run: npm test
+
+      - name: Run Firebase emulator tests
+        run: npm run test:firebase
+
+  build-security:
+    name: Build and security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out full source history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Scan source and reachable history
+        run: npm run security:source
+
+      - name: Scan client bundles
+        run: npm run security:bundle
+
+      - name: Audit production dependency tree
+        run: npm audit --audit-level=moderate
+
+  browser-accessibility:
+    name: Browser and accessibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Check out source
@@ -35,8 +121,5 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run complete quality gate
-        run: npm run quality
-
-      - name: Audit production dependency tree
-        run: npm audit --audit-level=moderate
+      - name: Run browser and accessibility tests
+        run: npm run test:e2e
