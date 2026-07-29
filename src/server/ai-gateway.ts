@@ -206,7 +206,7 @@ export class OpenAIGateway implements AIGateway {
   async runTests(
     fixture: ChallengeFixture,
     files: FileSnapshot[],
-    expectedFailure: boolean,
+    _expectedFailure: boolean,
   ): Promise<TestResult> {
     const startedAt = performance.now();
     const projectFiles = safeProjectFiles(fixture, files);
@@ -237,9 +237,13 @@ export class OpenAIGateway implements AIGateway {
       const passedCount = parseCount(logs, "passed");
       const failedCount = parseCount(logs, "failed");
       const status = failedCount > 0 ? "failed" : passedCount > 0 ? "passed" : "error";
-      const matchedExpectedFailure =
-        expectedFailure &&
-        fixture.expectedFailureTests.some((testName) => logs.includes(testName));
+      // Computed from observed output regardless of the caller's
+      // expectation, matching the deterministic runner's semantics: the
+      // execute path (expectedFailure=false) legitimately reports a match
+      // while the learner's files still contain the planted fault.
+      const matchedExpectedFailure = fixture.expectedFailureTests.some((testName) =>
+        logs.includes(testName),
+      );
 
       return {
         status,

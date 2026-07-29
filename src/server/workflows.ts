@@ -155,6 +155,11 @@ export async function generateChallengeWorkflow(
     } catch (error) {
       validationFeedback =
         error instanceof Error ? error.message.slice(0, 240) : "Validation failed.";
+      // Server-side only: fallbackReason stays generic for clients, so this
+      // is the sole record of why live generation was rejected.
+      console.error(
+        `[generate] live validation attempt ${attempt + 1} failed: ${validationFeedback}`,
+      );
     }
   }
 

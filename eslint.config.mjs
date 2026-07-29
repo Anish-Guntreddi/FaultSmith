@@ -15,6 +15,13 @@ const eslintConfig = defineConfig([
     // Netlify CLI deploy artifacts (generated bundles, not source).
     ".netlify/**",
   ]),
+  {
+    rules: {
+      // Underscore-prefixed parameters are interface-mandated slots an
+      // implementation intentionally ignores.
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+    },
+  },
 ]);
 
 export default eslintConfig;
