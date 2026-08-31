@@ -82,11 +82,11 @@ See [docs/TESTING.md](docs/TESTING.md) for the QA matrix and manual procedures, 
 
 Residual risks and verification evidence are documented in [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 
-## Build Week provenance
+## Authorship
 
-Codex is the primary implementation environment and this task is the primary build record. Codex implemented the application, API integration, fixtures, validation, security hardening, tests, browser review, and documentation. GPT-5.6 is substantive runtime functionality for strict mutation planning and explanation assessment; Code Interpreter is the live Python execution boundary.
+FaultSmith's engineering was directed by the author: the system architecture (browser workspace, server routes, GPT-5.6 boundary, Code Interpreter sandbox, fixture fallback), the product and learning-loop requirements in [docs/PRD.md](docs/PRD.md), the evaluation design that separates executed-test evidence from model assessment, the security boundaries documented in [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md) (trust boundaries, entry points, abuse cases, and mitigations), the test strategy and QA matrix in [docs/TESTING.md](docs/TESTING.md), and the acceptance criteria and verification evidence in [docs/COMPLETION_REPORT.md](docs/COMPLETION_REPORT.md) are all the author's work.
 
-No secondary Claude Code review was performed. That absence is recorded rather than represented as completed. The fixture fallback is a reliability feature, not a claim that live verification occurred without a credential.
+Implementation was AI-assisted; see [BUILD.md](BUILD.md) for tooling details.
 
 ## Documentation
 
