@@ -120,3 +120,11 @@ The authoritative commands, dates, and outcomes are maintained in `docs/TESTING.
 - **Remote verification:** GitHub Actions baseline run [29650774197](https://github.com/Anish-Guntreddi/FaultSmith/actions/runs/29650774197) completed successfully on public `main` using the checked-in clean-install workflow.
 - **Dependency-policy self-heal:** the initial Dependabot scan opened isolated React/React DOM updates and unsupported ESLint/TypeScript major upgrades, producing expected red PR checks. Updated the policy to group coupled React and development-tool minor/patch updates while leaving all major upgrades for explicit compatibility work; security updates remain independent of these version-update ignores.
 - **Direction:** the initial baseline necessarily landed directly on the empty `main`. Future work should use focused branches and pull requests governed by the checked-in template and CI gate.
+
+## July 18, 2026 — Final local handoff rehearsal
+
+- **Full gate:** reran `npm run quality`; lint, typecheck, 36 unit/integration tests, production build, the 17-artifact client leakage scan, and all five Playwright workflows passed.
+- **Manual primary workflow:** completed the Expense Approval boundary-condition fixture from selection through hypothesis, a progressive hint, minimal repair, six-pass evidence, and the verified report. The browser console contained no warnings or errors.
+- **Adversarial check:** an intentionally overbroad whitespace edit was rejected by the fixture's exact-snapshot boundary; the one-token `>` to `>=` repair then passed. This confirms the fallback verifier does not accept merely plausible or overbroad patches.
+- **Regression hardening:** extended the primary Playwright workflow to reload the completed report and assert restored challenge identity, six-pass evidence, and hypothesis-revision evidence. The complete five-workflow E2E suite passed after the change.
+- **Direction review:** the local release candidate and preserved prevalidated fallback remain ready for user testing. Remaining gates are external: live credential smoke, deployment approval/public URL, five-person study, recording/publication, and the primary `/feedback` Session ID.
